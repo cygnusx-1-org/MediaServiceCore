@@ -60,6 +60,7 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
     protected abstract fun getTitleInt(): String?
     protected open fun getParamsInt(): String? = null
     protected open fun getChannelIdInt(): String? = null
+    protected open fun getTopicInt(): Int = MediaGroup.TOPIC_NONE
 
     override fun getType(): Int {
         return options.groupType
@@ -107,5 +108,9 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
 
     override fun isEmpty(): Boolean {
         return _mediaItemList.isNullOrEmpty()
+    }
+
+    override fun getTopic(): Int {
+        return getTopicInt()
     }
 }

@@ -14,6 +14,7 @@ import com.liskovsoft.youtubeapi.next.v2.gen.WatchNextResultContinuation
 import com.liskovsoft.youtubeapi.next.v2.gen.getItems
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
+import com.liskovsoft.youtubeapi.next.v2.gen.getTopic
 import com.liskovsoft.youtubeapi.notifications.gen.NotificationsResult
 import com.liskovsoft.youtubeapi.notifications.gen.getItems
 import com.liskovsoft.youtubeapi.search.v2.gen.SearchSection
@@ -90,6 +91,7 @@ internal data class ShelfSectionMediaGroup(
     override fun getItemWrappersInt(): List<ItemWrapper?>? = shelf.getItems()
     override fun getNextPageKeyInt(): String? = shelf.getContinuationToken()
     override fun getTitleInt(): String? = shelf.getTitle()
+    override fun getTopicInt(): Int = shelf.shelfRenderer?.getTopic() ?: MediaGroup.TOPIC_NONE
 }
 
 internal data class ItemSectionMediaGroup(

@@ -30,6 +30,11 @@ public interface MediaGroup {
     int TYPE_PLAYBACK_QUEUE = 21;
     int TYPE_BLOCKED_CHANNELS = 22;
     int TYPE_BLOCKED_AI_CHANNELS = 23;
+    int TOPIC_NONE = 0;
+    int TOPIC_MUSIC = 1;
+    int TOPIC_GAMING = 2;
+    int TOPIC_SPORTS = 3;
+    int TOPIC_NEWS = 4;
     int getType();
     @Nullable
     List<MediaItem> getMediaItems();
@@ -41,4 +46,8 @@ public interface MediaGroup {
     String getNextPageKey();
     String getChannelUrl();
     boolean isEmpty();
+    /**
+     * What the whole row is about when the service marks it (e.g. a Home music shelf), one of TOPIC_*
+     */
+    int getTopic();
 }

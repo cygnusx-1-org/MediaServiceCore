@@ -72,13 +72,17 @@ internal data class SuggestionsGroup(val shelf: ShelfRenderer): MediaGroup {
         return mediaItems.isNullOrEmpty()
     }
 
+    override fun getTopic(): Int {
+        return MediaGroup.TOPIC_NONE
+    }
+
     companion object {
         fun from(continuation: WatchNextResultContinuation?, baseGroup: MediaGroup?): MediaGroup? {
             if (continuation == null || baseGroup == null) {
                 return null
             }
 
-            val newGroup = SuggestionsGroup(ShelfRenderer(null, null, null, null, null))
+            val newGroup = SuggestionsGroup(ShelfRenderer(null, null, null, null, null, null))
 
             val mediaItems = ArrayList<MediaItem>()
 

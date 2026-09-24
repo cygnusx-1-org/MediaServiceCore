@@ -258,6 +258,11 @@ public class YouTubeMediaGroup implements MediaGroup {
         return mMediaItems == null || mMediaItems.isEmpty();
     }
 
+    @Override
+    public int getTopic() {
+        return TOPIC_NONE;
+    }
+
     private static MediaGroup create(YouTubeMediaGroup baseGroup, List<GridTab> tabs) {
         ArrayList<MediaItem> mediaItems = new ArrayList<>();
 

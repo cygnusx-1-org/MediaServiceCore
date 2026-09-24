@@ -1,11 +1,18 @@
 package com.liskovsoft.youtubeapi.next.v2.gen
 
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper
+import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.youtubeapi.browse.v2.gen.PlaylistVideoListRenderer
 import com.liskovsoft.youtubeapi.browse.v2.gen.Shelf
 import com.liskovsoft.youtubeapi.browse.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.browse.v2.gen.getItems
 import com.liskovsoft.youtubeapi.common.models.gen.*
+
+private const val ICON_TYPE_MUSIC = "YOUTUBE_MUSIC_FILLED"
+private const val TOPIC_CHANNEL_MUSIC = "UC-9-kyTW8ZkZNDHQJ6FgpwQ"
+private const val TOPIC_CHANNEL_GAMING = "UCOpNcN46UbXVtpKMrmU4Abg"
+private const val TOPIC_CHANNEL_SPORTS = "UCEgdi0XIXXZ-qJOFPf4JSKw"
+private const val TOPIC_CHANNEL_NEWS = "UCYfdidRxbB8Qhf0Nx7ioOYw"
 
 //////
 
@@ -132,6 +139,19 @@ internal fun ShelfRenderer.getItemWrappers() =
 internal fun ShelfRenderer.getContinuationToken() = content?.horizontalListRenderer?.continuations?.getContinuationToken()
 internal fun ShelfRenderer.getChipItems() = headerRenderer?.chipCloudRenderer?.chips
 internal fun ShelfRenderer.containsShorts() = tvhtml5ShelfRendererType == TVHTML5_SHELF_RENDERER_TYPE_SHORTS
+/**
+ * Home TV music shelves have the music icon. Some topic shelves link to the topic channel (e.g. "Gaming").
+ */
+internal fun ShelfRenderer.getTopic(): Int = when {
+    icon?.iconType == ICON_TYPE_MUSIC -> MediaGroup.TOPIC_MUSIC
+    else -> when (endpoint?.getBrowseId()) {
+        TOPIC_CHANNEL_MUSIC -> MediaGroup.TOPIC_MUSIC
+        TOPIC_CHANNEL_GAMING -> MediaGroup.TOPIC_GAMING
+        TOPIC_CHANNEL_SPORTS -> MediaGroup.TOPIC_SPORTS
+        TOPIC_CHANNEL_NEWS -> MediaGroup.TOPIC_NEWS
+        else -> MediaGroup.TOPIC_NONE
+    }
+}
 private fun ShelfRenderer.getShelf() = headerRenderer?.shelfHeaderRenderer
 
 ///////

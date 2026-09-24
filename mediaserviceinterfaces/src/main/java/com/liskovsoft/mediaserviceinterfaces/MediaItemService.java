@@ -14,6 +14,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import io.reactivex.Observable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface MediaItemService {
@@ -97,6 +98,11 @@ public interface MediaItemService {
      * The owner's channel handle (e.g. "@handle") of the video
      */
     Observable<String> getChannelHandleObserve(String videoId);
+    /**
+     * Video id -> the category of the video in English (e.g. "Music"), empty when the video has none.<br/>
+     * Videos whose lookup failed are left out.
+     */
+    Observable<Map<String, String>> getVideoCategoriesObserve(List<String> videoIds);
     Observable<DislikeData> getDislikeDataObserve(String videoId);
     Observable<String> getUnlocalizedTitleObserve(String videoId);
 }

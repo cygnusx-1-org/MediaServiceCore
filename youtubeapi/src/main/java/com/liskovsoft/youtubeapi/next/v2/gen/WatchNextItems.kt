@@ -22,7 +22,8 @@ internal data class ShelfRenderer(
     val content: Content?,
     val headerRenderer: HeaderRenderer?,
     val endpoint: NavigationEndpointItem?,
-    val tvhtml5ShelfRendererType: String?
+    val tvhtml5ShelfRendererType: String?,
+    val icon: IconItem?
 ) {
     data class Content(
         val gridRenderer: GridRenderer?,

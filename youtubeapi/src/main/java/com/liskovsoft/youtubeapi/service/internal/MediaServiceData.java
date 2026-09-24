@@ -48,6 +48,11 @@ public class MediaServiceData {
     public static final int CONTENT_STREAMS_SUBSCRIPTIONS = 1 << 12;
     public static final int CONTENT_SHORTS_CHANNEL = 1 << 13;
     public static final int CONTENT_SHORTS_NEWS = 1 << 14;
+    public static final int CONTENT_MUSIC_HOME = 1 << 15;
+    public static final int CONTENT_GAMING_HOME = 1 << 16;
+    public static final int CONTENT_SPORTS_HOME = 1 << 17;
+    public static final int CONTENT_NEWS_HOME = 1 << 18;
+    public static final int CONTENT_TECH_HOME = 1 << 19;
     public static final int CONTENT_SHORTS_ALL = CONTENT_SHORTS_HOME | CONTENT_SHORTS_SEARCH
             | CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_TRENDING
             | CONTENT_SHORTS_CHANNEL | CONTENT_SHORTS_NEWS;

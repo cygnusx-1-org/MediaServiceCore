@@ -24,6 +24,7 @@ import com.liskovsoft.youtubeapi.block.SponsorBlockService;
 import com.liskovsoft.youtubeapi.block.data.SegmentList;
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.BaseMediaItem;
 import com.liskovsoft.youtubeapi.aislist.AiSListService;
+import com.liskovsoft.youtubeapi.videocategory.VideoCategoryService;
 import com.liskovsoft.youtubeapi.dearrow.DeArrowService;
 import com.liskovsoft.youtubeapi.feedback.FeedbackService;
 import com.liskovsoft.youtubeapi.innertube.InnertubeService;
@@ -42,6 +43,7 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import io.reactivex.Observable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class YouTubeMediaItemService implements MediaItemService {
@@ -555,6 +557,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     @Override
     public Observable<String> getChannelHandleObserve(String videoId) {
         return RxHelper.fromCallable(() -> getWatchNextService().getChannelHandle(videoId));
+    }
+
+    @Override
+    public Observable<Map<String, String>> getVideoCategoriesObserve(List<String> videoIds) {
+        return RxHelper.fromCallable(() -> VideoCategoryService.getCategories(videoIds));
     }
 
     @Override
