@@ -11,6 +11,8 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -319,6 +321,62 @@ public class ServiceHelper {
         }
 
         return randomId.toString();
+    }
+
+    /**
+     * Extract the channel handle from a text like <b>"Channel Name • @handle"</b> or an url like <b>"/@handle"</b>.<br/>
+     * The url might be percent-encoded.
+     * @return the handle with the leading "@" or null
+     */
+    @Nullable
+    public static String extractChannelHandle(String text) {
+        if (text == null) {
+            return null;
+        }
+
+        // Only urls are encoded. A plain text may contain a literal "%" (e.g. "100% Channel")
+        if (text.startsWith("/") && text.contains("%")) {
+            try {
+                text = URLDecoder.decode(text, "UTF-8");
+            } catch (UnsupportedEncodingException | IllegalArgumentException e) {
+                return null;
+            }
+        }
+
+        int start = text.lastIndexOf('@');
+
+        if (start < 0) {
+            return null;
+        }
+
+        // Should be a separate word or an url part, not an email-like text
+        if (start > 0) {
+            char prev = text.charAt(start - 1);
+            if (prev != '/' && !Character.isWhitespace(prev)) {
+                return null;
+            }
+        }
+
+        int end = start + 1;
+
+        while (end < text.length()) {
+            int codePoint = text.codePointAt(end);
+            if (!isHandleCharacter(codePoint)) {
+                break;
+            }
+            end += Character.charCount(codePoint);
+        }
+
+        return end > start + 1 ? text.substring(start, end) : null;
+    }
+
+    /**
+     * Handles can contain letters (with their combining marks), digits, underscores, hyphens, dots and middle dots.
+     */
+    private static boolean isHandleCharacter(int codePoint) {
+        int type = Character.getType(codePoint);
+        return Character.isLetterOrDigit(codePoint) || type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK
+                || codePoint == '_' || codePoint == '-' || codePoint == '.' || codePoint == '·';
     }
 
     public static void sleep(long time) {

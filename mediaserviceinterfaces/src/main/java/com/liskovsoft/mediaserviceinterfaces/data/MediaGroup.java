@@ -29,6 +29,7 @@ public interface MediaGroup {
     int TYPE_MY_VIDEOS = 20;
     int TYPE_PLAYBACK_QUEUE = 21;
     int TYPE_BLOCKED_CHANNELS = 22;
+    int TYPE_BLOCKED_AI_CHANNELS = 23;
     int getType();
     @Nullable
     List<MediaItem> getMediaItems();

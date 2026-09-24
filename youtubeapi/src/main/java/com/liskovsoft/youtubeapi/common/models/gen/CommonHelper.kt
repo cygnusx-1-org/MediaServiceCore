@@ -52,6 +52,7 @@ internal fun ThumbnailItem.Thumbnail.getUrl(): String? {
 ////////
 
 internal fun NavigationEndpointItem.getBrowseId() = browseEndpoint?.browseId
+internal fun NavigationEndpointItem.getChannelHandle() = browseEndpoint?.canonicalBaseUrl?.let { ServiceHelper.extractChannelHandle(it) }
 internal fun NavigationEndpointItem.getParams() = browseEndpoint?.params ?: watchEndpoint?.params
 internal fun NavigationEndpointItem.getOverlayToggleButton() = getOverlayItems()?.firstNotNullOfOrNull { it?.toggleButtonRenderer }
 internal fun NavigationEndpointItem.getOverlaySubscribeButton() = getOverlayItems()?.firstNotNullOfOrNull { it?.subscribeButtonRenderer }
@@ -119,6 +120,9 @@ internal fun VideoItem.getChannelId() =
     shortBylineText?.runs?.firstNotNullOfOrNull { it?.navigationEndpoint?.getBrowseId() } ?:
     longBylineText?.runs?.firstNotNullOfOrNull { it?.navigationEndpoint?.getBrowseId() } ?:
     menu?.getBrowseId()
+internal fun VideoItem.getChannelHandle() =
+    shortBylineText?.runs?.firstNotNullOfOrNull { it?.navigationEndpoint?.getChannelHandle() } ?:
+    longBylineText?.runs?.firstNotNullOfOrNull { it?.navigationEndpoint?.getChannelHandle() }
 internal fun VideoItem.getPlaylistId() = navigationEndpoint?.getPlaylistId()
 internal fun VideoItem.getPlaylistIndex() = navigationEndpoint?.getIndex()
 internal fun VideoItem.isLive(): Boolean = STATUS_STYLE_LIVE == getStatusStyle() || BADGE_STYLE_LIVE == getBadgeStyle()
@@ -206,6 +210,10 @@ internal fun TileItem.getThumbnails() = header?.tileHeaderRenderer?.thumbnail ?:
 internal fun TileItem.getMovingThumbnails() = header?.tileHeaderRenderer?.let { it.movingThumbnail ?: it.onFocusThumbnail }
 internal fun TileItem.getMovingThumbnailUrl() = header?.tileHeaderRenderer?.movingThumbnail?.thumbnails?.getOrNull(0)?.url
 internal fun TileItem.getChannelId() = onSelectCommand?.getBrowseId() ?: getMenu()?.getBrowseId()
+// The long-press menu subtitle has the form "Channel Name • @handle". Suggestions have a channel link in the metadata lines instead.
+internal fun TileItem.getChannelHandle() = getShowMenuCommand()?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
+    ?: metadata?.tileMetadataRenderer?.lines?.firstNotNullOfOrNull { it?.lineRenderer?.items?.firstNotNullOfOrNull {
+        it?.lineItemRenderer?.text?.runs?.firstNotNullOfOrNull { it?.navigationEndpoint?.getChannelHandle() } } }
 internal fun TileItem.getChannelParams() = onSelectCommand?.getParams()
 internal fun TileItem.getFeedbackTokens() = getMenu()?.getFeedbackTokens()
 internal fun TileItem.getEngagementPanelEndpoint() = onLongPressCommand?.showEngagementPanelEndpoint
@@ -331,6 +339,7 @@ internal fun ItemWrapper.getPlaylistId() = getVideoItem()?.getPlaylistId() ?: ge
     ?: getPlaylistItem()?.getPlaylistId() ?: getRadioItem()?.getPlaylistId()
 internal fun ItemWrapper.getChannelId() = getVideoItem()?.getChannelId() ?: getMusicItem()?.getChannelId() ?: getTileItem()?.getChannelId()
     ?: getChannelItem()?.getChannelId() ?: getRadioItem()?.getChannelId() ?: getLockupItem()?.getChannelId()
+internal fun ItemWrapper.getChannelHandle() = getVideoItem()?.getChannelHandle() ?: getTileItem()?.getChannelHandle()
 internal fun ItemWrapper.getChannelParams() = getTileItem()?.getChannelParams()
 internal fun ItemWrapper.getPlaylistIndex() = getVideoItem()?.getPlaylistIndex() ?: getMusicItem()?.getPlaylistIndex() ?: getTileItem()?.getPlaylistIndex()
 internal fun ItemWrapper.isLive() = getVideoItem()?.isLive() ?: getMusicItem()?.isLive() ?: getTileItem()?.isLive() ?: getLockupItem()?.isLive() ?: false

@@ -91,6 +91,19 @@ internal open class WatchNextService {
         }
     }
 
+    /**
+     * The owner's channel handle (e.g. "@handle"). Unlike [getMetadata] has no side effects.
+     */
+    fun getChannelHandle(videoId: String?): String? {
+        if (videoId == null) {
+            return null
+        }
+
+        val watchNext = getWatchNext(videoId, null, 0, null) ?: return null
+
+        return MediaItemMetadataImpl(watchNext).channelHandle
+    }
+
     fun getUnlocalizedTitle(videoId: String?): String? {
         return getUnlocalizedTitleResult(videoId)?.title
     }

@@ -54,6 +54,7 @@ open class BaseMediaItem : MediaItem {
     protected open val playlistIdItem: String? = null
     protected open val playlistIndexItem: Int? = null
     protected open val channelIdItem: String? = null
+    protected open val channelHandleItem: String? = null
     protected open val playlistParamsItem: String? = null
     protected open val isLiveItem: Boolean? = null
     protected open val isUpcomingItem: Boolean? = null
@@ -164,6 +165,10 @@ open class BaseMediaItem : MediaItem {
 
     fun setChannelId(channelId: String?) {
         _channelIdItem = channelId
+    }
+
+    override fun getChannelHandle(): String? {
+        return channelHandleItem
     }
 
     override fun getPlaylistIndex(): Int {

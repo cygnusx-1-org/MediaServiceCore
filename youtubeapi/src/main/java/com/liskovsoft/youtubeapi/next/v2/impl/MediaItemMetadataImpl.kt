@@ -47,6 +47,9 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     private val videoOwner by lazy {
         videoMetadata?.getVideoOwner()
     }
+    val channelHandle: String? by lazy {
+        videoOwner?.navigationEndpoint?.getChannelHandle()
+    }
     private val channelOwner by lazy {
         watchNextResult.getButtonStateItem()?.getChannelOwner()
     }

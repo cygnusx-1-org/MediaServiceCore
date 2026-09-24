@@ -1,5 +1,6 @@
 package com.liskovsoft.mediaserviceinterfaces;
 
+import com.liskovsoft.mediaserviceinterfaces.data.AiSListData;
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
@@ -91,6 +92,11 @@ public interface MediaItemService {
     Observable<List<SponsorSegment>> getSponsorSegmentsObserve(String videoId, Set<String> categories);
     Observable<DeArrowData> getDeArrowDataObserve(String videoId);
     Observable<DeArrowData> getDeArrowDataObserve(List<String> videoIds);
+    Observable<AiSListData> getAiSListDataObserve();
+    /**
+     * The owner's channel handle (e.g. "@handle") of the video
+     */
+    Observable<String> getChannelHandleObserve(String videoId);
     Observable<DislikeData> getDislikeDataObserve(String videoId);
     Observable<String> getUnlocalizedTitleObserve(String videoId);
 }

@@ -57,6 +57,11 @@ public interface MediaItem {
     int getWidth();
     int getHeight();
     String getChannelId();
+    /**
+     * Channel handle with the leading "@".<br/>
+     * Example: <b>"@handle"</b>
+     */
+    String getChannelHandle();
     String getVideoPreviewUrl();
     /**
      * Num of audio channels.<br/>

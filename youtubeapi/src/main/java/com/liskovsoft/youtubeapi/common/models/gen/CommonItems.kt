@@ -77,7 +77,8 @@ internal data class OverlayPanelRenderer(
 
 internal data class BrowseEndpoint(
     val browseId: String?,
-    val params: String?
+    val params: String?,
+    val canonicalBaseUrl: String? // e.g. "/@handle"
 )
 
 internal data class WatchEndpointItem(

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.MediaItemService;
+import com.liskovsoft.mediaserviceinterfaces.data.AiSListData;
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
@@ -22,6 +23,7 @@ import com.liskovsoft.youtubeapi.actions.ActionsServiceWrapper;
 import com.liskovsoft.youtubeapi.block.SponsorBlockService;
 import com.liskovsoft.youtubeapi.block.data.SegmentList;
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.BaseMediaItem;
+import com.liskovsoft.youtubeapi.aislist.AiSListService;
 import com.liskovsoft.youtubeapi.dearrow.DeArrowService;
 import com.liskovsoft.youtubeapi.feedback.FeedbackService;
 import com.liskovsoft.youtubeapi.innertube.InnertubeService;
@@ -543,6 +545,16 @@ public class YouTubeMediaItemService implements MediaItemService {
 
     private DeArrowData getDeArrowData(String videoId) {
         return DeArrowService.getData(videoId);
+    }
+
+    @Override
+    public Observable<AiSListData> getAiSListDataObserve() {
+        return RxHelper.fromCallable(AiSListService::getData);
+    }
+
+    @Override
+    public Observable<String> getChannelHandleObserve(String videoId) {
+        return RxHelper.fromCallable(() -> getWatchNextService().getChannelHandle(videoId));
     }
 
     @Override

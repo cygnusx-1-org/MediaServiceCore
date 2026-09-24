@@ -26,6 +26,7 @@ public class YouTubeMediaItem implements MediaItem {
     private CharSequence mSecondTitle;
     private String mVideoId;
     private String mChannelId;
+    private String mChannelHandle;
     private String mPlaylistId;
     private String mCardImageUrl;
     private String mBackgroundImageUrl;
@@ -159,6 +160,7 @@ public class YouTubeMediaItem implements MediaItem {
         video.mPlaylistId = item.getPlaylistId();
         video.mPlaylistIndex = item.getPlaylistIndex();
         video.mChannelId = item.getChannelId();
+        video.mChannelHandle = ServiceHelper.extractChannelHandle(item.getCanonicalChannelUrl());
         // TODO: time conversion doesn't take into account locale specific delimiters
         video.mLengthText = item.getLengthText() != null ? item.getLengthText() : item.getBadgeText();
         video.mBadgeText = item.getBadgeText() != null ? item.getBadgeText() : item.getLengthText();
@@ -452,6 +454,11 @@ public class YouTubeMediaItem implements MediaItem {
 
     public void setChannelId(String channelId) {
         mChannelId = channelId;
+    }
+
+    @Override
+    public String getChannelHandle() {
+        return mChannelHandle;
     }
 
     @Override
