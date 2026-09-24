@@ -15,6 +15,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemStoryboard;
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.SponsorSegment;
+import com.liskovsoft.mediaserviceinterfaces.data.VideoCategory;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.rx.RxHelper;
@@ -560,8 +561,18 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
-    public Observable<Map<String, String>> getVideoCategoriesObserve(List<String> videoIds) {
+    public Observable<Map<String, VideoCategory>> getVideoCategoriesObserve(List<String> videoIds) {
         return RxHelper.fromCallable(() -> VideoCategoryService.getCategories(videoIds));
+    }
+
+    @Override
+    public Observable<Map<String, VideoCategory>> getVideoTopicsObserve(List<String> videoIds) {
+        return RxHelper.fromCallable(() -> VideoCategoryService.getTopics(videoIds));
+    }
+
+    @Override
+    public Observable<String> checkDataApiKeyObserve(String key) {
+        return RxHelper.fromCallable(() -> VideoCategoryService.checkKey(key));
     }
 
     @Override

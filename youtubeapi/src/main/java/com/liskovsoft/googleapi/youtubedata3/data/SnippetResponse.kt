@@ -8,7 +8,8 @@ internal data class SnippetWrapper(
     val kind: String?,
     val id: String?,
     val snippet: Snippet?,
-    val contentDetails: ContentDetails?
+    val contentDetails: ContentDetails?,
+    val topicDetails: TopicDetails?
 ) {
     data class Snippet(
         val title: String?,
@@ -40,6 +41,9 @@ internal data class SnippetWrapper(
             val description: String?
         )
     }
+    data class TopicDetails(
+        val topicCategories: List<String?>? // e.g. https://en.wikipedia.org/wiki/Music
+    )
     data class ContentDetails(
         val duration: String?, // PT2H4M4S
         val itemCount: Int? // for playlists

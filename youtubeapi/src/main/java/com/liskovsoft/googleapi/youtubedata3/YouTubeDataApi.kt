@@ -18,5 +18,11 @@ internal interface YouTubeDataApi {
     @GET("https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails")
     fun getPlaylistMetadata(@Query("id") ids: String, @Query("key") key: String? = getKey()): Call<SnippetResponse?>
 
+    /**
+     * The category id and the topics only (the snippet is big)
+     */
+    @GET("https://www.googleapis.com/youtube/v3/videos?part=snippet,topicDetails&fields=items(id,snippet/categoryId,topicDetails/topicCategories)")
+    fun getVideoTopics(@Query("id") ids: String, @Query("key") key: String): Call<SnippetResponse?>
+
     private fun getKey(): String? = ConstantsService.constants?.youtubeDataApiKey
 }

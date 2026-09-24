@@ -77,6 +77,7 @@ public class MediaServiceData {
     private NSigData mSigData;
     private boolean mIsMoreSubtitlesUnlocked;
     private boolean mIsLegacyUIEnabled;
+    private String mDataApiKey;
 
     private static class MediaServiceCache extends SharedPreferencesBase {
         private static final String PREF_NAME = MediaServiceCache.class.getSimpleName();
@@ -294,6 +295,19 @@ public class MediaServiceData {
         persistData();
     }
 
+    /**
+     * The user's own YouTube Data API key, null when not set
+     */
+    public String getDataApiKey() {
+        return mDataApiKey;
+    }
+
+    public void setDataApiKey(String key) {
+        mDataApiKey = key != null && !key.trim().isEmpty() ? key.trim() : null;
+
+        persistData();
+    }
+
     private void restoreData() {
         String data = mGlobalPrefs.getMediaServiceData();
 
@@ -323,6 +337,7 @@ public class MediaServiceData {
         //mIsLegacyUIEnabled = Helpers.parseBoolean(split, 23);
         mFailedAppInfo = Helpers.parseItem(split, 24, AppInfoCached::fromString);
         mIsLegacyUIEnabled = Helpers.parseBoolean(split, 25);
+        mDataApiKey = Helpers.parseStr(split, 26);
 
         boolean isAppUpdated = mOldAppVersion != null && !Helpers.equals(mOldAppVersion, appVersion);
 
@@ -354,7 +369,7 @@ public class MediaServiceData {
                         mVideoInfoType, null, null, null, null, null,
                         null, mEnabledFormats, null, null, mPoToken, mAppInfo,
                         mPlayerData, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
-                        null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled));
+                        null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey));
     }
 
     private void persistCachedDataInt() {

@@ -10,6 +10,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemStoryboard;
 import com.liskovsoft.mediaserviceinterfaces.data.SponsorSegment;
+import com.liskovsoft.mediaserviceinterfaces.data.VideoCategory;
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import io.reactivex.Observable;
 
@@ -99,10 +100,20 @@ public interface MediaItemService {
      */
     Observable<String> getChannelHandleObserve(String videoId);
     /**
-     * Video id -> the category of the video in English (e.g. "Music"), empty when the video has none.<br/>
+     * Video id -> the category of the video and, with the user's Data API key, its topics.<br/>
      * Videos whose lookup failed are left out.
      */
-    Observable<Map<String, String>> getVideoCategoriesObserve(List<String> videoIds);
+    Observable<Map<String, VideoCategory>> getVideoCategoriesObserve(List<String> videoIds);
+    /**
+     * Video id -> the category and the topics of the video, from the user's Data API key only.<br/>
+     * Empty without a usable key. Videos whose lookup failed are left out.
+     */
+    Observable<Map<String, VideoCategory>> getVideoTopicsObserve(List<String> videoIds);
+    /**
+     * Tries the user's Data API key with one request.
+     * @return why the key doesn't work, empty when it works
+     */
+    Observable<String> checkDataApiKeyObserve(String key);
     Observable<DislikeData> getDislikeDataObserve(String videoId);
     Observable<String> getUnlocalizedTitleObserve(String videoId);
 }

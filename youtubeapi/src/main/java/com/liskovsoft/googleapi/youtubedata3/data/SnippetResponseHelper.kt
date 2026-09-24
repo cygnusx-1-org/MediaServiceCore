@@ -16,6 +16,7 @@ internal fun SnippetWrapper.getCategoryId(): String? = snippet?.categoryId
 internal fun SnippetWrapper.getThumbnailUrl(): String? = snippet?.thumbnails?.medium?.url
 internal fun SnippetWrapper.getDurationIso(): String? = contentDetails?.duration
 internal fun SnippetWrapper.getItemCount(): Int? = contentDetails?.itemCount
+internal fun SnippetWrapper.getTopics(): List<String> = topicDetails?.topicCategories?.mapNotNull { it?.substringAfterLast('/')?.ifEmpty { null } } ?: emptyList()
 private fun SnippetWrapper.isVideo() = kind == TYPE_VIDEO
 private fun SnippetWrapper.isChannel() = kind == TYPE_CHANNEL
 private fun SnippetWrapper.isPlaylist() = kind == TYPE_PLAYLIST
