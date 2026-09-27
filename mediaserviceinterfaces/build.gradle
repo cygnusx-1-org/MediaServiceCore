@@ -2,6 +2,7 @@ apply from: '../../SharedModules/constants.gradle'
 apply plugin: 'com.android.library'
 
 android {
+    namespace 'com.liskovsoft.mediaserviceinterfaces'
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
     testOptions.unitTests.includeAndroidResources = true
@@ -21,7 +22,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

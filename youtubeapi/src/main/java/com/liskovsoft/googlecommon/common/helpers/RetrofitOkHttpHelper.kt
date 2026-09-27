@@ -10,9 +10,13 @@ import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 internal object RetrofitOkHttpHelper {
-    private val authSkipList = mutableListOf<Request>()
+    // Added and removed from many threads at once (e.g. the parallel category lookups). A plain list got corrupted,
+    // and every request after that failed in the interceptor (ArrayIndexOutOfBoundsException in ArrayList.remove).
+    private val authSkipList: MutableSet<Request> = Collections.newSetFromMap(ConcurrentHashMap<Request, Boolean>())
 
     @JvmStatic
     val authHeaders = mutableMapOf<String, String>()
@@ -25,8 +29,7 @@ internal object RetrofitOkHttpHelper {
 
     @JvmStatic
     fun addAuthSkip(request: Request) {
-        if (!authSkipList.contains(request))
-            authSkipList.add(request)
+        authSkipList.add(request)
     }
 
     private val commonHeaders = mapOf(

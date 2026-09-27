@@ -1,8 +1,9 @@
 apply from: '../../SharedModules/constants.gradle'
-apply plugin: 'kotlin-android'
+apply plugin: 'com.android.built-in-kotlin'
 apply plugin: 'com.android.library'
 
 android {
+    namespace 'com.liskovsoft.youtubeapi'
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
     testOptions.unitTests.includeAndroidResources = true
@@ -33,7 +34,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -97,7 +98,7 @@ dependencies {
     // Add kotlin support libs
     implementation 'androidx.core:core-ktx:' + kotlinCoreXVersion
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + kotlinVersion
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + kotlinVersion
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + kotlinxVersion
 
     // https://github.com/florianingerl/com.florianingerl.util.regex
     implementation 'com.github.florianingerl.util:regex:' + florianingerlRegexVersion

@@ -1,27 +1,52 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply from: new File(gradle.ext.sharedModulesRoot, 'constants.gradle')
 
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.1'
-        
+        classpath 'com.android.tools.build:gradle:9.3.0'
+        // AGP's built-in Kotlin ('com.android.built-in-kotlin'). AGP doesn't depend on it, so it goes on the classpath by hand.
+        classpath 'com.android.tools.build:gradle-kotlin:9.3.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
+subprojects {
+    // AGP 8+ no longer generates BuildConfig by default, and the modules use it (BuildConfig.DEBUG etc.)
+    ['com.android.application', 'com.android.library'].each { id ->
+        plugins.withId(id) {
+            android.buildFeatures.buildConfig = true
+        }
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+    // The same versions the app build forces (electriceel/build.gradle)
+    configurations.all {
+        resolutionStrategy.force 'com.squareup.okhttp3:okhttp:' + okhttpVersion
+        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:' + kotlinVersion
+        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + kotlinVersion
+        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:' + kotlinVersion
+        resolutionStrategy.force 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + kotlinxVersion
+        resolutionStrategy.force 'androidx.core:core-ktx:' + kotlinCoreXVersion
+        resolutionStrategy.force 'androidx.core:core:' + coreXVersion
+        resolutionStrategy.force 'androidx.annotation:annotation:' + annotationXVersion
+        resolutionStrategy.force 'org.chromium.net:cronet-api:' + cronetApiVersion
+        resolutionStrategy.force 'androidx.multidex:multidex:' + multiDexVersion
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
 }
