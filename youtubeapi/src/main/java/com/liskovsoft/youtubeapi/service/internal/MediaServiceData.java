@@ -78,6 +78,8 @@ public class MediaServiceData {
     private boolean mIsMoreSubtitlesUnlocked;
     private boolean mIsLegacyUIEnabled;
     private String mDataApiKey;
+    private boolean mIsShortsQuickToggleEnabled;
+    private boolean mIsShortsQuickToggleHiding;
 
     private static class MediaServiceCache extends SharedPreferencesBase {
         private static final String PREF_NAME = MediaServiceCache.class.getSimpleName();
@@ -208,8 +210,52 @@ public class MediaServiceData {
         YouTubeMediaItemService.instance().invalidateCache(); // Remove current cached video
     }
 
+    /**
+     * Hidden now. While the Shorts quick toggle is enabled and off, none of the Shorts options apply.
+     */
     public boolean isContentHidden(int content) {
+        return (getHiddenContent() & content) == content;
+    }
+
+    /**
+     * Chosen in the settings, whether the Shorts quick toggle is on or off
+     */
+    public boolean isContentHiddenInSettings(int content) {
         return (mHiddenContent & content) == content;
+    }
+
+    private int getHiddenContent() {
+        if (!mIsShortsQuickToggleEnabled || mIsShortsQuickToggleHiding) {
+            return mHiddenContent;
+        }
+
+        return mHiddenContent & ~CONTENT_SHORTS_ALL;
+    }
+
+    /**
+     * A button on the main screen turns the Shorts options off and on, as they're set
+     */
+    public boolean isShortsQuickToggleEnabled() {
+        return mIsShortsQuickToggleEnabled;
+    }
+
+    public void setShortsQuickToggleEnabled(boolean enable) {
+        mIsShortsQuickToggleEnabled = enable;
+
+        persistData();
+    }
+
+    /**
+     * The quick toggle is on: the Shorts options apply (while it's enabled)
+     */
+    public boolean isShortsQuickToggleHiding() {
+        return mIsShortsQuickToggleHiding;
+    }
+
+    public void setShortsQuickToggleHiding(boolean hide) {
+        mIsShortsQuickToggleHiding = hide;
+
+        persistData();
     }
 
     public void setContentHidden(int content, boolean hide) {
@@ -338,6 +384,8 @@ public class MediaServiceData {
         mFailedAppInfo = Helpers.parseItem(split, 24, AppInfoCached::fromString);
         mIsLegacyUIEnabled = Helpers.parseBoolean(split, 25);
         mDataApiKey = Helpers.parseStr(split, 26);
+        mIsShortsQuickToggleEnabled = Helpers.parseBoolean(split, 27);
+        mIsShortsQuickToggleHiding = Helpers.parseBoolean(split, 28);
 
         boolean isAppUpdated = mOldAppVersion != null && !Helpers.equals(mOldAppVersion, appVersion);
 
@@ -369,7 +417,8 @@ public class MediaServiceData {
                         mVideoInfoType, null, null, null, null, null,
                         null, mEnabledFormats, null, null, mPoToken, mAppInfo,
                         mPlayerData, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
-                        null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey));
+                        null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey,
+                        mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding));
     }
 
     private void persistCachedDataInt() {
