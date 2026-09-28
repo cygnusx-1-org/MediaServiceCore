@@ -334,8 +334,15 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
-    public Observable<MediaGroup> getMyVideosObserve() {
-        return RxHelper.fromCallable(getBrowseService2()::getMyVideos);
+    public Observable<List<MediaGroup>> getMyVideosObserve() {
+        return RxHelper.create(emitter -> {
+            checkSigned();
+
+            MediaGroup videos = getBrowseService2().getMyVideos();
+            emitGroupsPartial(emitter, Collections.singletonList(videos));
+
+            emitGroups(emitter, Collections.singletonList(getBrowseService2().getMyShorts(videos)));
+        });
     }
 
     @Override

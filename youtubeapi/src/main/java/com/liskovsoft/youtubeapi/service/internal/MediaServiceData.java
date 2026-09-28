@@ -53,9 +53,19 @@ public class MediaServiceData {
     public static final int CONTENT_SPORTS_HOME = 1 << 17;
     public static final int CONTENT_NEWS_HOME = 1 << 18;
     public static final int CONTENT_TECH_HOME = 1 << 19;
-    public static final int CONTENT_SHORTS_ALL = CONTENT_SHORTS_HOME | CONTENT_SHORTS_SEARCH
+    public static final int CONTENT_SHORTS_GAMING = 1 << 20;
+    public static final int CONTENT_SHORTS_MUSIC = 1 << 21;
+    public static final int CONTENT_SHORTS_SPORTS = 1 << 22;
+    public static final int CONTENT_SHORTS_LIVE = 1 << 23;
+    public static final int CONTENT_SHORTS_MY_VIDEOS = 1 << 24;
+    /**
+     * Hide shorts everywhere, before Gaming, Music, Sports, Live and My videos had their own options
+     */
+    private static final int CONTENT_SHORTS_ALL_OLD = CONTENT_SHORTS_HOME | CONTENT_SHORTS_SEARCH
             | CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_TRENDING
             | CONTENT_SHORTS_CHANNEL | CONTENT_SHORTS_NEWS;
+    public static final int CONTENT_SHORTS_ALL = CONTENT_SHORTS_ALL_OLD | CONTENT_SHORTS_GAMING
+            | CONTENT_SHORTS_MUSIC | CONTENT_SHORTS_SPORTS | CONTENT_SHORTS_LIVE | CONTENT_SHORTS_MY_VIDEOS;
     private static MediaServiceData sInstance;
     private String mScreenId;
     private String mDeviceId;
@@ -386,6 +396,11 @@ public class MediaServiceData {
         mDataApiKey = Helpers.parseStr(split, 26);
         mIsShortsQuickToggleEnabled = Helpers.parseBoolean(split, 27);
         mIsShortsQuickToggleHiding = Helpers.parseBoolean(split, 28);
+        boolean isShortsSectionsMigrated = Helpers.parseBoolean(split, 29);
+
+        if (!isShortsSectionsMigrated) {
+            mHiddenContent = migrateShortsSections(mHiddenContent);
+        }
 
         boolean isAppUpdated = mOldAppVersion != null && !Helpers.equals(mOldAppVersion, appVersion);
 
@@ -394,6 +409,13 @@ public class MediaServiceData {
         }
 
         mOldAppVersion = appVersion;
+    }
+
+    /**
+     * Shorts hidden everywhere stay hidden everywhere, in the sections that got their own option too
+     */
+    static int migrateShortsSections(int hiddenContent) {
+        return (hiddenContent & CONTENT_SHORTS_ALL_OLD) == CONTENT_SHORTS_ALL_OLD ? hiddenContent | CONTENT_SHORTS_ALL : hiddenContent;
     }
 
     private void restoreCachedData() {
@@ -418,7 +440,7 @@ public class MediaServiceData {
                         null, mEnabledFormats, null, null, mPoToken, mAppInfo,
                         mPlayerData, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
                         null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey,
-                        mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding));
+                        mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding, true));
     }
 
     private void persistCachedDataInt() {

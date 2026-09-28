@@ -45,8 +45,29 @@ internal open class BrowseService2 {
         return getBrowseRowsTV(BrowseApiHelper::getLiveQuery, MediaGroup.TYPE_LIVE)
     }
 
+    /**
+     * The videos of the signed-in account, with the private and unlisted ones
+     */
     fun getMyVideos(): MediaGroup? {
         return getBrowseGridTV(BrowseApiHelper::getMyVideosQuery, MediaGroup.TYPE_MY_VIDEOS)
+    }
+
+    /**
+     * The TV "Your videos" has no shorts. They're on the channel of the account, the channel of its videos.
+     */
+    fun getMyShorts(myVideos: MediaGroup?): MediaGroup? {
+        if (MediaGroupOptions.create(MediaGroup.TYPE_MY_VIDEOS).removeShorts) {
+            return null
+        }
+
+        return myVideos?.mediaItems?.firstNotNullOfOrNull { it?.channelId }?.let { getChannelShortsTV(it) }
+    }
+
+    private fun getChannelShortsTV(channelId: String): MediaGroup? {
+        val options = MediaGroupOptions.create(MediaGroup.TYPE_MY_VIDEOS)
+        val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelShortsQuery(options.clientTV, channelId))
+
+        return RetrofitHelper.get(browseResult)?.getShelves()?.firstOrNull { it?.containsShorts() == true }?.let { ShelfSectionMediaGroup(it, options) }
     }
 
     fun getMovies(): Pair<List<MediaGroup?>?, String?>? {
