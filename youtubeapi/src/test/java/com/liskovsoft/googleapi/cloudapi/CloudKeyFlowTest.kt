@@ -280,7 +280,7 @@ class CloudKeyFlowTest {
 
         override fun createProject(): Project {
             createdProjects++
-            val project = Project("projects/999", "smarttube-yt-abc123", "ACTIVE", CloudApiHelper.PROJECT_DISPLAY_NAME,
+            val project = Project("projects/999", "electriceel-yt-abc123", "ACTIVE", CloudApiHelper.PROJECT_DISPLAY_NAME,
                 mapOf(CloudApiHelper.PROJECT_LABEL to "true"))
             projects += project
             return project
@@ -328,7 +328,7 @@ class CloudKeyFlowTest {
     }
 
     private companion object {
-        val OWN_PROJECT = Project("projects/111", "smarttube-yt-old123", "ACTIVE", CloudApiHelper.PROJECT_DISPLAY_NAME,
+        val OWN_PROJECT = Project("projects/111", "electriceel-yt-old123", "ACTIVE", CloudApiHelper.PROJECT_DISPLAY_NAME,
             mapOf(CloudApiHelper.PROJECT_LABEL to "true"))
         val OTHER_PROJECT = Project("projects/222", "my-project", "ACTIVE", "My Project")
         val OWN_KEY = ApiKey("projects/111/locations/global/keys/own", CloudApiHelper.KEY_DISPLAY_NAME,

@@ -8,7 +8,7 @@ import com.liskovsoft.sharedutils.mylogger.Log
 /**
  * Gets the user a YouTube Data API key of their own.<br/>
  * A key the user has already is always taken first, so a fresh install doesn't add another key (or project) to the account:
- * the one an earlier run or the web page made, then any other key of theirs that can call the Data API.
+ * the one an earlier run made, then any other key of theirs that can call the Data API (e.g. one the web page made).
  * Only without one: a labelled project (reused when it's there), the Data API turned on in it, and a key limited to that API.
  */
 internal object CloudKeyFlow {
@@ -68,7 +68,7 @@ internal object CloudKeyFlow {
     }
 
     /**
-     * A key of the user's that works with the Data API right now. Our (or the web page's) project goes first,
+     * A key of the user's that works with the Data API right now. Our project goes first,
      * then the others with the Data API on. A project is never changed here.
      */
     private fun findExistingKey(gateway: CloudKeyGateway, projects: List<Project>): CloudKeyResult? {
