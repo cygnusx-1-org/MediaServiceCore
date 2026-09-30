@@ -88,4 +88,23 @@ class BrowseService2Test {
 
         assertTrue("Has items", (search?.mediaItems?.size ?: 0) > 3)
     }
+
+    @Test
+    fun testThatWatchLaterIdsAreLoaded() {
+        // The test account's Watch later might be empty
+        val ids = mBrowseService2.getWatchLaterVideoIds()
+
+        assertTrue("Loaded", ids != null)
+        assertTrue("Only video ids", ids?.all { it.length == 11 } == true)
+    }
+
+    @Test
+    fun testThatPlaylistIdsAreReadPastTheFirstPage() {
+        // A public playlist of 183 videos, opened as a channel. The TV pages have 15.
+        val ids = mBrowseService2.getPlaylistVideoIds("VLPLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI")
+
+        assertTrue("Every page is read", (ids?.size ?: 0) > 100)
+        assertTrue("Only video ids", ids?.all { it.length == 11 } == true)
+        assertTrue("No duplicates across the pages", ids?.size == ids?.toSet()?.size)
+    }
 }

@@ -101,4 +101,15 @@ internal class SearchService2Test : SearchServiceTestBase() {
 
         Assert.assertNotNull("Can be continued", (continuation?.mediaItems?.size ?: 0) > 3)
     }
+
+    @Test
+    fun testThatChannelNamesAreFound() {
+        // The two sides of a collaboration shown as "Sidemen and Jesser"
+        val sidemen = SearchService2Wrapper.getChannelNames("Sidemen")
+        val jesser = SearchService2Wrapper.getChannelNames("Jesser")
+
+        Assert.assertTrue("Finds the channel", sidemen?.contains("Sidemen") == true)
+        Assert.assertTrue("Finds the channel", jesser?.contains("Jesser") == true)
+        Assert.assertTrue("Finds similar channels too", (sidemen?.size ?: 0) > 3)
+    }
 }

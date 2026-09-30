@@ -9,10 +9,13 @@ import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.youtubeapi.common.helpers.PostDataHelper
 import com.liskovsoft.youtubeapi.common.models.gen.ItemWrapper
 import com.liskovsoft.youtubeapi.common.models.gen.getPlaylistId
+import com.liskovsoft.youtubeapi.common.models.gen.getVideoId
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.ShortsMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.getItems
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
+
+private const val PLAYLIST_MAX_PAGES = 500 // 15 videos a page on TV. A playlist holds 5000 at most.
 
 internal open class BrowseService2 {
     private val mBrowseApi = RetrofitHelper.create(BrowseApi::class.java)
@@ -255,6 +258,42 @@ internal open class BrowseService2 {
         //        }
         //    }
         //}
+    }
+
+    /**
+     * The ids of every video in the signed-in account's Watch later (see [getPlaylistVideoIds])
+     */
+    fun getWatchLaterVideoIds(): List<String>? {
+        return getPlaylistVideoIds(BrowseApiHelper.WATCH_LATER_CHANNEL_ID)
+    }
+
+    /**
+     * The ids of every video in a playlist, page after page. Nothing is filtered out (e.g. shorts or watched videos).
+     * @param channelId the playlist opened as a channel ("VL" + the playlist id)
+     * @return null when a page failed, so a partial list is never taken for the whole
+     */
+    fun getPlaylistVideoIds(channelId: String): List<String>? {
+        val options = MediaGroupOptions.create(MediaGroup.TYPE_UNDEFINED)
+        val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelQuery(options.clientTV, channelId))
+        val firstPage = RetrofitHelper.get(browseResult) ?: return null
+        val result = mutableListOf<String>()
+
+        firstPage.getItems()?.forEach { it?.getVideoId()?.let { result.add(it) } }
+        var nextKey = firstPage.getContinuationToken()
+
+        // The cap stops a key that never ends
+        for (i in 0 until PLAYLIST_MAX_PAGES) {
+            if (nextKey == null)
+                return result
+
+            val continuation = mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(options.clientTV, nextKey))
+            val page = RetrofitHelper.get(continuation) ?: return null
+
+            page.getItems()?.forEach { it?.getVideoId()?.let { result.add(it) } }
+            nextKey = page.getContinuationToken()
+        }
+
+        return result
     }
 
     private fun continueShortsWeb(continuationKey: String?, auth: Boolean = false): MediaGroup? {

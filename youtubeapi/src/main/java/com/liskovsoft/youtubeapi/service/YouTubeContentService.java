@@ -660,6 +660,15 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
+    public Observable<List<String>> getWatchLaterVideoIdsObserve() {
+        return RxHelper.fromCallable(() -> {
+            checkSigned();
+
+            return getBrowseService2().getWatchLaterVideoIds();
+        });
+    }
+
+    @Override
     public void enableHistory(boolean enable) {
         if (enable) {
             getActionsService().resumeWatchHistory();

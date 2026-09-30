@@ -66,6 +66,10 @@ public interface ContentService {
     Observable<MediaGroup> getChannelSearchObserve(String channelId, String query);
     Observable<List<MediaGroup>> getPlaylistRowsObserve();
     Observable<MediaGroup> getPlaylistsObserve();
+    /**
+     * The ids of every video in the signed-in account's Watch later, unfiltered. An error when a page failed.
+     */
+    Observable<List<String>> getWatchLaterVideoIdsObserve();
     Observable<MediaGroup> getSubscribedChannelsObserve();
     Observable<MediaGroup> getSubscribedChannelsByNewContentObserve();
     Observable<MediaGroup> getSubscribedChannelsByNameObserve();
