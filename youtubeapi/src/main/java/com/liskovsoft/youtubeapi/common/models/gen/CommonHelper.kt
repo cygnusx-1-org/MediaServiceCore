@@ -258,6 +258,7 @@ internal fun ShortsItem.getThumbnails() = onTap?.innertubeCommand?.getThumbnails
 ////////////
 
 internal const val LOCKUP_BADGE_STYLE_LIVE = "THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE"
+private const val LOCKUP_CONTENT_TYPE_CHANNEL = "LOCKUP_CONTENT_TYPE_CHANNEL"
 
 internal fun LockupItem.getTitle() = metadata?.lockupMetadataViewModel?.title?.getText()
 internal fun LockupItem.getSubTitle() = YouTubeHelper.createInfo(
@@ -276,6 +277,7 @@ internal fun LockupItem.isEmpty() = getPercentWatched() == 100 && getBadgeText()
 internal fun LockupItem.getFeedbackTokens() =
     metadata?.lockupMetadataViewModel?.menuButton?.buttonViewModel?.onTap?.innertubeCommand?.getFeedbackTokens()
 internal fun LockupItem.getChannelId() = rendererContext?.getBrowseId()
+internal fun LockupItem.isChannel() = contentType == LOCKUP_CONTENT_TYPE_CHANNEL
 private fun LockupItem.getBadge() = getOverlays()?.firstNotNullOfOrNull { it?.thumbnailOverlayBadgeViewModel?.thumbnailBadges
     ?: it?.thumbnailBottomOverlayViewModel?.badges }?.firstNotNullOfOrNull { it?.thumbnailBadgeViewModel }
 private fun LockupItem.getOverlays() = getThumbnailView()?.overlays
@@ -314,6 +316,13 @@ internal fun ItemWrapper.getType(): Int {
 
     return MediaItem.TYPE_UNDEFINED
 }
+
+/**
+ * The name of a channel item (e.g. a result of a channel search) or null for the other items
+ */
+internal fun ItemWrapper.getChannelName() = getChannelItem()?.getTitle()
+    ?: getTileItem()?.takeIf { it.getContentType() == TILE_CONTENT_TYPE_CHANNEL }?.getTitle()
+    ?: getLockupItem()?.takeIf { it.isChannel() }?.getTitle()
 
 internal fun ItemWrapper.getVideoId() = getVideoItem()?.getVideoId() ?: getMusicItem()?.getVideoId() ?: getTileItem()?.getVideoId() ?: getRadioItem()?.getVideoId()
     ?: getShortsItem()?.getVideoId() ?: getLockupItem()?.getVideoId()

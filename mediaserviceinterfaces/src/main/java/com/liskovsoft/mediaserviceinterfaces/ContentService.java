@@ -38,6 +38,10 @@ public interface ContentService {
     Observable<List<MediaGroup>> getSearchObserve(String searchText);
     Observable<List<MediaGroup>> getSearchObserve(String searchText, int options);
     Observable<List<String>> getSearchTagsObserve(String searchText);
+    /**
+     * The names of the channels a signed-out channel search finds (the first page). Kept out of every search history.
+     */
+    Observable<List<String>> getChannelNamesObserve(String query);
     Observable<MediaGroup> getSubscriptionsObserve();
     Observable<MediaGroup> getRssFeedObserve(String... channelIds);
     /**

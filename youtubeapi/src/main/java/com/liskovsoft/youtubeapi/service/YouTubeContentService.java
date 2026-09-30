@@ -94,6 +94,11 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
+    public Observable<List<String>> getChannelNamesObserve(String query) {
+        return RxHelper.fromCallable(() -> getSearchService2().getChannelNames(query));
+    }
+
+    @Override
     public MediaGroup getSubscriptions() {
         Log.d(TAG, "Getting subscriptions...");
 

@@ -3,8 +3,10 @@ package com.liskovsoft.youtubeapi.search.v2
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.googlecommon.common.locale.LocaleManager
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
+import com.liskovsoft.mediaserviceinterfaces.data.SearchOptions
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.youtubeapi.app.AppService
+import com.liskovsoft.youtubeapi.common.models.gen.getChannelName
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchContinuationMediaGroup
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchSectionMediaGroup
 import com.liskovsoft.youtubeapi.next.v2.gen.WatchNextResultContinuation
@@ -36,6 +38,25 @@ internal open class SearchService2 {
         }
 
         return searchResult?.getSections()?.mapNotNull { it?.let { SearchSectionMediaGroup(it) } }
+    }
+
+    /**
+     * The names of the channels a channel search finds (the first page).<br/>
+     * Signed out, so the query stays out of the account's search history. Not overridden by the wrapper,
+     * so it stays out of the app's one too.
+     * @return null when the search failed
+     */
+    fun getChannelNames(query: String?): List<String>? {
+        val wrapper: Call<SearchResult?> =
+            mSearchApi.getSearchResult(SearchApiHelper.getSearchQuery(query, SearchOptions.TYPE_CHANNEL), mAppService.visitorData)
+        val searchResult = RetrofitHelper.get(wrapper, false)
+
+        if (searchResult == null) {
+            Log.e(TAG, "Empty channel search result for text %s", query)
+            return null
+        }
+
+        return searchResult.getSections()?.flatMap { it?.itemWrappers ?: emptyList() }?.mapNotNull { it?.getChannelName() } ?: emptyList()
     }
 
     /**
