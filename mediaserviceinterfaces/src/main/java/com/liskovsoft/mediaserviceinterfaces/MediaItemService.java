@@ -48,6 +48,10 @@ public interface MediaItemService {
     void markAsNotInterested(String feedbackToken);
     FeedbackReasons getFeedbackReasons(String feedbackToken);
     List<String> getFeedbackTokens(FeedbackEndpoint endpoint);
+    /**
+     * The feedback of the video as on a Home tile, for the videos that come without it
+     */
+    FeedbackEndpoint getHomeFeedbackEndpoint(String videoId);
     List<PlaylistInfo> getPlaylistsInfo(String videoId);
     void removeFromPlaylist(String playlistId, String videoId);
     void renamePlaylist(String playlistId, String newName);

@@ -17,6 +17,19 @@ internal object PanelService {
         return getFeedbackTokens(endpoint.panelId, endpoint.params)
     }
 
+    /**
+     * The context menu of the video as on a Home tile, with its feedback ("Not interested", "Don't recommend channel").
+     * The other sections (e.g. Gaming) don't send it, but YouTube gives the Home one for any video.
+     */
+    fun getHomeFeedbackEndpoint(videoId: String): FeedbackEndpoint {
+        val params = PanelApiHelper.getHomeContextMenuParams(videoId)
+
+        return object : FeedbackEndpoint {
+            override fun getPanelId(): String = PanelApiHelper.CONTEXT_MENU_PANEL_ID
+            override fun getParams(): String = params
+        }
+    }
+
     private fun getFeedbackTokens(panelId: String, params: String): List<String>? {
         if (mCachedToken?.panelId == panelId && mCachedToken?.params == params) {
             return mCachedToken?.tokens

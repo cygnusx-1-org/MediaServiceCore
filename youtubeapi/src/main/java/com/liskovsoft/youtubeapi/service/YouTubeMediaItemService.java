@@ -376,6 +376,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
+    public FeedbackEndpoint getHomeFeedbackEndpoint(String videoId) {
+        return getPanelService().getHomeFeedbackEndpoint(videoId);
+    }
+
+    @Override
     public List<PlaylistInfo> getPlaylistsInfo(String videoId) {
         checkSigned();
 
