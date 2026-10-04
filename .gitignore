@@ -32,4 +32,9 @@ tmp/
 fabric.properties
 *BAK.java
 
+bin/
+
 backup/
+
+# Java class files
+*.class
