@@ -85,6 +85,11 @@ public interface MediaItem {
      */
     double getRatingScore();
     boolean isMovie();
+    /**
+     * A show (podcast): a playlist of episodes that opens as a show page (e.g. the cards of Recommended shows).<br/>
+     * Found by markers that aren't translated, unlike its badge (e.g. <b>"434 episodes"</b>).
+     */
+    boolean isShow();
     boolean hasUploads();
     String getClickTrackingParams();
     String getSearchQuery();

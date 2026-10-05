@@ -16,6 +16,8 @@ public class Header {
     private List<Integer> mPercentWatched;
     @JsonPath("$.thumbnailOverlays[*].thumbnailOverlayTimeStatusRenderer.style")
     private List<String> mBadgeStyle;
+    @JsonPath("$.thumbnailOverlays[*].thumbnailOverlayTimeStatusRenderer.icon.iconType")
+    private List<String> mBadgeIconType;
     @JsonPath({
             "$.onFocusThumbnail.thumbnails[0].url", // v2
             "$.movingThumbnail.thumbnails[0].url" // v1
@@ -38,6 +40,13 @@ public class Header {
 
     public String getBadgeStyle() {
         return mBadgeStyle != null ? mBadgeStyle.get(0) : null;
+    }
+
+    /**
+     * E.g. PLAYLISTS
+     */
+    public String getBadgeIconType() {
+        return mBadgeIconType != null ? mBadgeIconType.get(0) : null;
     }
 
     /**

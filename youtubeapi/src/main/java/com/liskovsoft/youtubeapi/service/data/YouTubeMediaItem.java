@@ -56,6 +56,7 @@ public class YouTubeMediaItem implements MediaItem {
     private String mParams;
     private String mClickTrackingParams;
     private boolean mIsMovie;
+    private boolean mIsShow;
     private long mPublishedDate;
     private long mUpdatedDate;
     private String mDescription;
@@ -136,6 +137,7 @@ public class YouTubeMediaItem implements MediaItem {
         video.mFeedbackToken = item.getFeedbackToken();
         video.mClickTrackingParams = item.getClickTrackingParams();
         video.mIsMovie = item.isMovie();
+        video.mIsShow = item.isShow();
 
         addCommonProps(video);
 
@@ -400,6 +402,11 @@ public class YouTubeMediaItem implements MediaItem {
     @Override
     public boolean isMovie() {
         return mIsMovie;
+    }
+
+    @Override
+    public boolean isShow() {
+        return mIsShow;
     }
 
     @Override

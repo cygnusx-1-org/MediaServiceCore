@@ -78,8 +78,17 @@ internal data class OverlayPanelRenderer(
 internal data class BrowseEndpoint(
     val browseId: String?,
     val params: String?,
-    val canonicalBaseUrl: String? // e.g. "/@handle"
-)
+    val canonicalBaseUrl: String?, // e.g. "/@handle"
+    val pageAnimation: PageAnimation?
+) {
+    data class PageAnimation(
+        val preloadPageConfig: PreloadPageConfig?
+    ) {
+        data class PreloadPageConfig(
+            val ghostState: String? // the page shown while it loads, e.g. GHOST_STATE_EPISODIC_SHOW_PAGE
+        )
+    }
+}
 
 internal data class WatchEndpointItem(
     val videoId: String?,
@@ -628,7 +637,8 @@ internal data class ThumbnailOverlayItem(
 ) {
     data class ThumbnailOverlayTimeStatusRenderer(
         val text: TextItem?,
-        val style: String?
+        val style: String?,
+        val icon: IconItem? // e.g. PLAYLISTS
     )
 
     data class ThumbnailOverlayResumePlaybackRenderer(

@@ -51,6 +51,12 @@ internal fun ThumbnailItem.Thumbnail.getUrl(): String? {
 
 ////////
 
+// A show (podcast). Unlike its "N episodes" badge, these aren't translated.
+private const val GHOST_STATE_SHOW_PAGE = "GHOST_STATE_EPISODIC_SHOW_PAGE" // the show page it opens
+private const val BADGE_ICON_SHOW = "BROADCAST" // the icon of the episode count of some (a playlist has PLAYLISTS, a live LIVE)
+
+internal fun BrowseEndpoint.isShowPage() = pageAnimation?.preloadPageConfig?.ghostState == GHOST_STATE_SHOW_PAGE
+
 internal fun NavigationEndpointItem.getBrowseId() = browseEndpoint?.browseId
 internal fun NavigationEndpointItem.getChannelHandle() = browseEndpoint?.canonicalBaseUrl?.let { ServiceHelper.extractChannelHandle(it) }
 internal fun NavigationEndpointItem.getParams() = browseEndpoint?.params ?: watchEndpoint?.params
@@ -224,8 +230,12 @@ internal fun TileItem.getContinuationToken() = onSelectCommand?.getContinuations
 internal fun TileItem.isUpcoming() = BADGE_STYLE_UPCOMING == getBadgeStyle()
 internal fun TileItem.isMovie() = STATUS_STYLE_MOVIE == getStatusStyle() && getVideoId() == null // a movie has browseId instead of videoId
 internal fun TileItem.isShorts() = BADGE_STYLE_SHORTS == getBadgeStyle() || TILE_STYLE_SHORTS == getTileStyle()
+// On Home a show is a video tile (its latest episode) that opens the show page
+internal fun TileItem.isShow() = onSelectCommand?.browseEndpoint?.isShowPage() == true || BADGE_ICON_SHOW == getBadgeIconType()
 internal fun TileItem.getQuery() = onSelectCommand?.getQuery()
 private fun TileItem.Header.getBadgeStyle() = tileHeaderRenderer?.thumbnailOverlays?.firstNotNullOfOrNull { it?.thumbnailOverlayTimeStatusRenderer?.style }
+private fun TileItem.getBadgeIconType() = header?.tileHeaderRenderer?.thumbnailOverlays
+    ?.firstNotNullOfOrNull { it?.thumbnailOverlayTimeStatusRenderer?.icon?.iconType }
 private fun TileItem.Metadata.getStatusStyle() = tileMetadataRenderer?.lines?.firstNotNullOfOrNull { it?.lineRenderer?.items?.firstNotNullOfOrNull { it?.lineItemRenderer?.badge?.metadataBadgeRenderer?.style } }
 private fun TileItem.getMenu() = menu ?: getShowMenuCommand()?.menu
 private fun TileItem.getTileStyle() = style
@@ -259,6 +269,7 @@ internal fun ShortsItem.getThumbnails() = onTap?.innertubeCommand?.getThumbnails
 
 internal const val LOCKUP_BADGE_STYLE_LIVE = "THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE"
 private const val LOCKUP_CONTENT_TYPE_CHANNEL = "LOCKUP_CONTENT_TYPE_CHANNEL"
+private const val LOCKUP_CONTENT_TYPE_PODCAST = "LOCKUP_CONTENT_TYPE_PODCAST"
 
 internal fun LockupItem.getTitle() = metadata?.lockupMetadataViewModel?.title?.getText()
 internal fun LockupItem.getSubTitle() = YouTubeHelper.createInfo(
@@ -278,6 +289,7 @@ internal fun LockupItem.getFeedbackTokens() =
     metadata?.lockupMetadataViewModel?.menuButton?.buttonViewModel?.onTap?.innertubeCommand?.getFeedbackTokens()
 internal fun LockupItem.getChannelId() = rendererContext?.getBrowseId()
 internal fun LockupItem.isChannel() = contentType == LOCKUP_CONTENT_TYPE_CHANNEL
+internal fun LockupItem.isShow() = contentType == LOCKUP_CONTENT_TYPE_PODCAST || rendererContext?.getOnTapCommand()?.browseEndpoint?.isShowPage() == true
 private fun LockupItem.getBadge() = getOverlays()?.firstNotNullOfOrNull { it?.thumbnailOverlayBadgeViewModel?.thumbnailBadges
     ?: it?.thumbnailBottomOverlayViewModel?.badges }?.firstNotNullOfOrNull { it?.thumbnailBadgeViewModel }
 private fun LockupItem.getOverlays() = getThumbnailView()?.overlays
@@ -354,6 +366,7 @@ internal fun ItemWrapper.getPlaylistIndex() = getVideoItem()?.getPlaylistIndex()
 internal fun ItemWrapper.isLive() = getVideoItem()?.isLive() ?: getMusicItem()?.isLive() ?: getTileItem()?.isLive() ?: getLockupItem()?.isLive() ?: false
 internal fun ItemWrapper.isUpcoming() = getVideoItem()?.isUpcoming() ?: getMusicItem()?.isUpcoming() ?: getTileItem()?.isUpcoming() ?: false
 internal fun ItemWrapper.isMovie() = getVideoItem()?.isMovie() ?: getTileItem()?.isMovie() ?: false
+internal fun ItemWrapper.isShow() = getTileItem()?.isShow() ?: getLockupItem()?.isShow() ?: false
 internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts() ?: false
 internal fun ItemWrapper.getDescriptionText() = getTileItem()?.getRichTextTileText()
 internal fun ItemWrapper.getContinuationToken() = getTileItem()?.getContinuationToken() ?: getContinuationItem()?.getContinuationToken()

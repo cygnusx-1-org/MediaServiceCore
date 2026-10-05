@@ -20,6 +20,9 @@ public class TileItem {
     private static final String BADGE_STYLE_DEFAULT = "DEFAULT";
     private static final String BADGE_STYLE_MOVIE = "BADGE_STYLE_TYPE_YPC";
     private static final String TILE_STYLE_SHORTS = "TILE_STYLE_YTLR_SHORTS";
+    // A show (podcast). Unlike its "N episodes" badge, these aren't translated.
+    private static final String GHOST_STATE_SHOW_PAGE = "GHOST_STATE_EPISODIC_SHOW_PAGE"; // the show page it opens
+    private static final String BADGE_ICON_SHOW = "BROADCAST"; // the icon of the episode count of some (a playlist has PLAYLISTS, a live LIVE)
 
     @JsonPath("$.style")
     private String mStyle;
@@ -69,6 +72,9 @@ public class TileItem {
 
     @JsonPath("$.onSelectCommand.browseEndpoint.browseId")
     private String mChannelId;
+
+    @JsonPath("$.onSelectCommand.browseEndpoint.pageAnimation.preloadPageConfig.ghostState")
+    private String mGhostState;
 
     @JsonPath("$.contentType")
     private String mContentType;
@@ -163,6 +169,11 @@ public class TileItem {
 
     public boolean isShorts() {
         return Helpers.equalsAny(BADGE_STYLE_SHORTS, getBadgeStyles()) || TILE_STYLE_SHORTS.equals(mStyle);
+    }
+
+    public boolean isShow() {
+        // On Home a show is a video tile (its latest episode) that opens the show page
+        return GHOST_STATE_SHOW_PAGE.equals(mGhostState) || (mHeader != null && BADGE_ICON_SHOW.equals(mHeader.getBadgeIconType()));
     }
 
     public String getFeedbackToken() {
