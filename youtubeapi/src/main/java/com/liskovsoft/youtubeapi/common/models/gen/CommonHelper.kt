@@ -189,6 +189,7 @@ private const val TILE_CONTENT_TYPE_EDU = "TILE_CONTENT_TYPE_EDU" // a search qu
 private const val TILE_STYLE_DEFAULT = "TILE_STYLE_YTLR_DEFAULT"
 private const val TILE_STYLE_SHORTS = "TILE_STYLE_YTLR_SHORTS"
 private const val TILE_STYLE_QUERY = "TILE_STYLE_YTLR_EDU" // a search query tile in Home section
+private const val TILE_STYLE_ROUND = "TILE_STYLE_YTLR_ROUND" // the avatar of a channel (the box art of a game is TILE_STYLE_YTLR_GAME)
 
 internal fun TileItem.getTitle() = metadata?.tileMetadataRenderer?.title?.getText()
     ?: header?.tileHeaderRenderer?.thumbnailOverlays?.firstNotNullOfOrNull { it?.tileMetadataRenderer?.title?.getText() }
@@ -335,6 +336,11 @@ internal fun ItemWrapper.getType(): Int {
 internal fun ItemWrapper.getChannelName() = getChannelItem()?.getTitle()
     ?: getTileItem()?.takeIf { it.getContentType() == TILE_CONTENT_TYPE_CHANNEL }?.getTitle()
     ?: getLockupItem()?.takeIf { it.isChannel() }?.getTitle()
+
+/**
+ * A channel shown as its avatar, e.g. in "Top channels you watch". Not a game of "Top live games", whose tile is a channel too.
+ */
+internal fun ItemWrapper.isChannelAvatar() = getTileItem()?.let { it.getContentType() == TILE_CONTENT_TYPE_CHANNEL && it.style == TILE_STYLE_ROUND } ?: false
 
 internal fun ItemWrapper.getVideoId() = getVideoItem()?.getVideoId() ?: getMusicItem()?.getVideoId() ?: getTileItem()?.getVideoId() ?: getRadioItem()?.getVideoId()
     ?: getShortsItem()?.getVideoId() ?: getLockupItem()?.getVideoId()

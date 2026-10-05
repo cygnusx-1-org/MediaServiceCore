@@ -1,0 +1,1063 @@
+{
+  "contents": {
+    "tvBrowseRenderer": {
+      "content": {
+        "tvSurfaceContentRenderer": {
+          "content": {
+            "sectionListRenderer": {
+              "contents": [
+                {
+                  "shelfRenderer": {
+                    "endpoint": {
+                      "clickTrackingParams": "CNkBENwcGAAiEwjAgKL_36GXAxWGtn8EHaBIA1TKAQQQM281",
+                      "browseEndpoint": {
+                        "canonicalBaseUrl": "/channel/"
+                      }
+                    },
+                    "content": {
+                      "horizontalListRenderer": {
+                        "items": [
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_DEFAULT",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "https://i.ytimg.com/vi/_xIElJXAHFg/hq720.jpg?sqp=-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLDebWfDf1Ar5hVKMWIOLRcTJiuRbw",
+                                        "width": 640,
+                                        "height": 360
+                                      }
+                                    ]
+                                  },
+                                  "thumbnailOverlays": [
+                                    {
+                                      "thumbnailOverlayResumePlaybackRenderer": {
+                                        "percentDurationWatched": 0,
+                                        "videoPlaybackPositionToggleEntityKey": "EgtfeElFbEpYQUhGZyDpAigB"
+                                      }
+                                    },
+                                    {
+                                      "thumbnailOverlayTimeStatusRenderer": {
+                                        "text": {
+                                          "accessibility": {
+                                            "accessibilityData": {
+                                              "label": "10 minutes, 53 seconds"
+                                            }
+                                          },
+                                          "simpleText": "10:53"
+                                        },
+                                        "style": "DEFAULT"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "Hellcat vs Panzer IV"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "Yarnhub"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "badge": {
+                                                "metadataBadgeRenderer": {
+                                                  "style": "BADGE_STYLE_TYPE_SIMPLE",
+                                                  "label": "4K",
+                                                  "trackingParams": "CLcCEJQ1GAAiEwjAgKL_36GXAxWGtn8EHaBIA1Q="
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "accessibility": {
+                                                  "accessibilityData": {
+                                                    "label": "3 million views"
+                                                  }
+                                                },
+                                                "simpleText": "3M views"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "•"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "3 years ago"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CLcCEJQ1GAAiEwjAgKL_36GXAxWGtn8EHaBIA1QyB2ctdG9waWNaD0ZFdG9waWNzX2dhbWluZ5oBBxDB1AUY4QzKAQQQM281",
+                                "watchEndpoint": {
+                                  "videoId": "_xIElJXAHFg",
+                                  "params": "6gILTXMzamV4VkpmSWfqAgt2MkJGZWx2SkRjc-oCC2l5elJsNmc5dnRZ6gILTHZ1cUEzU1U1WHfqAgtIMmF5Q2NjNkI5c-oCCzI1djNCMlRVWEZv6gILenBiREI5RkNCVDTqAgs2MjlYT29FR0Z5ReoCCzVoR19uQVlFQzJn6gILWE9ETFFOTVN0STTqAgt1SkVHOUhBYlJYb-oCC0JxTGk1UXZ3aFU06gILOXZnV2w3SVRibzTqAgtTV2hHVHlNUzdtb-oCC3U4emR3WU8zZm5V6gILTFJ5WjZ5N01xcW_qAgs3NDh6NFV0V0ttUeoCC3NGR0xKSlZudXZB6gILRGEzd1ZXY2VXWGPqAgtaajJwbzJQZWhHTeoCC1NXd0IyYjlveUdJ6gILdldZYU91RWpPeFHqAgtYaUtZbFBGejBvd_oCGkdhbWVwbGF5IGZvciB5b3UgdG8gdW53aW5k"
+                                }
+                              },
+                              "trackingParams": "CLcCEJQ1GAAiEwjAgKL_36GXAxWGtn8EHaBIA1RA2LiArsmSgYn_AQ==",
+                              "contentId": "_xIElJXAHFg",
+                              "contentType": "TILE_CONTENT_TYPE_VIDEO"
+                            }
+                          },
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_DEFAULT",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "https://i.ytimg.com/vi/Ms3jexVJfIg/hq720.jpg?sqp=-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLBGR6wiPSbgQBetJZrZ4qVcOicG8g",
+                                        "width": 640,
+                                        "height": 360
+                                      }
+                                    ]
+                                  },
+                                  "thumbnailOverlays": [
+                                    {
+                                      "thumbnailOverlayTimeStatusRenderer": {
+                                        "text": {
+                                          "accessibility": {
+                                            "accessibilityData": {
+                                              "label": "17 minutes, 39 seconds"
+                                            }
+                                          },
+                                          "simpleText": "17:39"
+                                        },
+                                        "style": "DEFAULT"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "Shermans vs Panthers: Four Days of Hell"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "Yarnhub"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "badge": {
+                                                "metadataBadgeRenderer": {
+                                                  "style": "BADGE_STYLE_TYPE_SIMPLE",
+                                                  "label": "4K",
+                                                  "trackingParams": "CLMCEJQ1GAEiEwjAgKL_36GXAxWGtn8EHaBIA1Q="
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "accessibility": {
+                                                  "accessibilityData": {
+                                                    "label": "6.4 million views"
+                                                  }
+                                                },
+                                                "simpleText": "6.4M views"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "•"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "2 months ago"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CLMCEJQ1GAEiEwjAgKL_36GXAxWGtn8EHaBIA1QyB2ctdG9waWNaD0ZFdG9waWNzX2dhbWluZ5oBBxDB1AUY4QzKAQQQM281",
+                                "watchEndpoint": {
+                                  "videoId": "Ms3jexVJfIg",
+                                  "params": "6gILX3hJRWxKWEFIRmfqAgt2MkJGZWx2SkRjc-oCC2l5elJsNmc5dnRZ6gILTHZ1cUEzU1U1WHfqAgtIMmF5Q2NjNkI5c-oCCzI1djNCMlRVWEZv6gILenBiREI5RkNCVDTqAgs2MjlYT29FR0Z5ReoCCzVoR19uQVlFQzJn6gILWE9ETFFOTVN0STTqAgt1SkVHOUhBYlJYb-oCC0JxTGk1UXZ3aFU06gILOXZnV2w3SVRibzTqAgtTV2hHVHlNUzdtb-oCC3U4emR3WU8zZm5V6gILTFJ5WjZ5N01xcW_qAgs3NDh6NFV0V0ttUeoCC3NGR0xKSlZudXZB6gILRGEzd1ZXY2VXWGPqAgtaajJwbzJQZWhHTeoCC1NXd0IyYjlveUdJ6gILdldZYU91RWpPeFHqAgtYaUtZbFBGejBvd_oCGkdhbWVwbGF5IGZvciB5b3UgdG8gdW53aW5k"
+                                }
+                              },
+                              "onFocusCommand": {
+                                "showHintCommand": {
+                                  "shouldShowHint": true
+                                }
+                              },
+                              "trackingParams": "CLMCEJQ1GAEiEwjAgKL_36GXAxWGtn8EHaBIA1RAiPmlqrHv-OYy",
+                              "contentId": "Ms3jexVJfIg",
+                              "contentType": "TILE_CONTENT_TYPE_VIDEO"
+                            }
+                          }
+                        ],
+                        "trackingParams": "CNoBEMY5IhMIwICi_9-hlwMVhrZ_BB2gSANU",
+                        "collapsedItemCount": 3,
+                        "visibleItemCount": 3
+                      }
+                    },
+                    "trackingParams": "CNkBENwcGAAiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                    "headerRenderer": {
+                      "shelfHeaderRenderer": {
+                        "avatarLockup": {
+                          "avatarLockupRenderer": {
+                            "title": {
+                              "runs": [
+                                {
+                                  "text": "Gameplay for you to unwind"
+                                }
+                              ]
+                            },
+                            "thumbnail": {
+                              "thumbnails": [
+                                {
+                                  "url": "//yt3.googleusercontent.com/QqoTjrpKRDMfGFPYpgIaTmHkbQ6Lk-brN77OxCYwl0jTtluavivXDdd4lR2wQsr_hcIggw=s176-c-k-c0x00ffffff-no-rj",
+                                  "width": 88,
+                                  "height": 88
+                                }
+                              ]
+                            },
+                            "size": "AVATAR_LOCKUP_SIZE_SMALL"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "shelfRenderer": {
+                    "endpoint": {
+                      "clickTrackingParams": "CHcQ3BwYASITCMCAov_foZcDFYa2fwQdoEgDVMoBBBAzbzU=",
+                      "browseEndpoint": {
+                        "browseId": "UCOpNcN46UbXVtpKMrmU4Abg"
+                      }
+                    },
+                    "content": {
+                      "horizontalListRenderer": {
+                        "items": [
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_DEFAULT",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "https://i.ytimg.com/vi/FH1QiKnTgUA/hq720.jpg?sqp=-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLCS-oSBjSk-iC6mua-9lDZvmiaXxg",
+                                        "width": 640,
+                                        "height": 360
+                                      }
+                                    ]
+                                  },
+                                  "thumbnailOverlays": [
+                                    {
+                                      "thumbnailOverlayTimeStatusRenderer": {
+                                        "text": {
+                                          "accessibility": {
+                                            "accessibilityData": {
+                                              "label": "52 minutes, 19 seconds"
+                                            }
+                                          },
+                                          "simpleText": "52:19"
+                                        },
+                                        "style": "DEFAULT",
+                                        "icon": {
+                                          "iconType": "AUDIO"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "NO AI🚫 The Hidden Gems of Atmospheric Drum and Bass"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "Vic^",
+                                                    "navigationEndpoint": {
+                                                      "clickTrackingParams": "CNUBEIW8AhgAIhMIwICi_9-hlwMVhrZ_BB2gSANUygEEEDNvNQ==",
+                                                      "browseEndpoint": {
+                                                        "browseId": "UCMi-geZZVNUOyCgojjdfdbw",
+                                                        "canonicalBaseUrl": "/channel/UCMi-geZZVNUOyCgojjdfdbw"
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "accessibility": {
+                                                  "accessibilityData": {
+                                                    "label": "687 thousand views"
+                                                  }
+                                                },
+                                                "simpleText": "687K views"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "•"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "1 year ago"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CNUBEIW8AhgAIhMIwICi_9-hlwMVhrZ_BB2gSANUMgdnLXRvcGljWg9GRXRvcGljc19nYW1pbmeaAQcQwdQFGNgMygEEEDNvNQ==",
+                                "watchEndpoint": {
+                                  "videoId": "FH1QiKnTgUA",
+                                  "playlistId": "RDFH1QiKnTgUA",
+                                  "params": "wAEB6gILdFVaSTVwaThJRmfqAgtQVlo4ZElVTmkya-oCC0d0TTQzajh5alQ46gILQnU5SWEwbjk1ck3qAgs2VThsUGxUSzAySeoCC2g2WmJkM013X2ww6gILQi04RU9SQjc4M2PqAgtWZ0pQelpFbUEzSeoCC0F5c3JTb1kxR2RN6gILQzNHb3VHYTBub03qAgtxVW9KeF9DOGcyMOoCCzVGcmh0YWhRaVJj6gILc010NENoNmtuTknqAgtQNnRHTms0RDB2WeoCC2ZCOFR5TFREN0VF6gILT1ZnbGwzNVQ2eWPqAgtVT3hrR0Q4cVJCNOoCCzhGMS0xal9aRGdj6gILZlljT2lvUFdFc0XqAgt4emo0ME9scGJFd-oCC1ZOUEtsVnEwejJZ6gILMzA4STkxbGpDV2fqAgs4ZFdGS0lHMTFPSfoCDEdhbWluZyBNdXNpY7gFAQ%3D%3D",
+                                  "playerParams": "oAcB0gcJCS0MAYcqIYzv",
+                                  "loggingContext": {
+                                    "vssLoggingContext": {
+                                      "serializedContextData": "Gg1SREZIMVFpS25UZ1VB"
+                                    }
+                                  }
+                                }
+                              },
+                              "onFocusCommand": {
+                                "showHintCommand": {
+                                  "shouldShowHint": true
+                                }
+                              },
+                              "trackingParams": "CNUBEIW8AhgAIhMIwICi_9-hlwMVhrZ_BB2gSANUQMCCzs6KkdS-FA==",
+                              "contentId": "FH1QiKnTgUA",
+                              "contentType": "TILE_CONTENT_TYPE_VIDEO"
+                            }
+                          },
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_DEFAULT",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "https://i.ytimg.com/vi/tUZI5pi8IFg/hq720.jpg?sqp=-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLDquTieG_AakMBNIikQ_3rhih0D7w",
+                                        "width": 640,
+                                        "height": 360
+                                      }
+                                    ]
+                                  },
+                                  "thumbnailOverlays": [
+                                    {
+                                      "thumbnailOverlayTimeStatusRenderer": {
+                                        "text": {
+                                          "accessibility": {
+                                            "accessibilityData": {
+                                              "label": "5 minutes, 32 seconds"
+                                            }
+                                          },
+                                          "simpleText": "5:32"
+                                        },
+                                        "style": "DEFAULT",
+                                        "icon": {
+                                          "iconType": "AUDIO"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "Dolphin Shoals - Mario Kart 8  *Full Big Band Jazz Fusion version* ft. Bryan Carter"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "The 8-Bit Big Band"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "accessibility": {
+                                                  "accessibilityData": {
+                                                    "label": "996 thousand views"
+                                                  }
+                                                },
+                                                "simpleText": "996K views"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "•"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "2 years ago"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CNEBEIW8AhgBIhMIwICi_9-hlwMVhrZ_BB2gSANUMgdnLXRvcGljWg9GRXRvcGljc19nYW1pbmeaAQcQwdQFGNgMygEEEDNvNQ==",
+                                "watchEndpoint": {
+                                  "videoId": "tUZI5pi8IFg",
+                                  "playlistId": "RDtUZI5pi8IFg",
+                                  "params": "wAEB6gILRkgxUWlLblRnVUHqAgtQVlo4ZElVTmkya-oCC0d0TTQzajh5alQ46gILQnU5SWEwbjk1ck3qAgs2VThsUGxUSzAySeoCC2g2WmJkM013X2ww6gILQi04RU9SQjc4M2PqAgtWZ0pQelpFbUEzSeoCC0F5c3JTb1kxR2RN6gILQzNHb3VHYTBub03qAgtxVW9KeF9DOGcyMOoCCzVGcmh0YWhRaVJj6gILc010NENoNmtuTknqAgtQNnRHTms0RDB2WeoCC2ZCOFR5TFREN0VF6gILT1ZnbGwzNVQ2eWPqAgtVT3hrR0Q4cVJCNOoCCzhGMS0xal9aRGdj6gILZlljT2lvUFdFc0XqAgt4emo0ME9scGJFd-oCC1ZOUEtsVnEwejJZ6gILMzA4STkxbGpDV2fqAgs4ZFdGS0lHMTFPSfoCDEdhbWluZyBNdXNpY7gFAQ%3D%3D",
+                                  "playerParams": "oAcB",
+                                  "loggingContext": {
+                                    "vssLoggingContext": {
+                                      "serializedContextData": "Gg1SRHRVWkk1cGk4SUZn"
+                                    }
+                                  }
+                                }
+                              },
+                              "trackingParams": "CNEBEIW8AhgBIhMIwICi_9-hlwMVhrZ_BB2gSANUQNjA8MXpnJKjtQE=",
+                              "contentId": "tUZI5pi8IFg",
+                              "contentType": "TILE_CONTENT_TYPE_VIDEO"
+                            }
+                          }
+                        ],
+                        "trackingParams": "CHgQxjkiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                        "collapsedItemCount": 3,
+                        "visibleItemCount": 3
+                      }
+                    },
+                    "trackingParams": "CHcQ3BwYASITCMCAov_foZcDFYa2fwQdoEgDVA==",
+                    "headerRenderer": {
+                      "shelfHeaderRenderer": {
+                        "avatarLockup": {
+                          "avatarLockupRenderer": {
+                            "title": {
+                              "runs": [
+                                {
+                                  "text": "Gaming Music"
+                                }
+                              ]
+                            },
+                            "thumbnail": {
+                              "thumbnails": [
+                                {
+                                  "url": "//yt3.googleusercontent.com/QqoTjrpKRDMfGFPYpgIaTmHkbQ6Lk-brN77OxCYwl0jTtluavivXDdd4lR2wQsr_hcIggw=s176-c-k-c0x00ffffff-no-rj",
+                                  "width": 88,
+                                  "height": 88
+                                }
+                              ]
+                            },
+                            "size": "AVATAR_LOCKUP_SIZE_SMALL"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "shelfRenderer": {
+                    "content": {
+                      "horizontalListRenderer": {
+                        "items": [
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_GAME",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "//yt3.googleusercontent.com/715hUhDTu0xk1Mg_qL69K-aCc3QzduWYQEfiHlcYYOP55zBZrAwRtS-d7XXhSPfEht_wzx60Tw"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "Free Fire"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "28K"
+                                                  },
+                                                  {
+                                                    "text": " watching"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "wrap": true
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CHYQj5cDGAAiEwjAgKL_36GXAxWGtn8EHaBIA1TKAQQQM281",
+                                "browseEndpoint": {
+                                  "browseId": "UC_vVy4OI86F0amXqFN_zTMg"
+                                }
+                              },
+                              "trackingParams": "CHYQj5cDGAAiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                              "contentId": "UC_vVy4OI86F0amXqFN_zTMg",
+                              "contentType": "TILE_CONTENT_TYPE_CHANNEL"
+                            }
+                          },
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_GAME",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "//yt3.googleusercontent.com/zgizcB4ybe3KPXL0YagztEJYKNE7_rrRfGuslQq6wnS2QoLX4vp2MfxVhJWFjYWvIEzrgT0O"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "Geometry Dash"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "26K"
+                                                  },
+                                                  {
+                                                    "text": " watching"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ],
+                                        "wrap": true
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CHUQj5cDGAEiEwjAgKL_36GXAxWGtn8EHaBIA1TKAQQQM281",
+                                "browseEndpoint": {
+                                  "browseId": "UCCBtdKOdyp-H2ZWKe2fMKaA"
+                                }
+                              },
+                              "trackingParams": "CHUQj5cDGAEiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                              "contentId": "UCCBtdKOdyp-H2ZWKe2fMKaA",
+                              "contentType": "TILE_CONTENT_TYPE_CHANNEL"
+                            }
+                          }
+                        ],
+                        "trackingParams": "CGoQxjkiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                        "collapsedItemCount": 3,
+                        "visibleItemCount": 3
+                      }
+                    },
+                    "trackingParams": "CGkQ3BwYAiITCMCAov_foZcDFYa2fwQdoEgDVA==",
+                    "headerRenderer": {
+                      "shelfHeaderRenderer": {
+                        "avatarLockup": {
+                          "avatarLockupRenderer": {
+                            "title": {
+                              "runs": [
+                                {
+                                  "text": "Top live games"
+                                }
+                              ]
+                            },
+                            "subtitle": {
+                              "runs": [
+                                {
+                                  "text": "Auto-generated by YouTube"
+                                }
+                              ]
+                            },
+                            "size": "AVATAR_LOCKUP_SIZE_SMALL"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "shelfRenderer": {
+                    "content": {
+                      "horizontalListRenderer": {
+                        "items": [
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_DEFAULT",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "https://i.ytimg.com/vi/sZRnpGWY2tM/hq720.jpg?sqp=-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLAFi0SXL8L3gGhLL1zKdSfEBAiMYw",
+                                        "width": 640,
+                                        "height": 360
+                                      }
+                                    ]
+                                  },
+                                  "thumbnailOverlays": [
+                                    {
+                                      "thumbnailOverlayTimeStatusRenderer": {
+                                        "text": {
+                                          "accessibility": {
+                                            "accessibilityData": {
+                                              "label": "24 minutes, 26 seconds"
+                                            }
+                                          },
+                                          "simpleText": "24:26"
+                                        },
+                                        "style": "DEFAULT"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "Minecraft but you Can Equip Anything!"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "PrestonPlayz"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "badge": {
+                                                "metadataBadgeRenderer": {
+                                                  "style": "BADGE_STYLE_TYPE_SIMPLE",
+                                                  "label": "4K",
+                                                  "trackingParams": "CGUQlDUYACITCMCAov_foZcDFYa2fwQdoEgDVA=="
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "accessibility": {
+                                                  "accessibilityData": {
+                                                    "label": "707 thousand views"
+                                                  }
+                                                },
+                                                "simpleText": "707K views"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "•"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "1 day ago"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CGUQlDUYACITCMCAov_foZcDFYa2fwQdoEgDVDIHZy10b3BpY1oPRkV0b3BpY3NfZ2FtaW5nmgEGCHAQwdQFygEEEDNvNQ==",
+                                "watchEndpoint": {
+                                  "videoId": "sZRnpGWY2tM",
+                                  "params": "6gILSnBwUHkwdk1wZ3fqAgtYMHNlME1FbDF3b-oCCzlMbnRra2M0SURv6gILcjVvWTNIYXNfbmvqAgtMMFZLWGZPUHR5WeoCC0dwU0EtMVBGcTNB6gILXzZac2I1ZnRaMUHqAgtBRVRRVnFDZlZyd-oCCzQ3NzJPWHZYZS1N6gILS24yNTM3Z0lORUHqAgswbmNmR2ZZMTNJQeoCC3FyVEo2SnB0aHNF6gILUlNWYlhsXy1RNnfqAgswNVZXMXlwVzZ6TeoCC20ya1ZWLUNPT25v6gILSHFyR2JzQ3RJMTDqAgtScWFneFgxLWRQOOoCC0dFOXpHRU9FazQ46gILelBLNHh0Mm4weDTqAgtlU3RsLXFOR3RlReoCC2t0eVB5Umo3STNF6gILQ1NKYUZVWWVQbGfqAgs0VXoxT1p4VnZYa_oCD1RyZW5kaW5nIHZpZGVvcw%3D%3D"
+                                }
+                              },
+                              "trackingParams": "CGUQlDUYACITCMCAov_foZcDFYa2fwQdoEgDVEDTteOsxvSZyrEB",
+                              "contentId": "sZRnpGWY2tM",
+                              "contentType": "TILE_CONTENT_TYPE_VIDEO"
+                            }
+                          },
+                          {
+                            "tileRenderer": {
+                              "style": "TILE_STYLE_YTLR_DEFAULT",
+                              "header": {
+                                "tileHeaderRenderer": {
+                                  "thumbnail": {
+                                    "thumbnails": [
+                                      {
+                                        "url": "https://i.ytimg.com/vi/JppPy0vMpgw/hq720_custom_2.jpg?sqp=CPD_i9YG-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLDR979HrCEy7GkSiBAeuHJDC1xkXw",
+                                        "width": 640,
+                                        "height": 360
+                                      }
+                                    ]
+                                  },
+                                  "thumbnailOverlays": [
+                                    {
+                                      "thumbnailOverlayTimeStatusRenderer": {
+                                        "text": {
+                                          "accessibility": {
+                                            "accessibilityData": {
+                                              "label": "18 minutes, 11 seconds"
+                                            }
+                                          },
+                                          "simpleText": "18:11"
+                                        },
+                                        "style": "DEFAULT"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "metadata": {
+                                "tileMetadataRenderer": {
+                                  "title": {
+                                    "simpleText": "We Found an ABANDONED AIRPLANE in Minecraft"
+                                  },
+                                  "lines": [
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "runs": [
+                                                  {
+                                                    "text": "Cash"
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "lineRenderer": {
+                                        "items": [
+                                          {
+                                            "lineItemRenderer": {
+                                              "badge": {
+                                                "metadataBadgeRenderer": {
+                                                  "style": "BADGE_STYLE_TYPE_SIMPLE",
+                                                  "label": "4K",
+                                                  "trackingParams": "CGEQlDUYASITCMCAov_foZcDFYa2fwQdoEgDVA=="
+                                                }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "accessibility": {
+                                                  "accessibilityData": {
+                                                    "label": "429 thousand views"
+                                                  }
+                                                },
+                                                "simpleText": "429K views"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "•"
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "lineItemRenderer": {
+                                              "text": {
+                                                "simpleText": "10 hours ago"
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "onSelectCommand": {
+                                "clickTrackingParams": "CGEQlDUYASITCMCAov_foZcDFYa2fwQdoEgDVDIHZy10b3BpY1oPRkV0b3BpY3NfZ2FtaW5nmgEGCHAQwdQFygEEEDNvNQ==",
+                                "watchEndpoint": {
+                                  "videoId": "JppPy0vMpgw",
+                                  "params": "6gILc1pSbnBHV1kydE3qAgtYMHNlME1FbDF3b-oCCzlMbnRra2M0SURv6gILcjVvWTNIYXNfbmvqAgtMMFZLWGZPUHR5WeoCC0dwU0EtMVBGcTNB6gILXzZac2I1ZnRaMUHqAgtBRVRRVnFDZlZyd-oCCzQ3NzJPWHZYZS1N6gILS24yNTM3Z0lORUHqAgswbmNmR2ZZMTNJQeoCC3FyVEo2SnB0aHNF6gILUlNWYlhsXy1RNnfqAgswNVZXMXlwVzZ6TeoCC20ya1ZWLUNPT25v6gILSHFyR2JzQ3RJMTDqAgtScWFneFgxLWRQOOoCC0dFOXpHRU9FazQ46gILelBLNHh0Mm4weDTqAgtlU3RsLXFOR3RlReoCC2t0eVB5Umo3STNF6gILQ1NKYUZVWWVQbGfqAgs0VXoxT1p4VnZYa_oCD1RyZW5kaW5nIHZpZGVvcw%3D%3D"
+                                }
+                              },
+                              "trackingParams": "CGEQlDUYASITCMCAov_foZcDFYa2fwQdoEgDVECMzLLetPmTzSY=",
+                              "contentId": "JppPy0vMpgw",
+                              "contentType": "TILE_CONTENT_TYPE_VIDEO"
+                            }
+                          }
+                        ],
+                        "trackingParams": "CAgQxjkiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                        "collapsedItemCount": 3,
+                        "visibleItemCount": 3
+                      }
+                    },
+                    "trackingParams": "CAcQ3BwYAyITCMCAov_foZcDFYa2fwQdoEgDVA==",
+                    "headerRenderer": {
+                      "shelfHeaderRenderer": {
+                        "avatarLockup": {
+                          "avatarLockupRenderer": {
+                            "title": {
+                              "runs": [
+                                {
+                                  "text": "Trending videos"
+                                }
+                              ]
+                            },
+                            "subtitle": {
+                              "runs": [
+                                {
+                                  "text": "Hot and fresh"
+                                }
+                              ]
+                            },
+                            "size": "AVATAR_LOCKUP_SIZE_SMALL"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "shelfRenderer": {
+                    "content": {
+                      "horizontalListRenderer": {
+                        "items": [
+                          {
+                            "gridButtonRenderer": {
+                              "title": {
+                                "runs": [
+                                  {
+                                    "text": "Sign in for better recommendations"
+                                  }
+                                ]
+                              },
+                              "icon": {
+                                "iconType": "SIGN_IN"
+                              },
+                              "navigationEndpoint": {
+                                "clickTrackingParams": "CAYQpEEYACITCMCAov_foZcDFYa2fwQdoEgDVMoBBBAzbzU=",
+                                "clientActionEndpoint": {
+                                  "action": {
+                                    "actionType": "OPEN_SIGN_IN_PROMPT"
+                                  }
+                                }
+                              },
+                              "trackingParams": "CAYQpEEYACITCMCAov_foZcDFYa2fwQdoEgDVA=="
+                            }
+                          },
+                          {
+                            "gridButtonRenderer": {
+                              "title": {
+                                "runs": [
+                                  {
+                                    "text": "Refresh"
+                                  }
+                                ]
+                              },
+                              "icon": {
+                                "iconType": "ARROW_CIRCLE"
+                              },
+                              "navigationEndpoint": {
+                                "clickTrackingParams": "CAUQna4LGAEiEwjAgKL_36GXAxWGtn8EHaBIA1TKAQQQM281",
+                                "signalServiceEndpoint": {
+                                  "signal": "CLIENT_SIGNAL",
+                                  "actions": [
+                                    {
+                                      "clickTrackingParams": "CAUQna4LGAEiEwjAgKL_36GXAxWGtn8EHaBIA1TKAQQQM281",
+                                      "signalAction": {
+                                        "signal": "SOFT_RELOAD_PAGE"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              "trackingParams": "CAUQna4LGAEiEwjAgKL_36GXAxWGtn8EHaBIA1Q="
+                            }
+                          }
+                        ],
+                        "trackingParams": "CAQQxjkiEwjAgKL_36GXAxWGtn8EHaBIA1Q=",
+                        "collapsedItemCount": 0,
+                        "visibleItemCount": 0
+                      }
+                    },
+                    "trackingParams": "CAMQ3BwYBCITCMCAov_foZcDFYa2fwQdoEgDVA==",
+                    "headerRenderer": {
+                      "shelfHeaderRenderer": {
+                        "avatarLockup": {
+                          "avatarLockupRenderer": {
+                            "title": {
+                              "runs": [
+                                {
+                                  "text": "Can't find anything to watch?"
+                                }
+                              ]
+                            },
+                            "size": "AVATAR_LOCKUP_SIZE_SMALL"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "trackingParams": "CAIQui8iEwjAgKL_36GXAxWGtn8EHaBIA1Q="
+            }
+          },
+          "trackingParams": "CAEQ0IwDIhMIwICi_9-hlwMVhrZ_BB2gSANU"
+        }
+      }
+    }
+  }
+}

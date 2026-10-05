@@ -263,6 +263,11 @@ public class YouTubeMediaGroup implements MediaGroup {
         return TOPIC_NONE;
     }
 
+    @Override
+    public boolean isChannelRow() {
+        return false;
+    }
+
     private static MediaGroup create(YouTubeMediaGroup baseGroup, List<GridTab> tabs) {
         ArrayList<MediaItem> mediaItems = new ArrayList<>();
 

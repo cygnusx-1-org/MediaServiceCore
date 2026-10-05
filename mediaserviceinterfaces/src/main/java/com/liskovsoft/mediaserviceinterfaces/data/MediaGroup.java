@@ -50,4 +50,10 @@ public interface MediaGroup {
      * What the whole row is about when the service marks it (e.g. a Home music shelf), one of TOPIC_*
      */
     int getTopic();
+    /**
+     * Every item of the row is a channel shown as its avatar (e.g. <b>"Top channels you watch"</b> of Home).
+     * Not a row of games (e.g. <b>"Top live games"</b>), though a game is a channel too.<br/>
+     * Found by its items, unlike its title, which is translated.
+     */
+    boolean isChannelRow();
 }

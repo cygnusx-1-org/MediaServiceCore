@@ -61,6 +61,7 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
     protected open fun getParamsInt(): String? = null
     protected open fun getChannelIdInt(): String? = null
     protected open fun getTopicInt(): Int = MediaGroup.TOPIC_NONE
+    protected open fun isChannelRowInt(): Boolean = false
 
     override fun getType(): Int {
         return options.groupType
@@ -112,5 +113,9 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
 
     override fun getTopic(): Int {
         return getTopicInt()
+    }
+
+    override fun isChannelRow(): Boolean {
+        return isChannelRowInt()
     }
 }

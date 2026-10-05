@@ -152,6 +152,12 @@ internal fun ShelfRenderer.getTopic(): Int = when {
         else -> MediaGroup.TOPIC_NONE
     }
 }
+/**
+ * Every item is the avatar of a channel, e.g. "Top channels you watch" of Home TV. A pivot shelf has a channel among videos,
+ * and the games of "Top live games" are channels with box art.
+ */
+internal fun ShelfRenderer.isChannelRow() =
+    getItemWrappers()?.filterNotNull()?.let { items -> items.isNotEmpty() && items.all { it.isChannelAvatar() } } ?: false
 private fun ShelfRenderer.getShelf() = headerRenderer?.shelfHeaderRenderer
 
 ///////
