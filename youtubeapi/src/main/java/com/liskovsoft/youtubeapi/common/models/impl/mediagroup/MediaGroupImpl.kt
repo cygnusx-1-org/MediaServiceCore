@@ -16,6 +16,7 @@ import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
 import com.liskovsoft.youtubeapi.next.v2.gen.getTopic
 import com.liskovsoft.youtubeapi.next.v2.gen.isChannelRow
+import com.liskovsoft.youtubeapi.next.v2.gen.isSearchTopicRow
 import com.liskovsoft.youtubeapi.notifications.gen.NotificationsResult
 import com.liskovsoft.youtubeapi.notifications.gen.getItems
 import com.liskovsoft.youtubeapi.search.v2.gen.SearchSection
@@ -94,6 +95,7 @@ internal data class ShelfSectionMediaGroup(
     override fun getTitleInt(): String? = shelf.getTitle()
     override fun getTopicInt(): Int = shelf.shelfRenderer?.getTopic() ?: MediaGroup.TOPIC_NONE
     override fun isChannelRowInt(): Boolean = shelf.shelfRenderer?.isChannelRow() ?: false
+    override fun isSearchTopicRowInt(): Boolean = shelf.shelfRenderer?.isSearchTopicRow() ?: false
 }
 
 internal data class ItemSectionMediaGroup(

@@ -80,6 +80,10 @@ internal data class SuggestionsGroup(val shelf: ShelfRenderer): MediaGroup {
         return false
     }
 
+    override fun isSearchTopicRow(): Boolean {
+        return false
+    }
+
     companion object {
         fun from(continuation: WatchNextResultContinuation?, baseGroup: MediaGroup?): MediaGroup? {
             if (continuation == null || baseGroup == null) {

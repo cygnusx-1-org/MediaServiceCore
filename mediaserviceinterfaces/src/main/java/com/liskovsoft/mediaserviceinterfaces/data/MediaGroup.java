@@ -56,4 +56,9 @@ public interface MediaGroup {
      * Found by its items, unlike its title, which is translated.
      */
     boolean isChannelRow();
+    /**
+     * Every item of the row is a topic that opens a search (e.g. <b>"Explore more topics"</b> of Home).<br/>
+     * Found by its items, unlike its title, which is translated.
+     */
+    boolean isSearchTopicRow();
 }

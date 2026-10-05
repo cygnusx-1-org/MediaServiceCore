@@ -158,6 +158,11 @@ internal fun ShelfRenderer.getTopic(): Int = when {
  */
 internal fun ShelfRenderer.isChannelRow() =
     getItemWrappers()?.filterNotNull()?.let { items -> items.isNotEmpty() && items.all { it.isChannelAvatar() } } ?: false
+/**
+ * Every item is a topic that opens a search, e.g. "Explore more topics" of Home TV
+ */
+internal fun ShelfRenderer.isSearchTopicRow() =
+    getItemWrappers()?.filterNotNull()?.let { items -> items.isNotEmpty() && items.all { it.isSearchTopic() } } ?: false
 private fun ShelfRenderer.getShelf() = headerRenderer?.shelfHeaderRenderer
 
 ///////

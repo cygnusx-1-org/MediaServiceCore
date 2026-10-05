@@ -342,6 +342,11 @@ internal fun ItemWrapper.getChannelName() = getChannelItem()?.getTitle()
  */
 internal fun ItemWrapper.isChannelAvatar() = getTileItem()?.let { it.getContentType() == TILE_CONTENT_TYPE_CHANNEL && it.style == TILE_STYLE_ROUND } ?: false
 
+/**
+ * A topic that opens a search, e.g. in "Explore more topics". It has a thumbnail and the topic, no video.
+ */
+internal fun ItemWrapper.isSearchTopic() = getTileItem()?.getContentType() == TILE_CONTENT_TYPE_EDU
+
 internal fun ItemWrapper.getVideoId() = getVideoItem()?.getVideoId() ?: getMusicItem()?.getVideoId() ?: getTileItem()?.getVideoId() ?: getRadioItem()?.getVideoId()
     ?: getShortsItem()?.getVideoId() ?: getLockupItem()?.getVideoId()
 internal fun ItemWrapper.getTitle() = getVideoItem()?.getTitle() ?: getMusicItem()?.getTitle() ?: getTileItem()?.getTitle() ?: getPlaylistItem()?.getTitle()
