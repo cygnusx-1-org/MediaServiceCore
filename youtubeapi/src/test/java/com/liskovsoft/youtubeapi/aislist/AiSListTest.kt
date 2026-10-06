@@ -28,7 +28,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowLog
+import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchSectionMediaGroup
+import com.liskovsoft.youtubeapi.next.v2.WatchNextApi
+import com.liskovsoft.youtubeapi.next.v2.gen.WatchNextResult
+import com.liskovsoft.youtubeapi.search.v2.SearchApi
+import com.liskovsoft.youtubeapi.search.v2.gen.SearchResult
+import com.liskovsoft.youtubeapi.search.v2.gen.getSections
 import retrofit2.Call
+import retrofit2.http.Header
 import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
@@ -131,6 +138,82 @@ class AiSListTest {
         assertFalse("Suggestions have handles", handles!!.isEmpty())
         handles.forEach { assertTrue("Handle $it", it.startsWith("@")) }
     }
+
+    /**
+     * A collaboration's owner links to no channel: each collaborator has a panel with the handle, in the order of the byline
+     */
+    @Test
+    fun testThatCollaborationHasEveryHandle() {
+        val watchNextService = WatchNextService()
+        watchNextService.setWatchNextApi(MockUtils.mockWithGson(CollaborationWatchNextApiMock::class.java))
+
+        val handles = watchNextService.getChannelHandles("UCgVlHlNWpA")
+
+        assertEquals(listOf("@fexl", "@Frequensyt"), handles?.keys?.toList())
+        assertEquals("UCFlnKDqG512KkbDvPa2ybRw", handles?.get("@fexl"))
+        assertEquals("UCiGAvwe-bNSNfZLBP02DQMg", handles?.get("@Frequensyt"))
+    }
+
+    @Test
+    fun testThatSingleOwnerHasOnlyItsHandle() {
+        val watchNextService = WatchNextService()
+        watchNextService.setWatchNextApi(MockUtils.mockWithGson(SingleOwnerWatchNextApiMock::class.java))
+
+        assertEquals(mapOf("@fexl" to "UCFlnKDqG512KkbDvPa2ybRw"), watchNextService.getChannelHandles("mY8W8kTtIuU"))
+    }
+
+    /**
+     * TV search shows channels and videos as lockups. A channel's has its handle, a video's only the channel name.
+     */
+    @Test
+    fun testThatSearchChannelHasHandle() {
+        val api = MockUtils.mockWithGson(SearchLockupsApiMock::class.java)
+        val items = api.getSearchResult("").execute().body()?.getSections()
+            ?.flatMap { SearchSectionMediaGroup(it!!).mediaItems?.filterNotNull() ?: emptyList() }
+
+        assertNotNull(items)
+        val channel = items!!.first { it.videoId == null && it.channelId == "UCFlnKDqG512KkbDvPa2ybRw" }
+        assertEquals("@fexl", channel.channelHandle)
+        val collaboration = items.first { it.videoId == "UCgVlHlNWpA" }
+        assertTrue(collaboration.author!!.startsWith("Fexl and Frequensi"))
+        assertNull(collaboration.channelHandle)
+    }
+}
+
+internal interface CollaborationWatchNextApiMock: WatchNextApi {
+    @Mock
+    @MockResponse(body = "next/v2/2026.10.05_collaboration.json")
+    @Headers("Content-Type: application/json")
+    @POST("https://www.youtube.com/youtubei/v1/next")
+    override fun getWatchNextResult(@Body watchNextQuery: String): Call<WatchNextResult?>
+
+    @Mock
+    @MockResponse(body = "next/v2/2026.10.05_collaboration.json")
+    @Headers("Content-Type: application/json")
+    @POST("https://www.youtube.com/youtubei/v1/next")
+    override fun getWatchNextResult(@Body watchNextQuery: String, @Header("X-Goog-Visitor-Id") visitorId: String): Call<WatchNextResult?>
+}
+
+internal interface SingleOwnerWatchNextApiMock: WatchNextApi {
+    @Mock
+    @MockResponse(body = "next/v2/2026.10.05_single_owner.json")
+    @Headers("Content-Type: application/json")
+    @POST("https://www.youtube.com/youtubei/v1/next")
+    override fun getWatchNextResult(@Body watchNextQuery: String): Call<WatchNextResult?>
+
+    @Mock
+    @MockResponse(body = "next/v2/2026.10.05_single_owner.json")
+    @Headers("Content-Type: application/json")
+    @POST("https://www.youtube.com/youtubei/v1/next")
+    override fun getWatchNextResult(@Body watchNextQuery: String, @Header("X-Goog-Visitor-Id") visitorId: String): Call<WatchNextResult?>
+}
+
+internal interface SearchLockupsApiMock: SearchApi {
+    @Mock
+    @MockResponse(body = "search/2026.10.05_search_lockups.json")
+    @Headers("Content-Type: application/json")
+    @POST("https://www.youtube.com/youtubei/v1/search")
+    override fun getSearchResult(@Body searchQuery: String?): Call<SearchResult?>
 }
 
 internal interface SubscriptionsApiMock: BrowseApi {

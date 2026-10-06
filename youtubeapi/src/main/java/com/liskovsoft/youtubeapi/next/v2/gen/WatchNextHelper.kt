@@ -1,5 +1,6 @@
 package com.liskovsoft.youtubeapi.next.v2.gen
 
+import com.liskovsoft.googlecommon.common.helpers.ServiceHelper
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.youtubeapi.browse.v2.gen.PlaylistVideoListRenderer
@@ -33,6 +34,7 @@ internal fun VideoOwnerItem.getShortSubscriberCount() = subscribeButton?.subscri
 private const val MARKER_TYPE_HEATMAP = "MARKER_TYPE_HEATMAP"
 private const val MARKER_TYPE_CHAPTERS = "MARKER_TYPE_CHAPTERS"
 private const val ICON_TYPE_SHUFFLE = "SHUFFLE"
+private const val COLLABORATOR_PANEL_PREFIX = "channel-actions-panel-" // + the channel id
 
 private fun WatchNextResult.getWatchNextResults() = contents?.singleColumnWatchNextResults
 private fun WatchNextResult.getPlayerOverlays() = playerOverlays?.playerOverlayRenderer
@@ -62,6 +64,7 @@ internal fun WatchNextResult.getChapters() = getPlayerOverlays()?.decoratedPlaye
 internal fun WatchNextResult.getCommentPanel() = engagementPanels?.firstOrNull { it?.isCommentsSection() == true }
 internal fun WatchNextResult.getDescriptionPanel() = engagementPanels?.firstOrNull { it?.isDescriptionSection() == true }
 internal fun WatchNextResult.getCollaboratorPanel() = engagementPanels?.firstOrNull { it?.isCollaboratorSection() == true }
+internal fun WatchNextResult.getCollaboratorPanels() = engagementPanels?.filter { it?.isCollaboratorSection() == true }
 internal fun WatchNextResult.isEmpty(): Boolean = getSuggestedSections()?.isEmpty() ?: true
 private fun WatchNextResult.getAutoplaySet() = getWatchNextResults()?.autoplay?.autoplay?.sets?.getOrNull(0)
 
@@ -220,7 +223,16 @@ internal fun EngagementPanel.getTopCommentsToken(): String? = getSubMenuItems()?
 internal fun EngagementPanel.getNewCommentsToken(): String? = getSubMenuItems()?.getOrNull(1)?.continuation?.getContinuationToken()
 internal fun EngagementPanel.isCommentsSection(): Boolean = engagementPanelSectionListRenderer?.panelIdentifier == "comment-item-section"
 internal fun EngagementPanel.isDescriptionSection(): Boolean = engagementPanelSectionListRenderer?.panelIdentifier == "video-description-ep-identifier"
-internal fun EngagementPanel.isCollaboratorSection(): Boolean = engagementPanelSectionListRenderer?.identifier?.tag?.startsWith("channel-actions-panel-") ?: false
+internal fun EngagementPanel.isCollaboratorSection(): Boolean = engagementPanelSectionListRenderer?.identifier?.tag?.startsWith(COLLABORATOR_PANEL_PREFIX) ?: false
+/**
+ * The channel of a collaborator's panel: its tag ends with the channel id
+ */
+internal fun EngagementPanel.getCollaboratorChannelId(): String? =
+    engagementPanelSectionListRenderer?.identifier?.tag?.takeIf { it.startsWith(COLLABORATOR_PANEL_PREFIX) }?.removePrefix(COLLABORATOR_PANEL_PREFIX)
+/**
+ * The handle of a collaborator's panel, from its subtitle "@handle · 262K subscribers"
+ */
+internal fun EngagementPanel.getChannelHandle(): String? = getHeader()?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
 internal fun EngagementPanel.getTitle(): String? = getDescriptionHeader()?.title?.getText()
 internal fun EngagementPanel.getChannelName(): String? = getDescriptionHeader()?.channel?.getText()
 internal fun EngagementPanel.getViews(): String? = getDescriptionHeader()?.views?.getText()

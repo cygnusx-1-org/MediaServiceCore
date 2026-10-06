@@ -561,8 +561,8 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
-    public Observable<String> getChannelHandleObserve(String videoId) {
-        return RxHelper.fromCallable(() -> getWatchNextService().getChannelHandle(videoId));
+    public Observable<Map<String, String>> getChannelHandlesObserve(String videoId) {
+        return RxHelper.fromCallable(() -> getWatchNextService().getChannelHandles(videoId));
     }
 
     @Override

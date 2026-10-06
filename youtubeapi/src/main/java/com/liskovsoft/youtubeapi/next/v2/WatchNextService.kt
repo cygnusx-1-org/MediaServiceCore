@@ -92,16 +92,18 @@ internal open class WatchNextService {
     }
 
     /**
-     * The owner's channel handle (e.g. "@handle"). Unlike [getMetadata] has no side effects.
+     * The owners' channel handles (e.g. "@handle") -> their channel ids, the uploader first. A collaboration has one per channel.
+     * Unlike [getMetadata] has no side effects.
+     * @return null when none is found
      */
-    fun getChannelHandle(videoId: String?): String? {
+    fun getChannelHandles(videoId: String?): Map<String, String?>? {
         if (videoId == null) {
             return null
         }
 
         val watchNext = getWatchNext(videoId, null, 0, null) ?: return null
 
-        return MediaItemMetadataImpl(watchNext).channelHandle
+        return MediaItemMetadataImpl(watchNext).channelHandles.takeIf { it.isNotEmpty() }
     }
 
     fun getUnlocalizedTitle(videoId: String?): String? {

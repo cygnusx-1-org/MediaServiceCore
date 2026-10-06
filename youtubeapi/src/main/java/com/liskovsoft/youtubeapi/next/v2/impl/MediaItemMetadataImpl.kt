@@ -50,6 +50,14 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     val channelHandle: String? by lazy {
         videoOwner?.navigationEndpoint?.getChannelHandle()
     }
+    /**
+     * The owner's handle or, for a collaboration, whose owner links to no channel, each collaborator's
+     */
+    val channelHandles: Map<String, String?> by lazy {
+        channelHandle?.let { mapOf(it to videoOwner?.navigationEndpoint?.getBrowseId()) }
+            ?: watchNextResult.getCollaboratorPanels()?.mapNotNull { panel -> panel?.getChannelHandle()?.let { it to panel.getCollaboratorChannelId() } }?.toMap()
+            ?: emptyMap()
+    }
     private val channelOwner by lazy {
         watchNextResult.getButtonStateItem()?.getChannelOwner()
     }

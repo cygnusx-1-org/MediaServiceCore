@@ -100,9 +100,10 @@ public interface MediaItemService {
     Observable<DeArrowData> getDeArrowDataObserve(List<String> videoIds);
     Observable<AiSListData> getAiSListDataObserve();
     /**
-     * The owner's channel handle (e.g. "@handle") of the video
+     * The channel handles (e.g. "@handle") of the video's owners -> their channel ids (or null), the uploader first.
+     * A collaboration has one per channel. An error when none is found.
      */
-    Observable<String> getChannelHandleObserve(String videoId);
+    Observable<Map<String, String>> getChannelHandlesObserve(String videoId);
     /**
      * Video id -> the category of the video and, with the user's Data API key, its topics.<br/>
      * Videos whose lookup failed are left out.

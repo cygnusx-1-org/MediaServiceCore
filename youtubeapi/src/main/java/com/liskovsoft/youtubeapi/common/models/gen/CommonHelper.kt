@@ -290,6 +290,11 @@ internal fun LockupItem.getFeedbackTokens() =
     metadata?.lockupMetadataViewModel?.menuButton?.buttonViewModel?.onTap?.innertubeCommand?.getFeedbackTokens()
 internal fun LockupItem.getChannelId() = rendererContext?.getBrowseId()
 internal fun LockupItem.isChannel() = contentType == LOCKUP_CONTENT_TYPE_CHANNEL
+/**
+ * A channel's handle, from its long-press menu subtitle "@handle". A video's has only the channel name.
+ */
+internal fun LockupItem.getChannelHandle() = takeIf { it.isChannel() }?.rendererContext?.commandContext?.onLongPress?.innertubeCommand
+    ?.showMenuCommand?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
 internal fun LockupItem.isShow() = contentType == LOCKUP_CONTENT_TYPE_PODCAST || rendererContext?.getOnTapCommand()?.browseEndpoint?.isShowPage() == true
 private fun LockupItem.getBadge() = getOverlays()?.firstNotNullOfOrNull { it?.thumbnailOverlayBadgeViewModel?.thumbnailBadges
     ?: it?.thumbnailBottomOverlayViewModel?.badges }?.firstNotNullOfOrNull { it?.thumbnailBadgeViewModel }
@@ -371,7 +376,7 @@ internal fun ItemWrapper.getPlaylistId() = getVideoItem()?.getPlaylistId() ?: ge
     ?: getPlaylistItem()?.getPlaylistId() ?: getRadioItem()?.getPlaylistId()
 internal fun ItemWrapper.getChannelId() = getVideoItem()?.getChannelId() ?: getMusicItem()?.getChannelId() ?: getTileItem()?.getChannelId()
     ?: getChannelItem()?.getChannelId() ?: getRadioItem()?.getChannelId() ?: getLockupItem()?.getChannelId()
-internal fun ItemWrapper.getChannelHandle() = getVideoItem()?.getChannelHandle() ?: getTileItem()?.getChannelHandle()
+internal fun ItemWrapper.getChannelHandle() = getVideoItem()?.getChannelHandle() ?: getTileItem()?.getChannelHandle() ?: getLockupItem()?.getChannelHandle()
 internal fun ItemWrapper.getChannelParams() = getTileItem()?.getChannelParams()
 internal fun ItemWrapper.getPlaylistIndex() = getVideoItem()?.getPlaylistIndex() ?: getMusicItem()?.getPlaylistIndex() ?: getTileItem()?.getPlaylistIndex()
 internal fun ItemWrapper.isLive() = getVideoItem()?.isLive() ?: getMusicItem()?.isLive() ?: getTileItem()?.isLive() ?: getLockupItem()?.isLive() ?: false
