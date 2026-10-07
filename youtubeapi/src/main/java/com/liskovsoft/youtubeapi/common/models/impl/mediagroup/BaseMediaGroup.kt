@@ -29,12 +29,15 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
         get() = if (field == "") null else field ?: nextPageKeyItem
         set(value) { field = value ?: "" }
 
+    // The videos the filters left out, counted while the items are made
+    private var filteredVideoCount = 0
+
     private val titleItem by lazy { getTitleInt() }
     protected open val mediaItemList: List<MediaItem?>? by lazy { getItemWrappersInt()
         ?.mapIndexedNotNull { index, it -> it
-            ?.let { if (filter.invoke(it)) null else it }
+            ?.let { if (filter.invoke(it)) { countFiltered(it.getVideoId()); null } else it }
             ?.let { WrapperMediaItem(it).apply { playlistIndex = index } }
-            ?.let { if (legacyFilter.invoke(it)) null else it }
+            ?.let { if (legacyFilter.invoke(it)) { countFiltered(it.videoId); null } else it }
         }?.let {
             // Move Watch Later to the top
             if (options.groupType != MediaGroup.TYPE_USER_PLAYLISTS)
@@ -122,5 +125,16 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
 
     override fun isSearchTopicRow(): Boolean {
         return isSearchTopicRowInt()
+    }
+
+    override fun getFilteredVideoCount(): Int {
+        // The items are made first
+        return if (mediaItemList == null) 0 else filteredVideoCount
+    }
+
+    private fun countFiltered(videoId: String?) {
+        if (videoId != null) {
+            filteredVideoCount++
+        }
     }
 }

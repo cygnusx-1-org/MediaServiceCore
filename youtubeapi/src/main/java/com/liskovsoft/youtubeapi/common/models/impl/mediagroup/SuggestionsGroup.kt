@@ -84,6 +84,10 @@ internal data class SuggestionsGroup(val shelf: ShelfRenderer): MediaGroup {
         return false
     }
 
+    override fun getFilteredVideoCount(): Int {
+        return 0
+    }
+
     companion object {
         fun from(continuation: WatchNextResultContinuation?, baseGroup: MediaGroup?): MediaGroup? {
             if (continuation == null || baseGroup == null) {

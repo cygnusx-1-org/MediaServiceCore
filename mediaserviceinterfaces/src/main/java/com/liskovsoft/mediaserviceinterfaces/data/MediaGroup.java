@@ -61,4 +61,10 @@ public interface MediaGroup {
      * Found by its items, unlike its title, which is translated.
      */
     boolean isSearchTopicRow();
+    /**
+     * The videos the service left out of the row before its items (e.g. the watched ones of <b>"Hide watched videos from Home"</b>).
+     * Not the cards without a video.<br/>
+     * A row left with cards only (e.g. <b>"More music"</b> of <b>"Listen again"</b>) has lost its videos.
+     */
+    int getFilteredVideoCount();
 }

@@ -273,6 +273,11 @@ public class YouTubeMediaGroup implements MediaGroup {
         return false;
     }
 
+    @Override
+    public int getFilteredVideoCount() {
+        return 0;
+    }
+
     private static MediaGroup create(YouTubeMediaGroup baseGroup, List<GridTab> tabs) {
         ArrayList<MediaItem> mediaItems = new ArrayList<>();
 
