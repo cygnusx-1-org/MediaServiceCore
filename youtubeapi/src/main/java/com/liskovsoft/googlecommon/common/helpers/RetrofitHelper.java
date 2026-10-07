@@ -227,6 +227,7 @@ public class RetrofitHelper {
             Gson gson = new GsonBuilder().create();
             try (ResponseBody body = response.errorBody()) {
                 String errorMsg;
+                String errorDescription = null;
                 String errorData = body != null ? body.string() : null;
 
                 try {
@@ -235,11 +236,13 @@ public class RetrofitHelper {
                 } catch (JsonSyntaxException e) {
                     AuthErrorResponse authError = gson.fromJson(errorData, AuthErrorResponse.class);
                     errorMsg = "AuthError: " + authError.getError();
+                    // Why, e.g. invalid_grant: "Token has been expired or revoked." or "Bad Request"
+                    errorDescription = authError.getError_description();
                 }
 
                 errorMsg = errorMsg != null ? errorMsg : String.format("Unknown %s error", response.code());
 
-                Log.e(TAG, errorMsg);
+                Log.e(TAG, errorDescription != null ? String.format("%s (%s)", errorMsg, errorDescription) : errorMsg);
                 throw new IllegalStateException(errorMsg);
             } catch (IOException e) {
                 // handle failure to read error
