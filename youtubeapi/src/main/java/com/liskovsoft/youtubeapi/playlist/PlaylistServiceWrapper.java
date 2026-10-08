@@ -9,6 +9,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import com.liskovsoft.sharedutils.helpers.Helpers;
+import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseApiHelper;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseService2Wrapper;
 import com.liskovsoft.youtubeapi.channelgroups.models.ItemGroupImpl;
@@ -17,12 +18,15 @@ import com.liskovsoft.youtubeapi.next.v2.WatchNextService;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextServiceWrapper;
 import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo;
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl;
+import com.liskovsoft.youtubeapi.service.YouTubeSignInService;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class PlaylistServiceWrapper extends PlaylistService {
+    private static final String TAG = PlaylistServiceWrapper.class.getSimpleName();
+    private static final int LOCAL_PLAYLIST_ID_MAX_LENGTH = 12; // ItemGroupImpl GROUP_ID_LENGTH
     private static PlaylistServiceWrapper sInstance;
     private @Nullable List<PlaylistInfo> mCachedPlaylistInfos;
 
@@ -35,24 +39,43 @@ public class PlaylistServiceWrapper extends PlaylistService {
     }
 
     @Override
-    public void createPlaylist(String playlistName, String videoId) {
+    public String createPlaylist(String playlistName, String videoId) {
+        String playlistId = null;
+        IllegalStateException error = null;
+
         try {
-            super.createPlaylist(playlistName, videoId);
+            playlistId = super.createPlaylist(playlistName, videoId);
         } catch (IllegalStateException e) {
-            // NOP
+            // Signed out, or YouTube refused it: the playlist stays on this device only
+            Log.e(TAG, "Can't create the playlist on YouTube: %s", e.getMessage());
+            error = e;
         }
         
-        createCachedPlaylist(playlistName, videoId);
+        createCachedPlaylist(playlistId, playlistName, videoId);
+
+        // Signed in, the user expects it on YouTube, so the caller has to say it was kept on this device
+        if (error != null && YouTubeSignInService.instance().isSigned()) {
+            throw new LocalPlaylistException(error);
+        }
+
+        return playlistId;
     }
 
-    private static void createCachedPlaylist(String playlistName, @Nullable String videoId) {
+    /**
+     * A playlist kept on this device only, never sent to YouTube
+     */
+    public void createLocalPlaylist(String playlistName) {
+        createCachedPlaylist(null, playlistName, null);
+    }
+
+    private static void createCachedPlaylist(@Nullable String playlistId, String playlistName, @Nullable String videoId) {
         MediaItem cachedVideo = PlaylistGroupServiceImpl.cachedItem;
 
         if (videoId == null) {
-            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistName, null, Collections.emptyList());
+            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, playlistName, null, Collections.emptyList());
             PlaylistGroupServiceImpl.addPlaylistGroup(playlist);
         } else if (cachedVideo != null && Helpers.equals(cachedVideo.getVideoId(), videoId)) {
-            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistName, cachedVideo.getCardImageUrl(),
+            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, playlistName, cachedVideo.getCardImageUrl(),
                     Collections.singletonList(ItemImpl.fromMediaItem(cachedVideo)));
             PlaylistGroupServiceImpl.addPlaylistGroup(playlist);
         } else {
@@ -61,10 +84,44 @@ public class PlaylistServiceWrapper extends PlaylistService {
             CharSequence subtitle = ytMetadata != null ? ytMetadata.getSecondTitle() : null;
             String badgeText = ytMetadata != null ? ytMetadata.getBadgeText() : null;
             String channelId = ytMetadata != null ? ytMetadata.getChannelId() : null;
-            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistName, null,
+            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, playlistName, null,
                     Collections.singletonList(new ItemImpl(channelId, title, null, videoId, subtitle, badgeText, -1)));
             PlaylistGroupServiceImpl.addPlaylistGroup(playlist);
         }
+    }
+
+    /**
+     * A playlist kept on this device only. Its id is a number or 12 random characters,
+     * while a YouTube playlist id (that a copy of one here is keyed by) is longer, e.g. PL and 11 characters.
+     */
+    public static boolean isCachedPlaylist(@Nullable String playlistId) {
+        return playlistId != null && playlistId.length() <= LOCAL_PLAYLIST_ID_MAX_LENGTH
+                && PlaylistGroupServiceImpl.findPlaylistGroup(playlistId) != null;
+    }
+
+    /**
+     * Creates a playlist kept on this device on YouTube, videos included, and keys the copy here by the new YouTube id
+     */
+    public void copyCachedPlaylist(String playlistId) {
+        ItemGroup playlist = PlaylistGroupServiceImpl.findPlaylistGroup(playlistId);
+
+        if (playlist == null) {
+            throw new IllegalStateException("Playlist not found: " + playlistId);
+        }
+
+        List<String> videoIds = new ArrayList<>();
+
+        for (ItemGroup.Item item : playlist.getItems()) {
+            if (item.getVideoId() != null) {
+                videoIds.add(item.getVideoId());
+            }
+        }
+
+        String newPlaylistId = super.createPlaylist(playlist.getTitle(), videoIds);
+
+        PlaylistGroupServiceImpl.removePlaylistGroup(playlist);
+        PlaylistGroupServiceImpl.addPlaylistGroup(PlaylistGroupServiceImpl.createPlaylistGroup(
+                newPlaylistId, playlist.getTitle(), playlist.getIconUrl(), playlist.getItems()));
     }
 
     @Override

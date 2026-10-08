@@ -1,6 +1,10 @@
 package com.liskovsoft.youtubeapi.playlist;
 
+import com.google.gson.Gson;
+import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.youtubeapi.common.helpers.PostDataHelper;
+
+import java.util.List;
 
 public class PlaylistApiHelper {
     private static final String PLAYLISTS_INFO_QUERY = "\"videoIds\":[\"%s\"]";
@@ -11,10 +15,11 @@ public class PlaylistApiHelper {
     private static final String REMOVE_FROM_PLAYLISTS_QUERY = "\"playlistId\":\"%s\"," +
             "\"actions\":[{\"removedVideoId\":\"%s\",\"action\":\"ACTION_REMOVE_VIDEO_BY_VIDEO_ID\"}]";
     private static final String RENAME_PLAYLISTS_QUERY = "\"playlistId\":\"%s\"," +
-            "\"actions\":[{\"playlistName\":\"%s\",\"action\":\"ACTION_SET_PLAYLIST_NAME\"}]";
+            "\"actions\":[{\"playlistName\":%s,\"action\":\"ACTION_SET_PLAYLIST_NAME\"}]";
     private static final String SAVE_REMOVE_PLAYLIST_QUERY = "\"target\":{\"playlistId\":\"%s\"}";
-    private static final String CREATE_PLAYLIST_QUERY = "\"title\":\"%s\"";
-    private static final String CREATE_PLAYLIST_AND_ADD_QUERY = "\"title\":\"%s\",\"videoIds\":[\"%s\"]";
+    private static final String CREATE_PLAYLIST_QUERY = "\"title\":%s,\"privacyStatus\":\"PRIVATE\"";
+    private static final String CREATE_PLAYLIST_AND_ADD_QUERY = "\"title\":%s,\"privacyStatus\":\"PRIVATE\",\"videoIds\":[\"%s\"]";
+    private static final String CREATE_PLAYLIST_WITH_VIDEOS_QUERY = "\"title\":%s,\"privacyStatus\":\"PRIVATE\",\"videoIds\":%s";
     private static final String DELETE_PLAYLIST_QUERY = "\"playlistId\":\"%s\"";
 
     public static String getPlaylistsInfoQuery(String videoId) {
@@ -33,7 +38,7 @@ public class PlaylistApiHelper {
     }
 
     public static String getRenamePlaylistsQuery(String playlistId, String newName) {
-        String queryTemplate = String.format(RENAME_PLAYLISTS_QUERY, playlistId, newName);
+        String queryTemplate = String.format(RENAME_PLAYLISTS_QUERY, playlistId, toJsonString(newName));
         return PostDataHelper.createQueryTV(queryTemplate);
     }
 
@@ -47,14 +52,38 @@ public class PlaylistApiHelper {
         return PostDataHelper.createQueryTV(queryTemplate);
     }
 
+    /**
+     * Only the TV embedded client may create or delete a playlist with the TV sign-in:
+     * WEB answers 400 INVALID_ARGUMENT and TV answers 400 FAILED_PRECONDITION
+     */
     public static String getCreatePlaylistQuery(String playlistName, String videoId) {
+        String title = toJsonString(playlistName);
         String queryTemplate = videoId == null ?
-                String.format(CREATE_PLAYLIST_QUERY, playlistName) : String.format(CREATE_PLAYLIST_AND_ADD_QUERY, playlistName, videoId);
-        return PostDataHelper.createQueryWeb(queryTemplate);
+                String.format(CREATE_PLAYLIST_QUERY, title) : String.format(CREATE_PLAYLIST_AND_ADD_QUERY, title, videoId);
+        return PostDataHelper.createQuery(AppClient.TV_EMBED, queryTemplate);
+    }
+
+    /**
+     * One request takes all the videos (tried with 104)
+     */
+    public static String getCreatePlaylistQuery(String playlistName, List<String> videoIds) {
+        if (videoIds.isEmpty()) {
+            return getCreatePlaylistQuery(playlistName, (String) null);
+        }
+
+        String queryTemplate = String.format(CREATE_PLAYLIST_WITH_VIDEOS_QUERY, toJsonString(playlistName), new Gson().toJson(videoIds));
+        return PostDataHelper.createQuery(AppClient.TV_EMBED, queryTemplate);
     }
 
     public static String getRemovePlaylistQuery(String playlistName) {
         String queryTemplate = String.format(DELETE_PLAYLIST_QUERY, playlistName);
-        return PostDataHelper.createQueryWeb(queryTemplate);
+        return PostDataHelper.createQuery(AppClient.TV_EMBED, queryTemplate);
+    }
+
+    /**
+     * A quoted JSON string, so quotes or backslashes in a playlist name can't break the request
+     */
+    private static String toJsonString(String text) {
+        return new Gson().toJson(text);
     }
 }

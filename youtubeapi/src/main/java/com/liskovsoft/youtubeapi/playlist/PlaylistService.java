@@ -76,7 +76,12 @@ public class PlaylistService {
     private void removeForeignPlaylist(String playlistId) {
         Call<ActionResult> removeWrapper =
                 mPlaylistManager.removeForeignPlaylist(PlaylistApiHelper.getSaveRemoveForeignPlaylistQuery(playlistId));
-        RetrofitHelper.getWithErrors(removeWrapper);
+        ActionResult result = RetrofitHelper.getWithErrors(removeWrapper);
+
+        // The user's own playlist answers 404, which getWithErrors doesn't throw on
+        if (result == null) {
+            throw new IllegalStateException("Not a saved playlist: " + playlistId);
+        }
     }
 
     private void removeUserPlaylist(String playlistId) {
@@ -85,10 +90,28 @@ public class PlaylistService {
         RetrofitHelper.getWithErrors(deleteWrapper);
     }
 
-    public void createPlaylist(String playlistName, String videoId) {
-        Call<ActionResult> wrapper =
-                mPlaylistManager.createPlaylist(PlaylistApiHelper.getCreatePlaylistQuery(playlistName, videoId));
+    /**
+     * @return id of the new playlist
+     */
+    public String createPlaylist(String playlistName, String videoId) {
+        return getNewPlaylistId(mPlaylistManager.createPlaylist(PlaylistApiHelper.getCreatePlaylistQuery(playlistName, videoId)));
+    }
 
-        RetrofitHelper.getWithErrors(wrapper); // ignore result
+    /**
+     * @return id of the new playlist
+     */
+    public String createPlaylist(String playlistName, List<String> videoIds) {
+        return getNewPlaylistId(mPlaylistManager.createPlaylist(PlaylistApiHelper.getCreatePlaylistQuery(playlistName, videoIds)));
+    }
+
+    private static String getNewPlaylistId(Call<ActionResult> wrapper) {
+        ActionResult result = RetrofitHelper.getWithErrors(wrapper);
+        String playlistId = result != null ? result.getPlaylistId() : null;
+
+        if (playlistId == null) {
+            throw new IllegalStateException("Can't create the playlist. Unknown error.");
+        }
+
+        return playlistId;
     }
 }

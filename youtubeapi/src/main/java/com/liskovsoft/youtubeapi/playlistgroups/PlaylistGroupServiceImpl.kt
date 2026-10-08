@@ -70,6 +70,15 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
         return ItemGroupImpl(id = id, title = title, iconUrl = iconUrl, items = mutableListOf())
     }
 
+    /**
+     * Keyed by the YouTube playlist id when there is one, so removing that playlist removes this group too
+     */
+    @JvmStatic
+    fun createPlaylistGroup(id: String?, title: String, iconUrl: String?, items: List<Item>): ItemGroup {
+        return if (id != null) ItemGroupImpl(id = id, title = title, iconUrl = iconUrl, items = items.toMutableList())
+            else createPlaylistGroup(title, iconUrl, items)
+    }
+
     @JvmStatic
     fun getPlaylistGroups(): List<ItemGroup> {
         return mPlaylists

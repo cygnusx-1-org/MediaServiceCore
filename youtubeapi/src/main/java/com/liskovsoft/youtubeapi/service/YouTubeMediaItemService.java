@@ -523,6 +523,30 @@ public class YouTubeMediaItemService implements MediaItemService {
         return RxHelper.fromRunnable(() -> createPlaylist(playlistName, item));
     }
 
+    /**
+     * A playlist kept on this device only, never sent to YouTube
+     */
+    public Observable<Void> createLocalPlaylistObserve(String playlistName) {
+        return RxHelper.fromRunnable(() -> PlaylistServiceWrapper.instance().createLocalPlaylist(playlistName));
+    }
+
+    /**
+     * A playlist kept on this device only (not on YouTube)
+     */
+    public boolean isLocalPlaylist(String playlistId) {
+        return PlaylistServiceWrapper.isCachedPlaylist(playlistId);
+    }
+
+    /**
+     * Creates a playlist kept on this device on YouTube, with its videos
+     */
+    public Observable<Void> copyPlaylistToYouTubeObserve(String playlistId) {
+        return RxHelper.fromRunnable(() -> {
+            checkSigned();
+            PlaylistServiceWrapper.instance().copyCachedPlaylist(playlistId);
+        });
+    }
+
     @Override
     public Observable<List<SponsorSegment>> getSponsorSegmentsObserve(String videoId) {
         return RxHelper.fromCallable(() -> getSponsorSegments(videoId));
