@@ -3,7 +3,9 @@ package com.liskovsoft.youtubeapi.videocategory
 import com.google.gson.Gson
 import com.liskovsoft.googleapi.youtubedata3.YouTubeDataApi
 import com.liskovsoft.googleapi.youtubedata3.data.SnippetResponse
+import com.liskovsoft.googleapi.youtubedata3.data.SnippetWrapper
 import com.liskovsoft.googleapi.youtubedata3.data.getCategoryId
+import com.liskovsoft.googleapi.youtubedata3.data.getPublishedAt
 import com.liskovsoft.googleapi.youtubedata3.data.getTopics
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper
@@ -13,16 +15,21 @@ import com.liskovsoft.youtubeapi.app.AppService
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.common.helpers.QueryBuilder
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData
+import com.liskovsoft.youtubeapi.videocategory.VideoCategoryResult.PlayerMicroformatRenderer
+import retrofit2.Call
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
- * The categories of videos (e.g. "Music") and, with the user's own Data API key, their topics.<br/>
+ * The categories of videos (e.g. "Music") and, with the user's own Data API key, their topics.
+ * The same sources give the publish dates (e.g. of the shorts, whose cards come without).<br/>
  * With a key, one Data API request covers 50 videos. Without one, or when it fails, it's one WEB player request per video:
- * only the player response carries the category (microformat). It's there even when the video isn't playable
+ * only the player response carries the category and the date (microformat). It's there even when the video isn't playable
  * with this client, so no po token or signature is needed.<br/>
  * The shared Data API key (constants.json) is never used here: every install shares its quota.
  */
@@ -38,6 +45,10 @@ internal object VideoCategoryService {
     private const val QUOTA_TIME_ZONE = "America/Los_Angeles" // the daily quota resets at midnight Pacific Time
     private const val CHECK_VIDEO_ID = "jNQXAC9IVRw"
     private val QUOTA_REASONS = listOf("quotaExceeded", "dailyLimitExceeded")
+    private const val NO_DATE = 0L // the video has no date (e.g. private)
+    private val EMPTY_MICROFORMAT = PlayerMicroformatRenderer(null, null, null)
+    // The offset that ends a date, e.g. "-07:00" ("Z" is UTC)
+    private val DATE_OFFSET = Regex("([+-])(\\d{2}):?(\\d{2})$")
     // The Data API gives the category id, the player its name (in English)
     private val CATEGORY_NAMES = mapOf(
         "1" to "Film & Animation", "2" to "Autos & Vehicles", "10" to "Music", "15" to "Pets & Animals", "17" to "Sports",
@@ -101,6 +112,31 @@ internal object VideoCategoryService {
     }
 
     /**
+     * The Data API with the user's own key, the player for the videos it didn't give
+     * @return video id -> publish time (ms), [NO_DATE] when the video has none. Failed videos are left out.
+     */
+    @JvmStatic
+    fun getPublishedDates(videoIds: List<String>): Map<String, Long> {
+        val ids = videoIds.distinct()
+
+        if (ids.isEmpty()) {
+            return emptyMap()
+        }
+
+        val result = mutableMapOf<String, Long>()
+
+        getDataApiKey()?.let { result.putAll(getDataApiDates(ids, it)) }
+
+        val dataApiCount = result.size
+
+        result.putAll(getPlayerValues(ids.filterNot { result.containsKey(it) }, ::getPublishedDate))
+
+        Log.d(TAG, "Publish dates of %s videos: %s from the Data API, %s from the player", ids.size, dataApiCount, result.size - dataApiCount)
+
+        return result
+    }
+
+    /**
      * One Data API request (1 quota unit)
      * @return why the key doesn't work, empty when it works
      */
@@ -126,35 +162,60 @@ internal object VideoCategoryService {
     }
 
     /**
-     * Up to 50 videos per request, the requests run in parallel.
      * @return the videos found. The ones missing are left to the player lookup.
      */
     private fun getDataApiCategories(videoIds: List<String>, key: String): Map<String, VideoCategory> {
-        val tasks = videoIds.chunked(MAX_DATA_API_IDS).map { ids -> Callable { requestTopics(ids, key) } }
+        val result = mutableMapOf<String, VideoCategory>()
+
+        getDataApiItems(videoIds, key) { requestTopics(it, key) }.forEach { item ->
+            val videoId = item.id ?: return@forEach
+            val categoryId = item.getCategoryId()
+            result[videoId] = VideoCategoryItem(CATEGORY_NAMES[categoryId] ?: categoryId ?: "", item.getTopics())
+        }
+
+        return result
+    }
+
+    /**
+     * @return the videos found. The ones missing are left to the player lookup (e.g. private).
+     */
+    private fun getDataApiDates(videoIds: List<String>, key: String): Map<String, Long> {
+        val result = mutableMapOf<String, Long>()
+
+        getDataApiItems(videoIds, key) { requestDataApi(mYouTubeDataApi.getVideoPublishedDates(it.joinToString(","), key)) }.forEach { item ->
+            val videoId = item.id ?: return@forEach
+            parseDateMs(item.getPublishedAt())?.let { result[videoId] = it }
+        }
+
+        return result
+    }
+
+    /**
+     * Up to 50 videos per request, the requests run in parallel. A key error pauses the key (see [onKeyError]).
+     * @return the items of the requests that worked
+     */
+    private fun getDataApiItems(videoIds: List<String>, key: String, request: (List<String>) -> DataApiResult): List<SnippetWrapper> {
+        val tasks = videoIds.chunked(MAX_DATA_API_IDS).map { ids -> Callable { request(ids) } }
 
         // The unfinished ones are cancelled on timeout
         val futures = mExecutor.invokeAll(tasks, DATA_API_TIMEOUT_MS, TimeUnit.MILLISECONDS)
 
-        val result = mutableMapOf<String, VideoCategory>()
+        val result = mutableListOf<SnippetWrapper>()
 
         for (future in futures) {
             if (future.isCancelled) {
                 continue
             }
 
-            val topicsResult = runCatching { future.get() }.getOrNull() ?: continue
-            val error = topicsResult.error
+            val dataApiResult = runCatching { future.get() }.getOrNull() ?: continue
+            val error = dataApiResult.error
 
             if (error != null) {
                 onKeyError(key, error)
                 continue
             }
 
-            topicsResult.response?.items?.forEach { item ->
-                val videoId = item?.id ?: return@forEach
-                val categoryId = item.getCategoryId()
-                result[videoId] = VideoCategoryItem(CATEGORY_NAMES[categoryId] ?: categoryId ?: "", item.getTopics())
-            }
+            dataApiResult.response?.items?.forEach { item -> item?.let { result.add(it) } }
         }
 
         return result
@@ -183,63 +244,86 @@ internal object VideoCategoryService {
         return calendar.timeInMillis
     }
 
-    private fun requestTopics(videoIds: List<String>, key: String): TopicsResult {
-        val wrapper = mYouTubeDataApi.getVideoTopics(videoIds.joinToString(","), key)
+    private fun requestTopics(videoIds: List<String>, key: String): DataApiResult {
+        return requestDataApi(mYouTubeDataApi.getVideoTopics(videoIds.joinToString(","), key))
+    }
 
+    private fun requestDataApi(wrapper: Call<SnippetResponse?>): DataApiResult {
         val response = try {
             RetrofitHelper.getResponse(wrapper)
         } catch (e: IllegalStateException) { // network error
-            return TopicsResult(null, DataApiError(0, null, (e.cause ?: e).toString()))
+            return DataApiResult(null, DataApiError(0, null, (e.cause ?: e).toString()))
         }
 
         if (response == null) {
-            return TopicsResult(null, DataApiError(0, null, "No response"))
+            return DataApiResult(null, DataApiError(0, null, "No response"))
         }
 
         if (!response.isSuccessful) {
             val body = runCatching { response.errorBody()?.string() }.getOrNull()
             val error = runCatching { Gson().fromJson(body, ErrorResponse::class.java)?.error }.getOrNull()
 
-            return TopicsResult(null, DataApiError(response.code(), error?.errors?.firstOrNull()?.reason,
+            return DataApiResult(null, DataApiError(response.code(), error?.errors?.firstOrNull()?.reason,
                 error?.message ?: "HTTP ${response.code()}"))
         }
 
-        return TopicsResult(response.body(), null)
+        return DataApiResult(response.body(), null)
+    }
+
+    /**
+     * @return video id -> category (empty when the video has none). Failed videos are left out.
+     */
+    private fun getPlayerCategories(videoIds: List<String>): Map<String, VideoCategory> {
+        return getPlayerValues(videoIds, ::getCategory).mapValues { VideoCategoryItem(it.value, null) }
     }
 
     /**
      * One request per video, a few at a time.
-     * @return video id -> category (empty when the video has none). Failed videos are left out.
+     * @return video id -> what the lookup found. Failed videos are left out.
      */
-    private fun getPlayerCategories(videoIds: List<String>): Map<String, VideoCategory> {
+    private fun <T> getPlayerValues(videoIds: List<String>, lookup: (String) -> T?): Map<String, T> {
         if (videoIds.isEmpty()) {
             return emptyMap()
         }
 
-        val tasks = videoIds.map { videoId -> Callable { videoId to getCategory(videoId) } }
+        val tasks = videoIds.map { videoId -> Callable { videoId to lookup(videoId) } }
 
         // The unfinished ones are cancelled on timeout
         val futures = mExecutor.invokeAll(tasks, TIMEOUT_MS, TimeUnit.MILLISECONDS)
 
-        val result = mutableMapOf<String, VideoCategory>()
+        val result = mutableMapOf<String, T>()
 
         for (future in futures) {
             if (future.isCancelled) {
                 continue
             }
 
-            val (videoId, category) = runCatching { future.get() }.getOrNull() ?: continue
-            category?.let { result[videoId] = VideoCategoryItem(it, null) }
+            val (videoId, value) = runCatching { future.get() }.getOrNull() ?: continue
+            value?.let { result[videoId] = it }
         }
 
         return result
     }
 
     /**
-     * Retries a failed request [MAX_RETRIES] times.
      * @return the category, empty when the video has none or null when every request failed
      */
     private fun getCategory(videoId: String): String? {
+        return getMicroformat(videoId)?.let { it.category ?: "" }
+    }
+
+    /**
+     * @return the publish time (ms), [NO_DATE] when the video has none (e.g. private) or null when every request failed
+     */
+    private fun getPublishedDate(videoId: String): Long? {
+        return getMicroformat(videoId)?.let { parseDateMs(it.publishDate ?: it.uploadDate) ?: NO_DATE }
+    }
+
+    /**
+     * Retries a failed request [MAX_RETRIES] times.
+     * @return the microformat, empty when the response has none or null when every request failed
+     */
+    private fun getMicroformat(videoId: String): PlayerMicroformatRenderer? {
         for (attempt in 0..MAX_RETRIES) {
             if (Thread.currentThread().isInterrupted) {
                 return null // the batch timed out or was dropped
@@ -248,11 +332,34 @@ internal object VideoCategoryService {
             val result = requestCategory(videoId)
 
             if (result != null) {
-                return result.microformat?.playerMicroformatRenderer?.category ?: ""
+                return result.microformat?.playerMicroformatRenderer ?: EMPTY_MICROFORMAT
             }
         }
 
         return null
+    }
+
+    /**
+     * @param date e.g. "2026-09-27T09:00:14-07:00" (the player), "2026-09-27T16:00:14Z" (the Data API) or "2026-09-27"
+     * @return the time (ms) or null when it can't be read
+     */
+    @JvmStatic
+    internal fun parseDateMs(date: String?): Long? {
+        if (date == null) {
+            return null
+        }
+
+        val hasTime = date.contains('T')
+        // The "X" pattern of the offset isn't there before Android 7
+        val format = SimpleDateFormat(if (hasTime) "yyyy-MM-dd'T'HH:mm:ss" else "yyyy-MM-dd", Locale.US)
+        format.timeZone = TimeZone.getTimeZone("UTC")
+
+        val timeMs = runCatching { format.parse(date)?.time }.getOrNull() ?: return null
+        val offset = (if (hasTime) DATE_OFFSET.find(date.substringAfter('T')) else null) ?: return timeMs
+        val (sign, hours, minutes) = offset.destructured
+        val offsetMs = (hours.toLong() * 60 + minutes.toLong()) * 60 * 1_000
+
+        return if (sign == "+") timeMs - offsetMs else timeMs + offsetMs
     }
 
     private fun requestCategory(videoId: String): VideoCategoryResult? {
@@ -276,7 +383,7 @@ internal object VideoCategoryService {
         return if (response?.isSuccessful == true) response.body() else null
     }
 
-    private class TopicsResult(val response: SnippetResponse?, val error: DataApiError?)
+    private class DataApiResult(val response: SnippetResponse?, val error: DataApiError?)
 
     private class DataApiError(val code: Int, val reason: String?, val message: String)
 

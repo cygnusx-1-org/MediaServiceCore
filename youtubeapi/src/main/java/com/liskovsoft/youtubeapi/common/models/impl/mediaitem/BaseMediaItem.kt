@@ -31,6 +31,7 @@ open class BaseMediaItem : MediaItem {
         get() = field ?: playlistParamsItem
     private var _isShortsItem: Boolean? = null
         get() = field ?: isShortsItem
+    private var isSecondTitleSet = false
 
     private val _id by lazy { hashCode() }
     // TODO: time conversion doesn't take into account locale specific delimiters
@@ -59,6 +60,7 @@ open class BaseMediaItem : MediaItem {
     protected open val isLiveItem: Boolean? = null
     protected open val isUpcomingItem: Boolean? = null
     protected open val isShortsItem: Boolean? = null
+    protected open val isDateMissingItem: Boolean? = null
     protected open val isMovieItem: Boolean? = null
     protected open val isShowItem: Boolean? = null
     protected open val feedbackTokenItem: String? = null
@@ -114,6 +116,7 @@ open class BaseMediaItem : MediaItem {
 
     fun setSecondTitle(details: CharSequence?) {
         _secondTitleItem = details
+        isSecondTitleSet = true
     }
 
     override fun getVideoId(): String? {
@@ -194,6 +197,11 @@ open class BaseMediaItem : MediaItem {
 
     fun setShorts(isShorts: Boolean) {
         _isShortsItem = isShorts
+    }
+
+    override fun isDateMissing(): Boolean {
+        // A second title given afterwards (e.g. the metadata of the video, see sync) has the date
+        return isShorts() && !isLive() && !isUpcoming() && isDateMissingItem == true && !isSecondTitleSet
     }
 
     override fun isMovie(): Boolean {

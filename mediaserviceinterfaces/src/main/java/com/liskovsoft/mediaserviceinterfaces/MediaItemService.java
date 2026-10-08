@@ -115,6 +115,11 @@ public interface MediaItemService {
      */
     Observable<Map<String, VideoCategory>> getVideoTopicsObserve(List<String> videoIds);
     /**
+     * Video id -> the time the video was published (ms), 0 when it has none (e.g. private).<br/>
+     * From the user's Data API key, or the player without one. Videos whose lookup failed are left out.
+     */
+    Observable<Map<String, Long>> getPublishedDatesObserve(List<String> videoIds);
+    /**
      * Tries the user's Data API key with one request.
      * @return why the key doesn't work, empty when it works
      */

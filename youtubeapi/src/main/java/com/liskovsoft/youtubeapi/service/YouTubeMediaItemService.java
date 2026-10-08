@@ -576,6 +576,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
+    public Observable<Map<String, Long>> getPublishedDatesObserve(List<String> videoIds) {
+        return RxHelper.fromCallable(() -> VideoCategoryService.getPublishedDates(videoIds));
+    }
+
+    @Override
     public Observable<String> checkDataApiKeyObserve(String key) {
         return RxHelper.fromCallable(() -> VideoCategoryService.checkKey(key));
     }

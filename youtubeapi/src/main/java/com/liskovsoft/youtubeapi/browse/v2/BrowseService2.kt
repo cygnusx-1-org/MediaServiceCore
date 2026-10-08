@@ -16,6 +16,8 @@ import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
 
 private const val PLAYLIST_MAX_PAGES = 500 // 15 videos a page on TV. A playlist holds 5000 at most.
+private const val CHANNEL_ID_PREFIX = "UC"
+private const val SHORTS_PLAYLIST_PREFIX = "UUSH" // the uploads playlist of a channel is "UU", its shorts "UUSH"
 
 internal open class BrowseService2 {
     private val mBrowseApi = RetrofitHelper.create(BrowseApi::class.java)
@@ -66,11 +68,31 @@ internal open class BrowseService2 {
         return myVideos?.mediaItems?.firstNotNullOfOrNull { it?.channelId }?.let { getChannelShortsTV(it) }
     }
 
+    /**
+     * The Shorts tab gives the row its name. Its shorts have neither the views nor the date: the ones of the channel's
+     * playlist of shorts (UUSH) are shown instead, when it can be read.
+     */
     private fun getChannelShortsTV(channelId: String): MediaGroup? {
         val options = MediaGroupOptions.create(MediaGroup.TYPE_MY_VIDEOS)
         val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelShortsQuery(options.clientTV, channelId))
+        val shelf = RetrofitHelper.get(browseResult)?.getShelves()?.firstOrNull { it?.containsShorts() == true }
+            ?.let { ShelfSectionMediaGroup(it, options) } ?: return null
 
-        return RetrofitHelper.get(browseResult)?.getShelves()?.firstOrNull { it?.containsShorts() == true }?.let { ShelfSectionMediaGroup(it, options) }
+        return getShortsPlaylistTV(channelId, options)?.apply { title = shelf.title } ?: shelf
+    }
+
+    /**
+     * The shorts of the channel, newest first, as a playlist: "UUSH" + the channel id without "UC"
+     */
+    private fun getShortsPlaylistTV(channelId: String, options: MediaGroupOptions): BrowseMediaGroupTV? {
+        if (!channelId.startsWith(CHANNEL_ID_PREFIX)) {
+            return null
+        }
+
+        val playlistId = "VL" + SHORTS_PLAYLIST_PREFIX + channelId.removePrefix(CHANNEL_ID_PREFIX)
+        val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelQuery(options.clientTV, playlistId))
+
+        return RetrofitHelper.get(browseResult)?.let { BrowseMediaGroupTV(it, options) }?.takeIf { !it.isEmpty }
     }
 
     fun getMovies(): Pair<List<MediaGroup?>?, String?>? {

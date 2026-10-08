@@ -1,0 +1,462 @@
+[
+  {
+    "tileRenderer": {
+      "style": "TILE_STYLE_YTLR_SHORTS",
+      "header": {
+        "tileHeaderRenderer": {
+          "thumbnail": {
+            "thumbnails": [
+              {
+                "url": "https://i.ytimg.com/vi/eZ2IK5R2WPw/oardefault.jpg?sqp=-oaymwEWCMoBEOgCSFCQAgHyq4qpAwUVAACIQg==&rs=AOn4CLBLfWuEnB1OB7VGt5e7uZSJr7qQhQ&usqp=CCk",
+                "width": 202,
+                "height": 360
+              },
+              {
+                "url": "https://i.ytimg.com/vi/eZ2IK5R2WPw/oardefault.jpg?sqp=-oaymwEZCMoBEK8CSFCQAgHyq4qpAwgVAACIQsgBAQ==&rs=AOn4CLDPIDZ6JM-UZj8YbTK-V_pS1JffJA&usqp=CCk",
+                "width": 202,
+                "height": 303
+              },
+              {
+                "url": "https://i.ytimg.com/vi/eZ2IK5R2WPw/oardefault.jpg?sqp=-oaymwEWCJUDENAFSFCQAgHyq4qpAwUVAACIQg==&rs=AOn4CLDvNvgax1bL_0XPkgXurWlGcI0FCg&usqp=CCk",
+                "width": 405,
+                "height": 720
+              },
+              {
+                "url": "https://i.ytimg.com/vi/eZ2IK5R2WPw/oardefault.jpg?sqp=-oaymwEZCJUDEOAESFCQAgHyq4qpAwgVAACIQsgBAQ==&rs=AOn4CLAhZnEydOlEC1_VC7ne7bEYMEs-4A&usqp=CCk",
+                "width": 405,
+                "height": 608
+              }
+            ],
+            "isOriginalAspectRatio": true
+          },
+          "thumbnailOverlays": [
+            {
+              "tileMetadataRenderer": {
+                "title": {
+                  "simpleText": "Дурачусь #blonde #blondie #girlfriend"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "onSelectCommand": {
+        "clickTrackingParams": "CMoXEIf2BBgAIhMIoc2rnpfokgMV9SBzCR02UBB5Wg9GRXN1YnNjcmlwdGlvbnOaAQYIJBDw8AXKAQTAKBMF",
+        "reelWatchEndpoint": {
+          "videoId": "eZ2IK5R2WPw",
+          "thumbnail": {
+            "thumbnails": [
+              {
+                "url": "https://i.ytimg.com/vi/eZ2IK5R2WPw/frame0.jpg?usqp=CCk",
+                "width": 1080,
+                "height": 1920
+              }
+            ],
+            "isOriginalAspectRatio": true,
+            "darkColorPalette": {
+              "section1Color": 3747135,
+              "section2Color": 3023923,
+              "section3Color": 2235174,
+              "primaryTitleColor": 16180735,
+              "secondaryTitleColor": 12493772,
+              "iconActivatedColor": 16180735,
+              "iconInactiveColor": 9074323
+            }
+          },
+          "params": "CAcwAroBGFVDZU5UOUVNNVd1MTZ4YmVlbUg4U3ptZw%3D%3D",
+          "sequenceProvider": "REEL_WATCH_SEQUENCE_PROVIDER_RPC",
+          "watchEndpointSource": "REEL_WATCH_ENDPOINT_SOURCE_SUBSCRIPTIONS",
+          "videoType": "REEL_VIDEO_TYPE_VIDEO"
+        }
+      },
+      "contentId": "eZ2IK5R2WPw",
+      "contentType": "TILE_CONTENT_TYPE_SHORTS",
+      "onLongPressCommand": {
+        "clickTrackingParams": "CMoXEIf2BBgAIhMIoc2rnpfokgMV9SBzCR02UBB5ygEEwCgTBQ==",
+        "showMenuCommand": {
+          "contentId": "eZ2IK5R2WPw",
+          "title": {
+            "simpleText": "Дурачусь #blonde #blondie #girlfriend"
+          },
+          "subtitle": {
+            "simpleText": "Gilticus • @Gilticus"
+          }
+        }
+      }
+    }
+  },
+  {
+    "tileRenderer": {
+      "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+      "header": {
+        "tileHeaderRenderer": {
+          "thumbnail": {
+            "thumbnails": [
+              {
+                "url": "https://i.ytimg.com/vi/CEJXqm2eiJ0/sddefault.jpg?sqp=-oaymwEoCIAFEOAD8quKqQMcGADwAQH4AbYIgAKAD4oCDAgAEAEYfyBNKCEwDw==&rs=AOn4CLDG0ialK8lBapl70_2oxLXWmCjM0g",
+                "width": 640,
+                "height": 480
+              }
+            ]
+          },
+          "thumbnailOverlays": [
+            {
+              "thumbnailOverlayTimeStatusRenderer": {
+                "text": {
+                  "accessibility": {
+                    "accessibilityData": {
+                      "label": "Shorts"
+                    }
+                  }
+                },
+                "style": "SHORTS",
+                "icon": {
+                  "iconType": "YOUTUBE_SHORTS_FILL_NO_TRIANGLE_WHITE_16"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "tileMetadataRenderer": {
+          "title": {
+            "simpleText": "What’s Inside My Briefcase?"
+          },
+          "lines": [
+            {
+              "lineRenderer": {
+                "items": [
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "runs": [
+                          {
+                            "text": "MrBeast"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "lineRenderer": {
+                "items": [
+                  {
+                    "lineItemRenderer": {
+                      "badge": {
+                        "metadataBadgeRenderer": {
+                          "style": "BADGE_STYLE_TYPE_SIMPLE",
+                          "label": "4K",
+                          "trackingParams": "CFgQnaQHGAAiEwiR4s_r26mXAxULWUwIHWPGLRo="
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "accessibility": {
+                          "accessibilityData": {
+                            "label": "47 million views"
+                          }
+                        },
+                        "simpleText": "47M views"
+                      }
+                    }
+                  },
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "simpleText": "•"
+                      }
+                    }
+                  },
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "simpleText": "10 days ago"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "onSelectCommand": {
+        "clickTrackingParams": "CFgQnaQHGAAiEwiR4s_r26mXAxULWUwIHWPGLRpaHFZMVVVTSFg2T1EzRGtjc2JZTkU2SDh1UVF1VkGaAQcIDBD6LBgBygEEiNESPQ==",
+        "reelWatchEndpoint": {
+          "videoId": "CEJXqm2eiJ0",
+          "playlistId": "UUSHX6OQ3DkcsbYNE6H8uQQuVA",
+          "thumbnail": {
+            "thumbnails": [
+              {
+                "url": "https://i.ytimg.com/vi/CEJXqm2eiJ0/frame0.jpg",
+                "width": 1080,
+                "height": 1920
+              }
+            ],
+            "isOriginalAspectRatio": true,
+            "darkColorPalette": {
+              "section1Color": 4138512,
+              "section2Color": 3350029,
+              "section3Color": 2496266,
+              "primaryTitleColor": 16773605,
+              "secondaryTitleColor": 13416099,
+              "iconActivatedColor": 16773605,
+              "iconInactiveColor": 9667702
+            }
+          },
+          "params": "CCcwAroBGFVDWDZPUTNEa2NzYllORTZIOHVRUXVWQQ%3D%3D",
+          "sequenceProvider": "REEL_WATCH_SEQUENCE_PROVIDER_RPC",
+          "watchEndpointSource": "REEL_WATCH_ENDPOINT_SOURCE_PLAYLIST",
+          "videoType": "REEL_VIDEO_TYPE_VIDEO"
+        }
+      },
+      "contentId": "CEJXqm2eiJ0",
+      "contentType": "TILE_CONTENT_TYPE_VIDEO",
+      "customData": {
+        "playlistPageTileData": {
+          "setThumbnailAsAppBackground": true
+        }
+      },
+      "onLongPressCommand": {
+        "clickTrackingParams": "CFgQnaQHGAAiEwiR4s_r26mXAxULWUwIHWPGLRrKAQSI0RI9",
+        "showMenuCommand": {
+          "contentId": "CEJXqm2eiJ0",
+          "title": {
+            "simpleText": "What’s Inside My Briefcase?"
+          },
+          "subtitle": {
+            "simpleText": "MrBeast • @MrBeast"
+          }
+        }
+      }
+    }
+  },
+  {
+    "tileRenderer": {
+      "style": "TILE_STYLE_YTLR_DEFAULT",
+      "header": {
+        "tileHeaderRenderer": {
+          "thumbnail": {
+            "thumbnails": [
+              {
+                "url": "https://i.ytimg.com/vi/K3nvny5x47w/hq720.jpg?sqp=-oaymwEVCIAFEOgCSFDyq4qpAwcVAACIQhgB&rs=AOn4CLDR1Iobe_K_p-FjFHyNBnm5MyGDMQ",
+                "width": 640,
+                "height": 360
+              }
+            ]
+          },
+          "thumbnailOverlays": [
+            {
+              "thumbnailOverlayTimeStatusRenderer": {
+                "text": {
+                  "accessibility": {
+                    "accessibilityData": {
+                      "label": "34 minutes, 12 seconds"
+                    }
+                  },
+                  "simpleText": "34:12"
+                },
+                "style": "DEFAULT"
+              }
+            }
+          ]
+        }
+      },
+      "metadata": {
+        "tileMetadataRenderer": {
+          "title": {
+            "simpleText": "Играем на Tesla | Лучшая 16 ГБ карта для нейросетей за 30 тысяч | Nvidia V100 vs RX 6800"
+          },
+          "lines": [
+            {
+              "lineRenderer": {
+                "items": [
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "runs": [
+                          {
+                            "text": "Мой Компьютер"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "lineRenderer": {
+                "items": [
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "accessibility": {
+                          "accessibilityData": {
+                            "label": "358 thousand views"
+                          }
+                        },
+                        "simpleText": "358K views"
+                      }
+                    }
+                  },
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "simpleText": "•"
+                      }
+                    }
+                  },
+                  {
+                    "lineItemRenderer": {
+                      "text": {
+                        "simpleText": "3 months ago"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "onSelectCommand": {
+        "clickTrackingParams": "CLYBEJQ1GAEiEwjA-IDZtuOOAxWpnwoJHYL4G0YyC2ctdG9waWMtcmVjWg9GRXdoYXRfdG9fd2F0Y2iaAQYQjh4YngE=",
+        "watchEndpoint": {
+          "videoId": "K3nvny5x47w",
+          "params": "6gILWXFnOV9OYWpsYzjqAgtSV1IyWVRSZ213VeoCC3hfeWVPekl0U2w06gILMXdIa0tLd1ZsWlnqAgs5Y2U2U3ZlX1FrMOoCC2hkS2tCaWFQRUxv6gILcU1UeHFjNzVDa2_qAgtrT1BkbnpmS2haa-oCC25TdjdxXzNHY2ZN6gILdHZHN2hEN3NIVDDqAgtFaU9WT25NWTVqSeoCC3NGaHlxR20yaHZR6gILeGhsTEp2dzczREHqAgtVU1c4eWY0TC1SNOoCC3ZiZWFlTGQ1d2NB6gILVVpja0Q0YXY1VWPqAgt1Ykh2cE1Uakg5OOoCC3BhbnYxeTc4dXNj6gILb1NqN1p0NXI1S0nqAgtMZUNGZXZ4N2lYNOoCC3YzWDg2LURzelhz6gILbWNnNUlEbWxXTlXqAgtqODAzb0Z2a3BTVeoCC3FtZVRRc0JxUHR36gILOGhnZzRZRWRQYWvqAgtmX2dwWi0wVzQ0ReoCC2c5LUFhN0NmSXhB6gILUW1tWE9lMkJlY2PqAgthUGRFenlmOEtrMPoCC1JlY29tbWVuZGVkugMKCM-rjrXNv4_UYroDCgiFtoKjk8ydskW6AwsI3pS1kbPHp_7HAboDCwiWq9bgioX5gNcBugMLCM2E_b2vye7j9QG6AwsIuqG8tOKAqemFAboDCwjKlOT3nLW84qgBugMLCJmLqr7zs_fxkAG6AwsI8-OZ7r_1_pWdAboDCwi9urD3w_Du-LYBugMKCLLM45inp-WREroDCwj0jdrNhtWcrLABugMLCLC47-Hv5NKMxgG6AwoInvKv8J-Z75JRugMLCMCD57uLz-bbvQG6AwoIx8q_tfiByctRugMLCN-_jKfM9PvYuQG6AwsIx_Xy9_L6-9SlAboDCwiiya_z7ey-lKEBugMKCP6S7uOvr6HwLboDCwj7mrOHvp3_ur8BugMLCNWxlc2DpI7kmQG6AwsIpcqS34X0zeaPAboDCwjc_aiDrOjks6oBugMLCKn79IiYnIiM8gG6AwoIgcfb6P6sivx_ugMLCJDG_IS7jeDvgwG6AwoIx_OF7J7n5bRCugMKCM3U8L_ymdH7aA%3D%3D",
+          "ustreamerConfig": "GgIIBQ==",
+          "watchEndpointSupportedOnesieConfig": {
+            "html5PlaybackOnesieConfig": {
+              "commonConfig": {
+                "url": "https://rr4---sn-4gxb5u-qo3z.googlevideo.com/initplayback?source=youtube&oeis=1&c=TVHTML5&oad=3200&ovd=3200&oaad=3200&oavd=3200&ocs=700&oewis=1&oputc=1&ofpcc=1&siu=1&msp=1&odepv=1&onvi=1&id=2b79ef9f2e71e3bc&ip=46.98.177.170&initcwndbps=2020000&mt=1753838476"
+              }
+            }
+          }
+        }
+      },
+      "onFocusCommand": {
+        "startInlinePlaybackCommand": {
+          "caption": false,
+          "muted": false,
+          "delayMs": 3000,
+          "playbackEndpoint": {
+            "clickTrackingParams": "CLYBEJQ1GAEiEwjA-IDZtuOOAxWpnwoJHYL4G0YyC2ctdG9waWMtcmVjWg9GRXdoYXRfdG9fd2F0Y2iaAQYQjh4YngE=",
+            "watchEndpoint": {
+              "videoId": "K3nvny5x47w",
+              "endTimeSeconds": 40,
+              "playerParams": "YAE%3D",
+              "ustreamerConfig": "GgIIBQ==",
+              "watchEndpointSupportedOnesieConfig": {
+                "html5PlaybackOnesieConfig": {
+                  "commonConfig": {
+                    "url": "https://rr4---sn-4gxb5u-qo3z.googlevideo.com/initplayback?source=youtube&oeis=1&c=TVHTML5&oad=3200&ovd=3200&oaad=3200&oavd=3200&ocs=700&oewis=1&oputc=1&ofpcc=1&siu=1&msp=1&odepv=1&onvi=1&id=2b79ef9f2e71e3bc&ip=46.98.177.170&initcwndbps=2020000&mt=1753838476"
+                  }
+                }
+              }
+            }
+          },
+          "blockAdoption": true,
+          "resumeVideo": true,
+          "restartPlaybackBeforeSeconds": 10
+        }
+      },
+      "contentId": "K3nvny5x47w",
+      "contentType": "TILE_CONTENT_TYPE_VIDEO",
+      "onLongPressCommand": {
+        "clickTrackingParams": "CLYBEJQ1GAEiEwjA-IDZtuOOAxWpnwoJHYL4G0Y=",
+        "showMenuCommand": {
+          "contentId": "K3nvny5x47w",
+          "title": {
+            "simpleText": "Играем на Tesla | Лучшая 16 ГБ карта для нейросетей за 30 тысяч | Nvidia V100 vs RX 6800"
+          },
+          "subtitle": {
+            "simpleText": "Мой Компьютер • @mka"
+          }
+        }
+      }
+    }
+  },
+  {
+    "reelItemRenderer": {
+      "videoId": "9SHkPWqNEDc",
+      "headline": {
+        "simpleText": "Проблема Hogwarts Legacy"
+      },
+      "thumbnail": {
+        "thumbnails": [
+          {
+            "url": "https://i.ytimg.com/vi/9SHkPWqNEDc/hq720_2.jpg?sqp=-oaymwEdCJUDENAFSFXyq4qpAw8IARUAAIhCcAHAAQbQAQE=&rs=AOn4CLBvrQOTaIqmme5kRjfP-i9paZoaPw",
+            "width": 405,
+            "height": 720
+          }
+        ],
+        "isOriginalAspectRatio": true
+      },
+      "viewCountText": {
+        "accessibility": {
+          "accessibilityData": {
+            "label": "351 тысяча просмотров"
+          }
+        },
+        "simpleText": "351 тыс. просмотров"
+      },
+      "navigationEndpoint": {
+        "clickTrackingParams": "CO8BEIf2BBgAIhMIt4Cc5bms_QIV04P0Bx0j_wfQ",
+        "commandMetadata": {
+          "webCommandMetadata": {
+            "url": "/shorts/9SHkPWqNEDc",
+            "webPageType": "WEB_PAGE_TYPE_SHORTS",
+            "rootVe": 37414
+          }
+        },
+        "reelWatchEndpoint": {
+          "videoId": "9SHkPWqNEDc",
+          "playerParams": "8AEByAMkuAQR",
+          "thumbnail": {
+            "thumbnails": [
+              {
+                "url": "https://i.ytimg.com/vi/9SHkPWqNEDc/frame0.jpg",
+                "width": 720,
+                "height": 1280
+              }
+            ],
+            "isOriginalAspectRatio": true
+          },
+          "overlay": {
+            "reelPlayerOverlayRenderer": {
+              "style": "REEL_PLAYER_OVERLAY_STYLE_SHORTS",
+              "trackingParams": "CPEBELC1BCITCLeAnOW5rP0CFdOD9AcdI_8H0A==",
+              "reelPlayerNavigationModel": "REEL_PLAYER_NAVIGATION_MODEL_UNSPECIFIED"
+            }
+          },
+          "params": "CBEwAg%3D%3D",
+          "sequenceProvider": "REEL_WATCH_SEQUENCE_PROVIDER_RPC",
+          "sequenceParams": "GhMKCzlTSGtQV3FORURjGAAgASgBKjEKDQoLOVNIa1BXcU5FRGMKDQoLMWtHdmttSnlpcVkKDQoLLTlSMHdfZ2J6bEEQABgROhhVQzRlX1hQQmlpSU80Zm80X0N1Y3hRZWdoAA%3D%3D",
+          "loggingContext": {
+            "vssLoggingContext": {
+              "serializedContextData": "CgIIDA%3D%3D"
+            },
+            "qoeLoggingContext": {
+              "serializedContextData": "CgIIDA%3D%3D"
+            }
+          }
+        }
+      },
+      "accessibility": {
+        "accessibilityData": {
+          "label": "Воспроизвести видео – \"Проблема Hogwarts Legacy\". Его продолжительность – 44 секунды."
+        }
+      },
+      "style": "REEL_ITEM_STYLE_AVATAR_CIRCLE",
+      "videoType": "REEL_VIDEO_TYPE_VIDEO"
+    }
+  }
+]

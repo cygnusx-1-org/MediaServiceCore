@@ -384,6 +384,12 @@ internal fun ItemWrapper.isUpcoming() = getVideoItem()?.isUpcoming() ?: getMusic
 internal fun ItemWrapper.isMovie() = getVideoItem()?.isMovie() ?: getTileItem()?.isMovie() ?: false
 internal fun ItemWrapper.isShow() = getTileItem()?.isShow() ?: getLockupItem()?.isShow() ?: false
 internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts() ?: false
+/**
+ * No date comes with the item: a shelf of shorts gives the channel (TV tile without lines) or the views (web lockup) only.
+ * A short of a playlist has the views and the date in its lines (TV) or its video info (web).
+ */
+internal fun ItemWrapper.isDateMissing() = shortsLockupViewModel != null || getVideoItem()?.let { it.getPublishedTimeText() == null && it.videoInfo == null }
+    ?: getTileItem()?.let { it.metadata?.tileMetadataRenderer?.lines.isNullOrEmpty() } ?: false
 internal fun ItemWrapper.getDescriptionText() = getTileItem()?.getRichTextTileText()
 internal fun ItemWrapper.getContinuationToken() = getTileItem()?.getContinuationToken() ?: getContinuationItem()?.getContinuationToken()
 internal fun ItemWrapper.getFeedbackToken() = getFeedbackTokens()?.getOrNull(0)

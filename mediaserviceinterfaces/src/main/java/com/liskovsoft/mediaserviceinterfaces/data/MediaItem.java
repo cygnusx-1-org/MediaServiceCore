@@ -15,6 +15,10 @@ public interface MediaItem {
     boolean isLive();
     boolean isUpcoming();
     boolean isShorts();
+    /**
+     * A short that comes without its date: the second title has the channel or the views only (e.g. a shelf of shorts)
+     */
+    boolean isDateMissing();
     int getPercentWatched();
     int getStartTimeSeconds();
     String getAuthor();

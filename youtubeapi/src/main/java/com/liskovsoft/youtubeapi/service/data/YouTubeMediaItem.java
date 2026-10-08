@@ -400,6 +400,11 @@ public class YouTubeMediaItem implements MediaItem {
     }
 
     @Override
+    public boolean isDateMissing() {
+        return false;
+    }
+
+    @Override
     public boolean isMovie() {
         return mIsMovie;
     }

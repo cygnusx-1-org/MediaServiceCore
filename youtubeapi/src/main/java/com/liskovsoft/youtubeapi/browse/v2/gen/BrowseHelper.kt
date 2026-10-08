@@ -221,8 +221,9 @@ private fun ReelResult.getWatchEndpoint(): ReelWatchEndpoint? = replacementEndpo
 private fun ReelResult.getPlayerHeader(): ReelPlayerHeaderRenderer? = overlay?.reelPlayerOverlayRenderer?.reelPlayerHeaderSupportedRenderers?.reelPlayerHeaderRenderer
 internal fun ReelResult.getVideoId(): String? = getWatchEndpoint()?.videoId
 internal fun ReelResult.getTitle(): String? = getPlayerHeader()?.reelTitleOnClickCommand?.getTitle() ?: getVideoInfo()?.getTitle()
+// The relative upload time (e.g. "6 hours ago") rather than the day alone (e.g. "Apr 27, 2023")
 internal fun ReelResult.getSubtitle(): CharSequence? = getPlayerHeader()?.reelTitleOnClickCommand?.getSubtitle() ?:
-    YouTubeHelper.createInfo(getVideoInfo()?.getChannelName(), getVideoInfo()?.getViews(), getVideoInfo()?.getPublishDate())
+    YouTubeHelper.createInfo(getVideoInfo()?.getChannelName(), getVideoInfo()?.getViews(), getUploadDate() ?: getVideoInfo()?.getPublishDate())
 private fun ReelResult.getVideoInfo(): EngagementPanel? = engagementPanels?.firstNotNullOfOrNull { if (it?.getTitle() != null) it else null }
 private fun ReelResult.getChannelName(): String? = getPlayerHeader()?.channelTitleText?.getText()
 private fun ReelResult.getUploadDate(): String? = getPlayerHeader()?.timestampText?.getText()
