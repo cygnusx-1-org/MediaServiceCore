@@ -64,7 +64,14 @@ internal data class ItemGroupImpl(
         }
     }
 
-    override fun contains(channelOrVideoId: String): Boolean {
+    /**
+     * Null (e.g. the playlists of no video in particular, see getPlaylistsInfo) is in none: an item without a channel or a video isn't a match
+     */
+    override fun contains(channelOrVideoId: String?): Boolean {
+        if (channelOrVideoId == null) {
+            return false
+        }
+
         return Helpers.containsIf(items) { mediaItem -> mediaItem.channelId == channelOrVideoId || mediaItem.videoId == channelOrVideoId }
     }
 

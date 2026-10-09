@@ -4,7 +4,7 @@ import com.liskovsoft.sharedutils.helpers.Helpers
 import com.liskovsoft.youtubeapi.service.internal.MediaServicePrefs
 
 internal object SearchTagStorage: MediaServicePrefs.ProfileChangeListener {
-    private const val SEARCH_TAG_DATA = "search_tag_data"
+    const val SEARCH_TAG_DATA = "search_tag_data"
     private val _tags: MutableList<String> = Helpers.createSafeLRUList(50)
 
     @JvmStatic

@@ -102,6 +102,19 @@ public class GoogleAccount implements Account {
         return getName() == null && getEmail() == null;
     }
 
+    /**
+     * None: the settings are of the YouTube accounts (see YouTubeAccount)
+     */
+    @Override
+    public String getProfileName() {
+        return null;
+    }
+
+    @Override
+    public String getSharedProfileName() {
+        return null;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof GoogleAccount) {

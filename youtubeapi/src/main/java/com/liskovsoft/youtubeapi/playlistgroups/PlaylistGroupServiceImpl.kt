@@ -10,7 +10,7 @@ import com.liskovsoft.youtubeapi.service.internal.MediaServicePrefs
 import io.reactivex.disposables.Disposable
 
 internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListener {
-    private const val PLAYLIST_GROUP_DATA = "playlist_group_data"
+    const val PLAYLIST_GROUP_DATA = "playlist_group_data"
     private const val PERSIST_DELAY_MS: Long = 5_000
     private lateinit var mPlaylists: MutableList<ItemGroup>
     private var mPersistAction: Disposable? = null

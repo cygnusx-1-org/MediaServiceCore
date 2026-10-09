@@ -23,7 +23,7 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
     private const val SUBSCRIPTIONS_GROUP_NAME: String = "Subscriptions"
     private const val NOTIFICATIONS_GROUP_ID: String = "1001"
     private const val NOTIFICATIONS_GROUP_NAME: String = "Notifications"
-    private const val CHANNEL_GROUP_DATA = "channel_group_data"
+    const val CHANNEL_GROUP_DATA = "channel_group_data"
     private val mImportServices = listOf(PocketTubeService, GrayJayService, NewPipeService)
     private lateinit var mChannelGroups: MutableList<ItemGroup>
     private var mPersistAction: Disposable? = null

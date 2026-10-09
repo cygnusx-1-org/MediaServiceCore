@@ -15,7 +15,7 @@ public interface ItemGroup {
     void add(@NonNull Item mediaItem);
     void addAll(@NonNull List<Item> newMediaItems);
     void remove(String channelOrVideoId);
-    boolean contains(String channelOrVideoId);
+    boolean contains(@Nullable String channelOrVideoId);
     boolean isEmpty();
 
     interface Item {

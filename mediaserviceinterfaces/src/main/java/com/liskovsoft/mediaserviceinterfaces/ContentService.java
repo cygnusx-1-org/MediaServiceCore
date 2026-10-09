@@ -18,6 +18,10 @@ public interface ContentService {
     MediaGroup getRecommended();
     MediaGroup getHistory();
     List<MediaGroup> getHome();
+    /**
+     * The rows of My videos on this thread: the videos, then the shorts (see getMyVideosObserve)
+     */
+    List<MediaGroup> getMyVideos();
     MediaGroup getSubscribedChannels();
     MediaGroup getSubscribedChannelsByNewContent();
     MediaGroup getSubscribedChannelsByName();

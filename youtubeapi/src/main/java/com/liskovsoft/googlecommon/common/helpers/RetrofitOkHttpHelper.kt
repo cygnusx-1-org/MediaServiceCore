@@ -11,6 +11,7 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.Collections
+import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
 
 internal object RetrofitOkHttpHelper {
@@ -20,6 +21,12 @@ internal object RetrofitOkHttpHelper {
 
     @JvmStatic
     val authHeaders = mutableMapOf<String, String>()
+
+    /**
+     * The auth headers of the requests made on this thread, when it has its own: another account's than the selected one
+     * (see callWithAuthHeaders)
+     */
+    private val threadAuthHeaders = ThreadLocal<Map<String, String>>()
 
     @JvmStatic
     val client: OkHttpClient by lazy { createClient() }
@@ -31,6 +38,29 @@ internal object RetrofitOkHttpHelper {
     fun addAuthSkip(request: Request) {
         authSkipList.add(request)
     }
+
+    /**
+     * The requests the callable makes on this thread have these auth headers, whatever the selected account's are.
+     * Empty: none, signed out.
+     */
+    @JvmStatic
+    @Throws(Exception::class)
+    fun <T> callWithAuthHeaders(headers: Map<String, String>, callable: Callable<T>): T {
+        val previous = threadAuthHeaders.get()
+        threadAuthHeaders.set(headers)
+
+        try {
+            return callable.call()
+        } finally {
+            if (previous != null) threadAuthHeaders.set(previous) else threadAuthHeaders.remove()
+        }
+    }
+
+    /**
+     * The ones of the requests made on this thread: its own (see callWithAuthHeaders), else the selected account's
+     */
+    @JvmStatic
+    fun getRequestAuthHeaders(): Map<String, String> = threadAuthHeaders.get() ?: authHeaders
 
     private val commonHeaders = mapOf(
         // Enable compression in production
@@ -93,13 +123,14 @@ internal object RetrofitOkHttpHelper {
                 applyHeaders(this.apiHeaders, headers, requestBuilder)
 
                 val tParam = if (tParamSuffixes.any { url.contains(it) }) YouTubeHelper.generateTParameter() else null
+                val requestAuthHeaders = getRequestAuthHeaders()
 
-                if (authHeaders.isEmpty() || doSkipAuth) {
+                if (requestAuthHeaders.isEmpty() || doSkipAuth) {
                     applyQueryKeys(mapOf("key" to AppConstants.API_KEY, "prettyPrint" to "false", "t" to tParam),
                         request, requestBuilder)
                 } else {
                     applyQueryKeys(mapOf("prettyPrint" to "false", "t" to tParam), request, requestBuilder)
-                    applyHeaders(authHeaders, headers, requestBuilder)
+                    applyHeaders(requestAuthHeaders, headers, requestBuilder)
                 }
             }
 

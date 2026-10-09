@@ -27,6 +27,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class YouTubeAccountManager {
     private static final String TAG = YouTubeAccountManager.class.getSimpleName();
     private static YouTubeAccountManager sInstance;
+    /**
+     * Between the name and the number of the profile of an account whose name another account has (see assignProfileNames)
+     */
+    private static final String PROFILE_NUMBER_DELIM = "#";
+    private final Object mRestoreLock = new Object();
+    private volatile boolean mRestored;
     private boolean mStorageSynced;
     private final YouTubeSignInService mSignInService;
     private final WeakHashSet<OnAccountChange> mListeners = new WeakHashSet<>();
@@ -99,6 +105,8 @@ public class YouTubeAccountManager {
 
     @Nullable
     public List<Account> getAccounts() {
+        restoreAccountsOnce();
+
         return mAccounts;
     }
 
@@ -175,6 +183,8 @@ public class YouTubeAccountManager {
     }
 
     public Account getSelectedAccount() {
+        restoreAccountsOnce();
+
         for (Account account : mAccounts) {
             if (account != null && account.isSelected()) {
                 return account;
@@ -185,7 +195,28 @@ public class YouTubeAccountManager {
     }
 
     private void persistAccounts() {
+        assignProfileNames(mAccounts, false);
         setAccountManagerData(Helpers.mergeArray(mAccounts.toArray()));
+    }
+
+    /**
+     * Once, by the first that needs them: the init runs on a thread of its own (see YouTubeSignInService), and the accounts
+     * can be needed before it does (e.g. the home screen channels, updated with nothing else of the app running)
+     */
+    private void restoreAccountsOnce() {
+        if (mRestored) {
+            return;
+        }
+
+        synchronized (mRestoreLock) {
+            // Not stored yet
+            if (mRestored || GlobalPreferences.sInstance == null) {
+                return;
+            }
+
+            restoreAccounts();
+            mRestored = true;
+        }
     }
 
     private void restoreAccounts() {
@@ -200,7 +231,52 @@ public class YouTubeAccountManager {
             }
         }
 
+        if (assignProfileNames(mAccounts, true)) {
+            setAccountManagerData(Helpers.mergeArray(mAccounts.toArray()));
+        }
+
         //notifyListeners();
+    }
+
+    /**
+     * Each account gets a profile of its own (see Account.getProfileName): the one named after it, or, when another account has
+     * that one, the name and the first number free.
+     * @param isRestored restored without one: the accounts with the same name shared the profile named after them. The ones that
+     *                   get another start as a copy of it (see Account.getSharedProfileName).
+     * @return any account got one
+     */
+    static boolean assignProfileNames(List<Account> accounts, boolean isRestored) {
+        boolean isAssigned = false;
+
+        for (Account account : accounts) {
+            YouTubeAccount youTubeAccount = (YouTubeAccount) account;
+
+            if (youTubeAccount.hasProfileName()) {
+                continue;
+            }
+
+            String nameProfileName = youTubeAccount.getNameProfileName();
+            String profileName = nameProfileName;
+
+            for (int number = 2; isProfileNameTaken(accounts, profileName); number++) {
+                profileName = nameProfileName + PROFILE_NUMBER_DELIM + number;
+            }
+
+            youTubeAccount.setProfileName(profileName, isRestored && !profileName.equals(nameProfileName) ? nameProfileName : null);
+            isAssigned = true;
+        }
+
+        return isAssigned;
+    }
+
+    private static boolean isProfileNameTaken(List<Account> accounts, String profileName) {
+        for (Account account : accounts) {
+            if (((YouTubeAccount) account).hasProfileName() && profileName.equals(account.getProfileName())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void setAccountManagerData(String data) {
@@ -226,7 +302,7 @@ public class YouTubeAccountManager {
     }
 
     public void init() {
-        restoreAccounts();
+        restoreAccountsOnce();
     }
 
     public void addOnAccountChange(OnAccountChange listener) {

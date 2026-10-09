@@ -4,12 +4,18 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl
+import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaGroup
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItem
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemMetadata
 
 internal object WatchNextServiceWrapper: WatchNextService() {
     override fun getMetadata(videoId: String?, playlistId: String?, playlistIndex: Int, playlistParams: String?): MediaItemMetadata? {
+        // The playlists kept on the device are the selected account's: not another's (see YouTubeSignInService.callAs)
+        if (!YouTubeSignInService.instance().isSelectedAccountCall) {
+            return super.getMetadata(videoId, playlistId, playlistIndex, playlistParams)
+        }
+
         return super.getMetadata(videoId, playlistId, playlistIndex, playlistParams)?.let {
             if (playlistId != null && it.suggestions?.firstOrNull()?.mediaItems?.firstOrNull()?.playlistId != playlistId) {
                 transformMetadata(it, videoId, playlistId, playlistIndex)

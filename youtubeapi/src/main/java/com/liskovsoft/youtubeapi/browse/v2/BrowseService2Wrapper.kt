@@ -5,6 +5,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItem
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl
 import com.liskovsoft.youtubeapi.rss.RssService
+import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaGroup
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItem
 
@@ -12,7 +13,8 @@ internal object BrowseService2Wrapper: BrowseService2() {
     override fun getSubscriptions(): MediaGroup? {
         val subscriptions = super.getSubscriptions()
 
-        if (subscriptions == null || subscriptions.isEmpty) {
+        // The channels kept on the device are the selected account's: not another's (see YouTubeSignInService.callAs)
+        if ((subscriptions == null || subscriptions.isEmpty) && YouTubeSignInService.instance().isSelectedAccountCall) {
             val channelIds = ChannelGroupServiceImpl.getSubscribedChannelIds()
 
             return channelIds?.let { RssService.getFeed(*it, type = MediaGroup.TYPE_SUBSCRIPTIONS) }

@@ -4,6 +4,7 @@ import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import io.reactivex.Observable;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public interface SignInService {
     interface OnAccountChange {
@@ -16,6 +17,13 @@ public interface SignInService {
     void selectAccount(Account account);
     void removeAccount(Account account);
     String printDebugInfo();
+
+    /**
+     * Runs the callable on this thread as the account, whichever is selected: the requests it makes on this thread are the
+     * account's.
+     * @param account null: signed out
+     */
+    <T> T callAs(Account account, Callable<T> callable) throws Exception;
 
     // RxJava interfaces
     /**

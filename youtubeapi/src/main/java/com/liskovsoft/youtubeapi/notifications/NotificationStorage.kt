@@ -7,7 +7,7 @@ import com.liskovsoft.youtubeapi.channelgroups.models.ItemImpl
 import com.liskovsoft.youtubeapi.service.internal.MediaServicePrefs
 
 internal object NotificationStorage: MediaServicePrefs.ProfileChangeListener {
-    private const val NOTIFICATION_DATA = "notification_data"
+    const val NOTIFICATION_DATA = "notification_data"
     private const val MIN_LIKE_COUNT = 5
 
     init {

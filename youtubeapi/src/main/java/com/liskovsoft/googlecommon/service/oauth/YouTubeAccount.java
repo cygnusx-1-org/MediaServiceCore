@@ -1,12 +1,17 @@
 package com.liskovsoft.googlecommon.service.oauth;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.googlecommon.common.models.auth.info.AccountInt;
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper;
 
 public class YouTubeAccount implements Account {
+    /**
+     * The profile of the signed out user, and of an account without a name
+     */
+    public static final String ANONYMOUS_PROFILE_NAME = "anonymous";
     private int mId;
     private String mName;
     private String mEmail;
@@ -16,6 +21,8 @@ public class YouTubeAccount implements Account {
     private boolean mHasChannel;
     private String mPageIdToken;
     private String mChannelName;
+    private String mProfileName;
+    private String mSharedProfileName;
 
     public static YouTubeAccount from(AccountInt accountInt) {
         YouTubeAccount account = new YouTubeAccount();
@@ -49,6 +56,8 @@ public class YouTubeAccount implements Account {
         account.mHasChannel = Helpers.parseBoolean(split, 6, true);
         account.mPageIdToken = Helpers.parseStr(split, 7);
         account.mChannelName = Helpers.parseStr(split, 8);
+        account.mProfileName = Helpers.parseStr(split, 9);
+        account.mSharedProfileName = Helpers.parseStr(split, 10);
 
         account.mImageUrl = YouTubeHelper.avatarBlockFix(account.mImageUrl);
 
@@ -71,7 +80,8 @@ public class YouTubeAccount implements Account {
     @NonNull
     @Override
     public String toString() {
-        return Helpers.mergeData(mId, mName, mImageUrl, mIsSelected, mRefreshToken, mEmail, mHasChannel, mPageIdToken, mChannelName);
+        return Helpers.mergeData(mId, mName, mImageUrl, mIsSelected, mRefreshToken, mEmail, mHasChannel, mPageIdToken, mChannelName,
+                mProfileName, mSharedProfileName);
     }
 
     @Override
@@ -102,6 +112,35 @@ public class YouTubeAccount implements Account {
     @Override
     public boolean isEmpty() {
         return getName() == null && getEmail() == null;
+    }
+
+    /**
+     * Named after the account until it has one of its own (see YouTubeAccountManager)
+     */
+    @Override
+    public String getProfileName() {
+        return mProfileName != null ? mProfileName : getNameProfileName();
+    }
+
+    @Override
+    public String getSharedProfileName() {
+        return mSharedProfileName;
+    }
+
+    /**
+     * The profile named after the account: every account had it before each had one of its own
+     */
+    public String getNameProfileName() {
+        return mName != null ? mName.replace(" ", "_") : ANONYMOUS_PROFILE_NAME;
+    }
+
+    public boolean hasProfileName() {
+        return mProfileName != null;
+    }
+
+    public void setProfileName(String profileName, @Nullable String sharedProfileName) {
+        mProfileName = profileName;
+        mSharedProfileName = sharedProfileName;
     }
 
     @Override
@@ -171,6 +210,10 @@ public class YouTubeAccount implements Account {
         }
         if (mEmail == null) {
             mEmail = originAccount.getEmail();
+        }
+        if (mProfileName == null) {
+            mProfileName = originAccount.mProfileName;
+            mSharedProfileName = originAccount.mSharedProfileName;
         }
     }
 }

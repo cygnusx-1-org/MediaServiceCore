@@ -34,6 +34,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -336,6 +337,15 @@ class YouTubeContentService implements ContentService {
 
             emitGroups(emitter, getBrowseService2().getLive());
         });
+    }
+
+    @Override
+    public List<MediaGroup> getMyVideos() {
+        checkSigned();
+
+        MediaGroup videos = getBrowseService2().getMyVideos();
+
+        return Arrays.asList(videos, getBrowseService2().getMyShorts(videos));
     }
 
     @Override
