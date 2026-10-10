@@ -58,6 +58,7 @@ public class MediaServiceData {
     public static final int CONTENT_SHORTS_SPORTS = 1 << 22;
     public static final int CONTENT_SHORTS_LIVE = 1 << 23;
     public static final int CONTENT_SHORTS_MY_VIDEOS = 1 << 24;
+    public static final int CONTENT_NON_GAMING_GAMING = 1 << 25;
     /**
      * Hide shorts everywhere, before Gaming, Music, Sports, Live and My videos had their own options
      */
