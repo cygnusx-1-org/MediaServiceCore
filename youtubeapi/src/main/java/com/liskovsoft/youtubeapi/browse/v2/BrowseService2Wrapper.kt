@@ -23,6 +23,19 @@ internal object BrowseService2Wrapper: BrowseService2() {
         return subscriptions
     }
 
+    override fun getSubscribedChannelIds(): List<String>? {
+        val channelIds = if (YouTubeSignInService.instance().isSigned) super.getSubscribedChannelIds() else null
+
+        if (channelIds != null) {
+            return channelIds
+        }
+
+        // Signed out, all of them are kept on the device. Signed in, the ones seen in the player (see WatchNextService.getMetadata).
+        // Only the selected account's (see getSubscriptions).
+        return if (YouTubeSignInService.instance().isSelectedAccountCall)
+            ChannelGroupServiceImpl.getSubscribedChannelIds()?.toList() ?: emptyList() else null
+    }
+
     override fun getSubscribedChannels(): MediaGroup? {
         // Backup channels ones
         // Add each channel on subscribe

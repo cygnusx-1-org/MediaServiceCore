@@ -152,6 +152,18 @@ internal open class BrowseService2 {
         return RetrofitHelper.get(guideResult)?.let { GuideMediaGroup(it, options) }
     }
 
+    /**
+     * The ids of the subscribed channels: the ones of the Channels section (see [getSubscribedChannelsTV])
+     * @return null when they can't be read
+     */
+    open fun getSubscribedChannelIds(): List<String>? {
+        val options = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL_UPLOADS)
+        val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getSubscriptionsQuery(options.clientTV))
+
+        // A channel is listed again under each sorting
+        return RetrofitHelper.get(browseResult)?.getTabs()?.mapNotNull { it?.getSubscribedChannelId() }?.distinct()
+    }
+
     private fun getSubscribedChannelsTV(sortByName: Boolean = false): MediaGroup? {
         val options = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL_UPLOADS)
         val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getSubscriptionsQuery(options.clientTV))

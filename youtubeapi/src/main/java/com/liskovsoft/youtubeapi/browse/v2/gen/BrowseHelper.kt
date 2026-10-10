@@ -1,5 +1,7 @@
 package com.liskovsoft.youtubeapi.browse.v2.gen
 
+import android.net.Uri
+import android.util.Base64
 import com.liskovsoft.sharedutils.helpers.Helpers
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper
 import com.liskovsoft.youtubeapi.common.models.gen.CommandExecutorCommand
@@ -69,6 +71,11 @@ internal fun TabRenderer.getTitle(): String? = title
 internal fun TabRenderer.getBrowseId(): String? = endpoint?.getBrowseId()
 internal fun TabRenderer.getReloadToken(): String? = content?.tvSurfaceContentRenderer?.continuation?.getContinuationToken()
 internal fun TabRenderer.getParams(): String? = endpoint?.getParams()
+/**
+ * A channel in the TV list of subscriptions opens the subscriptions (FEsubscriptions) filtered by its params:
+ * a protobuf in URL-encoded base64 that holds the channel id
+ */
+internal fun TabRenderer.getSubscribedChannelId(): String? = getParams()?.let { extractChannelId(it) }
 internal fun TabRenderer.getThumbnails(): ThumbnailItem? = thumbnail
 internal fun TabRenderer.hasNewContent(): Boolean = presentationStyle?.style == TAB_STYLE_NEW_CONTENT
 internal fun TabRenderer.getNestedShelves(): List<ShelfListWrapper?>? = getListRenderer()?.getNestedShelves()
@@ -341,3 +348,18 @@ internal fun ShowSheetCommand.getFeedbackTokens() = panelLoadingStrategy
 
 internal fun CommandExecutorCommand.getContinuationToken() = commands?.firstNotNullOfOrNull { it?.continuationCommand?.token }
 internal fun CommandExecutorCommand.getFeedbackToken() = commands?.firstNotNullOfOrNull { it?.feedbackEndpoint?.feedbackToken }
+
+private val CHANNEL_ID_REGEX = Regex("UC[A-Za-z0-9_-]{22}")
+
+private fun extractChannelId(params: String): String? {
+    // Uri.decode keeps a '+' of base64, unlike URLDecoder
+    val base64 = Uri.decode(params).replace('-', '+').replace('_', '/')
+    val bytes = try {
+        Base64.decode(base64, Base64.DEFAULT)
+    } catch (e: IllegalArgumentException) {
+        return null
+    }
+
+    // One char a byte: the id is ASCII among the other fields
+    return CHANNEL_ID_REGEX.find(String(bytes, Charsets.ISO_8859_1))?.value
+}

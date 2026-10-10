@@ -74,6 +74,11 @@ public interface ContentService {
      * The ids of every video in the signed-in account's Watch later, unfiltered. An error when a page failed.
      */
     Observable<List<String>> getWatchLaterVideoIdsObserve();
+    /**
+     * The ids of the channels the selected account is subscribed to. When they can't be read, or signed out,
+     * the ones kept on the device. An error when neither is known.
+     */
+    Observable<List<String>> getSubscribedChannelIdsObserve();
     Observable<MediaGroup> getSubscribedChannelsObserve();
     Observable<MediaGroup> getSubscribedChannelsByNewContentObserve();
     Observable<MediaGroup> getSubscribedChannelsByNameObserve();
