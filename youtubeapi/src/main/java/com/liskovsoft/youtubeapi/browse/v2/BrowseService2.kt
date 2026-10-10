@@ -8,6 +8,7 @@ import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.*
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.youtubeapi.common.helpers.PostDataHelper
 import com.liskovsoft.youtubeapi.common.models.gen.ItemWrapper
+import com.liskovsoft.youtubeapi.common.models.gen.getCurrentStateIndex
 import com.liskovsoft.youtubeapi.common.models.gen.getPlaylistId
 import com.liskovsoft.youtubeapi.common.models.gen.getVideoId
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.ShortsMediaItem
@@ -36,10 +37,6 @@ internal open class BrowseService2 {
         //return Pair(rows, null)
 
         return getBrowseRowsTV(BrowseApiHelper::getHomeQuery, MediaGroup.TYPE_HOME)
-    }
-
-    fun getTrending(): List<MediaGroup?>? {
-        return getBrowseRowsWeb(BrowseApiHelper.getTrendingQuery(AppClient.WEB), MediaGroup.TYPE_TRENDING)
     }
 
     fun getSports(): Pair<List<MediaGroup?>?, String?>? {
@@ -162,6 +159,16 @@ internal open class BrowseService2 {
 
         // A channel is listed again under each sorting
         return RetrofitHelper.get(browseResult)?.getTabs()?.mapNotNull { it?.getSubscribedChannelId() }?.distinct()
+    }
+
+    /**
+     * The bell of a channel on the account, from its page: the index of its state among All, Personalized and None
+     * @return null when it can't be read, e.g. the channel isn't subscribed
+     */
+    open fun getNotificationStateIndex(channelId: String): Int? {
+        val browseResult = mBrowseApi.getChannelBellResultTV(BrowseApiHelper.getChannelQuery(AppClient.TV, channelId))
+
+        return RetrofitHelper.get(browseResult)?.getNotificationPreference()?.getCurrentStateIndex()
     }
 
     private fun getSubscribedChannelsTV(sortByName: Boolean = false): MediaGroup? {
@@ -603,25 +610,6 @@ internal open class BrowseService2 {
             val (overrideItems, overrideKey) = if (continueIfNeeded) continueIfNeededTV(it.getItems(), it.getContinuationToken(), options) else Pair(null, null)
 
             WatchNexContinuationMediaGroup(it, options, overrideItems = overrideItems, overrideKey = overrideKey).apply { title = group.title }
-        }
-    }
-
-    private fun getBrowseRowsWeb(query: String, sectionType: Int, auth: Boolean = false): List<MediaGroup?>? {
-        val options = MediaGroupOptions.create(sectionType)
-        val browseResult = mBrowseApi.getBrowseResult(query)
-
-        return RetrofitHelper.get(browseResult, auth)?.let {
-            val result = mutableListOf<MediaGroup?>()
-
-            // First chip is always empty and corresponds to current result.
-            // Also title used as id in continuation. No good.
-            // NOTE: First tab on home page has no title.
-            result.add(BrowseMediaGroup(it, MediaGroupOptions.create(sectionType))) // always renders first tab
-            it.getTabs()?.drop(1)?.forEach { if (it?.getTitle() != null) result.add(TabMediaGroup(it, options)) }
-            it.getSections()?.forEach { if (it?.getTitle() != null) addOrMerge(result, RichSectionMediaGroup(it, options)) }
-            it.getChips()?.forEach { if (it?.getTitle() != null) result.add(ChipMediaGroup(it, options)) }
-
-            result
         }
     }
 

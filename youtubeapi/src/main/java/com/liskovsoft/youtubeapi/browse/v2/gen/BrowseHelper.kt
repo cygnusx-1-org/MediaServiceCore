@@ -308,6 +308,9 @@ private fun BrowseResultTV.getContent() = contents?.tvBrowseRenderer?.content?.t
 private fun BrowseResultTV.getSections() = contents?.tvBrowseRenderer?.content?.tvSecondaryNavRenderer?.sections
 private fun BrowseResultTV.getSubscriptionsTab() = getTabs()?.firstOrNull { it.getBrowseId() == SUBSCRIPTIONS_BROWSE_ID } ?: getTabs()?.getOrNull(0)
 
+internal fun ChannelBellResultTV.getNotificationPreference() = contents?.tvBrowseRenderer?.content?.tvSurfaceContentRenderer?.header
+    ?.channelHeaderRenderer?.buttons?.firstNotNullOfOrNull { it?.subscribeButtonRenderer?.notificationPreferenceButton }
+
 ///////////
 
 // Recommended row in subscriptions can have either a shelf of grid. So, we check the titles on both

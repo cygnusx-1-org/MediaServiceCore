@@ -20,7 +20,7 @@ public interface MediaGroup {
     int TYPE_SETTINGS = 11;
     int TYPE_CHANNEL_UPLOADS = 12;
     int TYPE_KIDS_HOME = 13;
-    int TYPE_TRENDING = 14;
+    // 14 was Trending, which YouTube removed. Not reused: the sidebar of an older version keeps it.
     int TYPE_SHORTS = 15;
     int TYPE_NOTIFICATIONS = 16;
     int TYPE_SPORTS = 17;

@@ -282,24 +282,6 @@ class BrowseApiUnsignedTest {
         //assertNotNull("Has title", videos?.getTitle())
     }
 
-    @Ignore("Trending was removed by YouTube")
-    @Test
-    fun testThatTrendingNotEmpty() {
-        val trending = getTrending()
-
-        assertNotNull("Contains videos", trending?.getItems()?.getOrNull(0))
-
-        for (tab in trending!!.getTabs()!!) {
-            if (tab!!.content != null) {
-                assertTrue("Root tab contains videos", (tab.getItems()?.size ?: 0) > 10)
-            } else {
-                val tabContent = getTrendingTab(tab.endpoint?.getParams())
-
-                assertTrue("Next tab contains videos", (tabContent?.getItems()?.size ?: 0) > 10)
-            }
-        }
-    }
-
     @Test
     fun testChannelTopicContinuation() {
         // World of tanks recently uploaded
@@ -473,18 +455,6 @@ class BrowseApiUnsignedTest {
         val continuation = mService.getReelContinuationResult(BrowseApiHelper.getReelContinuation2Query(AppClient.WEB, nextPageKey!!))
 
         return RetrofitHelper.get(continuation)
-    }
-
-    private fun getTrending(): BrowseResult? {
-        val trendingResult = mService.getBrowseResult(BrowseApiHelper.getTrendingQuery(AppClient.WEB))
-
-        return RetrofitHelper.get(trendingResult)
-    }
-
-    private fun getTrendingTab(params: String?): BrowseResult? {
-        val trendingResult = mService.getBrowseResult(BrowseApiHelper.getChannelQuery(AppClient.WEB, "FEtrending", params))
-
-        return RetrofitHelper.get(trendingResult)
     }
 
     private fun createOptions(groupType: Int = MediaGroup.TYPE_SUBSCRIPTIONS): MediaGroupOptions {

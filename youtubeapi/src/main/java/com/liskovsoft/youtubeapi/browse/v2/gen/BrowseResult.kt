@@ -4,6 +4,7 @@ import com.liskovsoft.youtubeapi.common.models.gen.MenuWrapper
 import com.liskovsoft.youtubeapi.common.models.gen.NavigationEndpointItem
 import com.liskovsoft.youtubeapi.common.models.gen.PlaylistItem
 import com.liskovsoft.youtubeapi.common.models.gen.ResponseContext
+import com.liskovsoft.youtubeapi.common.models.gen.SubscribeButtonRenderer
 import com.liskovsoft.youtubeapi.next.v2.gen.EngagementPanel
 
 /**
@@ -136,6 +137,41 @@ internal data class ReelContinuationResult(
         data class Command(
             val reelWatchEndpoint: ReelWatchEndpoint?
         )
+    }
+}
+
+/**
+ * Only the bell of a channel page of the TV client, the rest of the page is skipped
+ */
+internal data class ChannelBellResultTV(
+    val contents: Contents?
+) {
+    data class Contents(
+        val tvBrowseRenderer: TvBrowseRenderer?
+    ) {
+        data class TvBrowseRenderer(
+            val content: Content?
+        ) {
+            data class Content(
+                val tvSurfaceContentRenderer: TvSurfaceContentRenderer?
+            ) {
+                data class TvSurfaceContentRenderer(
+                    val header: Header?
+                ) {
+                    data class Header(
+                        val channelHeaderRenderer: ChannelHeaderRenderer?
+                    ) {
+                        data class ChannelHeaderRenderer(
+                            val buttons: List<Button?>?
+                        ) {
+                            data class Button(
+                                val subscribeButtonRenderer: SubscribeButtonRenderer?
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

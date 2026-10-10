@@ -13,7 +13,7 @@ import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.ShuffleMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.*
 import com.liskovsoft.youtubeapi.browse.v2.gen.getShelfItems
-import com.liskovsoft.youtubeapi.notifications.NotificationStateImplWrapper
+import com.liskovsoft.youtubeapi.common.models.impl.NotificationStateImpl
 
 internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNextResult,
                                  private val suggestionsResult: WatchNextResult? = null) : MediaItemMetadata {
@@ -63,6 +63,12 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     }
     private val notificationPreference by lazy {
         videoOwner?.getNotificationPreference()
+    }
+    /**
+     * The bell of the channel on the account, among All, Personalized and None. Null when unknown, e.g. not subscribed.
+     */
+    val notificationStateIndex by lazy {
+        notificationPreference?.getCurrentStateIndex()
     }
     private val videoDetails by lazy {
         watchNextResult.getVideoDetails()
@@ -191,7 +197,7 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     private val notificationStateList by lazy {
         val currentId = notificationPreference?.getCurrentStateId()
         val result = notificationPreference?.getItems()?.mapNotNull {
-            it?.let { NotificationStateImplWrapper(it, currentId, channelId, params, isSubscribed) }
+            it?.let { NotificationStateImpl(it, currentId, channelId, params, isSubscribed) }
         }
 
         result?.forEach { it.allStates = result }

@@ -63,14 +63,6 @@ class BrowseService2Test {
         BrowseTestHelper.checkGuideMediaItem(channels?.mediaItems?.getOrNull(0)!!)
     }
 
-    @Ignore("Trending was removed by YouTube")
-    @Test
-    fun testThatTrendingNotEmpty() {
-        val trending = mBrowseService2.getTrending()
-
-        assertTrue("Trending not empty", trending?.get(0)?.mediaItems?.size ?: 0 > 10)
-    }
-
     @Test
     fun testThatChannelSortingOptionsNotEmpty() {
         val sorting = mBrowseService2.getChannelSortingOptions(TestHelpers.CHANNEL_ID_3)

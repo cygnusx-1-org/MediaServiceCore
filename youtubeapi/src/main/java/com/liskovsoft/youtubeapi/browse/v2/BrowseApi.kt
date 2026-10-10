@@ -45,6 +45,14 @@ internal interface BrowseApi {
 
     @Headers(
         "Content-Type: application/json",
+        "User-Agent: " + DefaultHeaders.USER_AGENT_TV,
+        "Referer: https://www.youtube.com/tv"
+    )
+    @POST("https://www.youtube.com/youtubei/v1/browse")
+    fun getChannelBellResultTV(@Body browseQuery: String?): Call<ChannelBellResultTV?>
+
+    @Headers(
+        "Content-Type: application/json",
         "User-Agent: " + DefaultHeaders.USER_AGENT_WEB,
         "Referer: https://www.youtube.com/"
     )

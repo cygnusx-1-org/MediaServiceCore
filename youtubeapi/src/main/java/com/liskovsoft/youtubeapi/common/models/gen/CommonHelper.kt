@@ -445,6 +445,10 @@ internal fun MenuItem.getVideoId() = menuNavigationItemRenderer?.navigationEndpo
 
 internal fun NotificationPreferenceButton.getItems() = subscriptionNotificationToggleButtonRenderer?.states?.filter { it?.getStateParams() != null }
 internal fun NotificationPreferenceButton.getCurrentStateId() = subscriptionNotificationToggleButtonRenderer?.currentStateId ?: -1
+/**
+ * Among the states of [getItems]: All, Personalized and None
+ */
+internal fun NotificationPreferenceButton.getCurrentStateIndex() = getItems()?.indexOfFirst { it?.getStateId() == getCurrentStateId() }?.takeIf { it != -1 }
 internal fun NotificationStateItem.getTitle() = inlineMenuButton?.buttonRenderer?.text?.getText()
 internal fun NotificationStateItem.getStateId() = stateId
 internal fun NotificationStateItem.getStateParams() = inlineMenuButton?.buttonRenderer?.serviceEndpoint?.modifyChannelNotificationPreferenceEndpoint?.params

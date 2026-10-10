@@ -14,8 +14,6 @@ internal object BrowseApiHelper {
     const val LIKED_PLAYLIST = "LL"
 
     private const val HOME_TV_ID = "default"
-    private const val TRENDING_ID = "FEtrending"
-    private const val TRENDING_PARAMS = "6gQJRkVleHBsb3Jl"
     private const val HYPE_ID = "FEhype_leaderboard"
 
     private const val CHANNEL = "\"browseId\":\"%s\""
@@ -32,7 +30,6 @@ internal object BrowseApiHelper {
     private const val KIDS_HOME_PARAMS = "\"browseId\":\"FEkids_home\",\"params\":\"%s\""
     private const val WHAT_TO_WATCH = "\"browseId\":\"FEwhat_to_watch\""
     private const val HOME_TV = "\"browseId\":\"default\""
-    private const val TRENDING = "\"browseId\":\"FEtrending\",\"params\":\"6gQJRkVleHBsb3Jl\""
     private const val HYPE = "\"browseId\":\"FEhype_leaderboard\""
     private const val SUBSCRIPTIONS = "\"browseId\":\"FEsubscriptions\""
     private const val SPORTS = "\"browseId\":\"FEtopics_sports\""
@@ -58,10 +55,6 @@ internal object BrowseApiHelper {
 
     fun getHomeQuery(client: AppClient): String {
         return PostDataHelper.createQuery(client.browseTemplate, HOME_TV)
-    }
-
-    fun getTrendingQuery(client: AppClient): String {
-        return PostDataHelper.createQuery(client.browseTemplate, TRENDING)
     }
 
     fun getHypeQuery(client: AppClient): String {

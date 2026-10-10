@@ -21,7 +21,6 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                     || (MediaGroup.TYPE_HISTORY == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_HISTORY))
                     || (MediaGroup.TYPE_CHANNEL == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_CHANNEL))
                     || (MediaGroup.TYPE_CHANNEL_UPLOADS == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_CHANNEL))
-                    || (MediaGroup.TYPE_TRENDING == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_TRENDING))
                     || (MediaGroup.TYPE_SEARCH == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_SEARCH))
                     || (MediaGroup.TYPE_NEWS == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_NEWS))
                     || (MediaGroup.TYPE_GAMING == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_GAMING))

@@ -20,6 +20,7 @@ import com.liskovsoft.youtubeapi.next.v2.gen.getDislikeCount
 import com.liskovsoft.youtubeapi.next.v2.gen.getLikeCount
 import com.liskovsoft.youtubeapi.next.v2.gen.isEmpty
 import com.liskovsoft.youtubeapi.next.v2.impl.MediaItemMetadataImpl
+import com.liskovsoft.youtubeapi.notifications.NotificationStorage
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 
 internal open class WatchNextService {
@@ -50,8 +51,15 @@ internal open class WatchNextService {
                 ChannelGroupServiceImpl.cachedChannel = ItemImpl(it, author, authorImageUrl)
                 if (!YouTubeSignInService.instance().isSigned) {
                     isSubscribedOverrideItem = ChannelGroupServiceImpl.isSubscribed(it)
-                } else if (isSubscribed != ChannelGroupServiceImpl.isSubscribed(it)) {
-                    ChannelGroupServiceImpl.subscribe(isSubscribed, it, author, authorImageUrl)
+                } else {
+                    if (isSubscribed != ChannelGroupServiceImpl.isSubscribed(it)) {
+                        ChannelGroupServiceImpl.subscribe(isSubscribed, it, author, authorImageUrl)
+                    }
+
+                    // The Notifications kept on the device are the selected account's
+                    if (YouTubeSignInService.instance().isSelectedAccountCall) {
+                        notificationStateIndex?.let { index -> NotificationStorage.syncChannel(it, index) }
+                    }
                 }
             }
         }

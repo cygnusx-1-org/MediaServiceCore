@@ -43,7 +43,10 @@ public class MediaServiceData {
     public static final int CONTENT_SHORTS_HISTORY = 1 << 7;
     public static final int CONTENT_UPCOMING_CHANNEL = 1 << 8;
     public static final int CONTENT_UPCOMING_HOME = 1 << 9;
-    public static final int CONTENT_SHORTS_TRENDING = 1 << 10;
+    /**
+     * Shorts hidden from Trending, which YouTube removed. Only part of {@link #CONTENT_SHORTS_ALL_OLD}; the bit isn't reused.
+     */
+    static final int CONTENT_SHORTS_TRENDING_OLD = 1 << 10;
     public static final int CONTENT_UPCOMING_SUBSCRIPTIONS = 1 << 11;
     public static final int CONTENT_STREAMS_SUBSCRIPTIONS = 1 << 12;
     public static final int CONTENT_SHORTS_CHANNEL = 1 << 13;
@@ -63,9 +66,9 @@ public class MediaServiceData {
      * Hide shorts everywhere, before Gaming, Music, Sports, Live and My videos had their own options
      */
     private static final int CONTENT_SHORTS_ALL_OLD = CONTENT_SHORTS_HOME | CONTENT_SHORTS_SEARCH
-            | CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_TRENDING
+            | CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_TRENDING_OLD
             | CONTENT_SHORTS_CHANNEL | CONTENT_SHORTS_NEWS;
-    public static final int CONTENT_SHORTS_ALL = CONTENT_SHORTS_ALL_OLD | CONTENT_SHORTS_GAMING
+    public static final int CONTENT_SHORTS_ALL = (CONTENT_SHORTS_ALL_OLD & ~CONTENT_SHORTS_TRENDING_OLD) | CONTENT_SHORTS_GAMING
             | CONTENT_SHORTS_MUSIC | CONTENT_SHORTS_SPORTS | CONTENT_SHORTS_LIVE | CONTENT_SHORTS_MY_VIDEOS;
     private static MediaServiceData sInstance;
     private String mScreenId;

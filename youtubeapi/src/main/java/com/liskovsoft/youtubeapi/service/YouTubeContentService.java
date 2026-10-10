@@ -286,15 +286,6 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
-    public Observable<List<MediaGroup>> getTrendingObserve() {
-        return RxHelper.create(emitter -> {
-            checkSigned();
-
-            emitGroups(emitter, getBrowseService2().getTrending());
-        });
-    }
-
-    @Override
     public Observable<MediaGroup> getShortsObserve() {
         return RxHelper.create(emitter -> {
             checkSigned();

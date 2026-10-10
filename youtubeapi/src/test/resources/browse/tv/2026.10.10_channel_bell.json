@@ -1,0 +1,457 @@
+{
+  "contents": {
+    "tvBrowseRenderer": {
+      "content": {
+        "tvSurfaceContentRenderer": {
+          "header": {
+            "channelHeaderRenderer": {
+              "backgroundImage": {
+                "thumbnails": [
+                  {
+                    "url": "https://yt3.googleusercontent.com/NHdj4xeflm7ibbV5lacdTHUqp5WydmAUI8uVfsjs0sIw9eb0oXhV2lhlloBPG6P94a-ixJsNOQ=w320-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj",
+                    "width": 320,
+                    "height": 180
+                  },
+                  {
+                    "url": "https://yt3.googleusercontent.com/NHdj4xeflm7ibbV5lacdTHUqp5WydmAUI8uVfsjs0sIw9eb0oXhV2lhlloBPG6P94a-ixJsNOQ=w854-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj",
+                    "width": 854,
+                    "height": 480
+                  },
+                  {
+                    "url": "https://yt3.googleusercontent.com/NHdj4xeflm7ibbV5lacdTHUqp5WydmAUI8uVfsjs0sIw9eb0oXhV2lhlloBPG6P94a-ixJsNOQ=w1280-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj",
+                    "width": 1280,
+                    "height": 720
+                  },
+                  {
+                    "url": "https://yt3.googleusercontent.com/NHdj4xeflm7ibbV5lacdTHUqp5WydmAUI8uVfsjs0sIw9eb0oXhV2lhlloBPG6P94a-ixJsNOQ=w1920-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj",
+                    "width": 1920,
+                    "height": 1080
+                  },
+                  {
+                    "url": "https://yt3.googleusercontent.com/NHdj4xeflm7ibbV5lacdTHUqp5WydmAUI8uVfsjs0sIw9eb0oXhV2lhlloBPG6P94a-ixJsNOQ=w2120-fcrop64=1,00000000ffffffff-k-c0xffffffff-no-nd-rj",
+                    "width": 2120,
+                    "height": 1192
+                  }
+                ]
+              },
+              "avatar": {
+                "thumbnails": [
+                  {
+                    "url": "https://yt3.googleusercontent.com/M4_ivLzhilooagVDpIaeMEup7tRafOO1Coli-EUXu0T2o4UXsYEGWg3p5OBR5998EwBL7zBlJw=s72-c-k-c0x00ffffff-no-rj",
+                    "width": 72,
+                    "height": 72
+                  }
+                ]
+              },
+              "title": {
+                "simpleText": "Adam de Leon"
+              },
+              "subtitle": {
+                "lineRenderer": {
+                  "items": [
+                    {
+                      "lineItemRenderer": {
+                        "text": {
+                          "runs": [
+                            {
+                              "text": "@adam.deleon",
+                              "textColor": 4294967295
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "lineItemRenderer": {
+                        "text": {
+                          "simpleText": "\u2022"
+                        }
+                      }
+                    },
+                    {
+                      "lineItemRenderer": {
+                        "text": {
+                          "simpleText": "8.66K subscribers"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "buttons": [
+                {
+                  "buttonRenderer": {
+                    "isDisabled": false,
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Play mix"
+                        }
+                      ]
+                    },
+                    "icon": {
+                      "iconType": "MIX"
+                    },
+                    "navigationEndpoint": {
+                      "watchEndpoint": {
+                        "videoId": "YXi-99veB5E",
+                        "params": "KgtZWGktOTl2ZUI1RSoLMkdvblRLOHI5NGsqC195WGdqeW0yYkZNKgtTdzZwS0ZmWFdEZzIHVXAgbmV4dIADAQ%3D%3D",
+                        "playerParams": "0gcJCbYAcF6B3_Qy",
+                        "watchEndpointSupportedOnesieConfig": {
+                          "html5PlaybackOnesieConfig": {
+                            "commonConfig": {
+                              "url": "https://rr4---sn-bvvbaxivnuxqjvm-2ime.googlevideo.com/initplayback?source=youtube&oeis=1&c=TVHTML5&oad=3200&ovd=3200&oaad=3200&oavd=3200&ocs=700&oewis=1&oputc=1&siu=1&msp=1&odepv=1&id=6178bef7dbde0791&ip=68.3.136.57&initcwndbps=4032625&mt=1791615908"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "onFocusCommand": {
+                      "startInlinePlaybackCommand": {
+                        "muted": false,
+                        "delayMs": 3000,
+                        "playbackEndpoint": {
+                          "watchEndpoint": {
+                            "videoId": "YXi-99veB5E",
+                            "params": "KgtZWGktOTl2ZUI1RSoLMkdvblRLOHI5NGsqC195WGdqeW0yYkZNKgtTdzZwS0ZmWFdEZzIHVXAgbmV4dIADAQ%3D%3D",
+                            "watchEndpointSupportedOnesieConfig": {
+                              "html5PlaybackOnesieConfig": {
+                                "commonConfig": {
+                                  "url": "https://rr4---sn-bvvbaxivnuxqjvm-2ime.googlevideo.com/initplayback?source=youtube&oeis=1&c=TVHTML5&oad=3200&ovd=3200&oaad=3200&oavd=3200&ocs=700&oewis=1&oputc=1&siu=1&msp=1&odepv=1&id=6178bef7dbde0791&ip=68.3.136.57&initcwndbps=4032625&mt=1791615908"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "blockAdoption": false
+                      }
+                    }
+                  }
+                },
+                {
+                  "subscribeButtonRenderer": {
+                    "buttonText": {
+                      "runs": [
+                        {
+                          "text": "Subscribed"
+                        }
+                      ]
+                    },
+                    "subscribed": true,
+                    "enabled": true,
+                    "type": "FREE",
+                    "channelId": "UCuTQ3Qs9HjT7zk3ggzhPC9g",
+                    "showPreferences": false,
+                    "subscribedButtonText": {
+                      "runs": [
+                        {
+                          "text": "Subscribed"
+                        }
+                      ]
+                    },
+                    "unsubscribedButtonText": {
+                      "runs": [
+                        {
+                          "text": "Subscribe"
+                        }
+                      ]
+                    },
+                    "unsubscribeButtonText": {
+                      "runs": [
+                        {
+                          "text": "Unsubscribe"
+                        }
+                      ]
+                    },
+                    "serviceEndpoints": [
+                      {
+                        "authDeterminedCommand": {
+                          "authenticatedCommand": {
+                            "subscribeEndpoint": {
+                              "channelIds": [
+                                "UCuTQ3Qs9HjT7zk3ggzhPC9g"
+                              ],
+                              "params": "EgIIAhgA"
+                            }
+                          },
+                          "unauthenticatedCommand": {
+                            "authRequiredCommand": {
+                              "identityActionContext": {
+                                "eventTrigger": "ACCOUNT_EVENT_TRIGGER_SUBSCRIBE",
+                                "nextEndpoint": {
+                                  "commandExecutorCommand": {
+                                    "commands": [
+                                      {
+                                        "signalAction": {
+                                          "signal": "CLOSE_POPUP"
+                                        }
+                                      },
+                                      {
+                                        "subscribeEndpoint": {
+                                          "channelIds": [
+                                            "UCuTQ3Qs9HjT7zk3ggzhPC9g"
+                                          ],
+                                          "params": "EgIIAhgA"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "unsubscribeEndpoint": {
+                          "channelIds": [
+                            "UCuTQ3Qs9HjT7zk3ggzhPC9g"
+                          ],
+                          "params": "CgIIAhgA"
+                        }
+                      }
+                    ],
+                    "notificationPreferenceButton": {
+                      "subscriptionNotificationToggleButtonRenderer": {
+                        "states": [
+                          {
+                            "stateId": 2,
+                            "nextStateId": 2,
+                            "state": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "icon": {
+                                  "iconType": "NOTIFICATIONS_ACTIVE"
+                                }
+                              }
+                            },
+                            "inlineMenuButton": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "text": {
+                                  "simpleText": "All"
+                                },
+                                "serviceEndpoint": {
+                                  "modifyChannelNotificationPreferenceEndpoint": {
+                                    "params": "ChhVQ3VUUTNRczlIalQ3emszZ2d6aFBDOWcSAggCGAAgBA%3D%3D"
+                                  }
+                                },
+                                "icon": {
+                                  "iconType": "NOTIFICATIONS_ACTIVE"
+                                }
+                              }
+                            },
+                            "notificationState": "SUBSCRIPTION_NOTIFICATION_STATE_ALL"
+                          },
+                          {
+                            "stateId": 3,
+                            "nextStateId": 3,
+                            "state": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "icon": {
+                                  "iconType": "NOTIFICATIONS_NONE"
+                                }
+                              }
+                            },
+                            "inlineMenuButton": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "text": {
+                                  "simpleText": "Personalized"
+                                },
+                                "serviceEndpoint": {
+                                  "modifyChannelNotificationPreferenceEndpoint": {
+                                    "params": "ChhVQ3VUUTNRczlIalQ3emszZ2d6aFBDOWcSAggBGAAgBA%3D%3D"
+                                  }
+                                },
+                                "icon": {
+                                  "iconType": "NOTIFICATIONS_NONE"
+                                }
+                              }
+                            },
+                            "notificationState": "SUBSCRIPTION_NOTIFICATION_STATE_OCCASIONAL"
+                          },
+                          {
+                            "stateId": 0,
+                            "nextStateId": 0,
+                            "state": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "icon": {
+                                  "iconType": "NOTIFICATIONS_OFF"
+                                }
+                              }
+                            },
+                            "inlineMenuButton": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "text": {
+                                  "simpleText": "None"
+                                },
+                                "serviceEndpoint": {
+                                  "modifyChannelNotificationPreferenceEndpoint": {
+                                    "params": "ChhVQ3VUUTNRczlIalQ3emszZ2d6aFBDOWcSAggDGAAgBA%3D%3D"
+                                  }
+                                },
+                                "icon": {
+                                  "iconType": "NOTIFICATIONS_OFF"
+                                }
+                              }
+                            },
+                            "notificationState": "SUBSCRIPTION_NOTIFICATION_STATE_OFF"
+                          },
+                          {
+                            "state": {
+                              "buttonRenderer": {
+                                "style": "STYLE_TEXT",
+                                "size": "SIZE_DEFAULT",
+                                "isDisabled": false,
+                                "text": {
+                                  "runs": [
+                                    {
+                                      "text": "Unsubscribe"
+                                    }
+                                  ]
+                                },
+                                "icon": {
+                                  "iconType": "PERSON_MINUS"
+                                },
+                                "command": {
+                                  "commandExecutorCommand": {
+                                    "commands": [
+                                      {
+                                        "unsubscribeEndpoint": {
+                                          "channelIds": [
+                                            "UCuTQ3Qs9HjT7zk3ggzhPC9g"
+                                          ],
+                                          "params": "CgIIAhgA"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ],
+                        "currentStateId": 3,
+                        "onTapBehavior": "ON_TAP_BEHAVIOR_TOGGLE_ICON_WITH_INLINE_MENU",
+                        "command": {
+                          "showEngagementPanelEndpoint": {
+                            "identifier": {
+                              "tag": "channel-notifications-panel"
+                            }
+                          }
+                        },
+                        "targetId": "notification-bell",
+                        "notificationStateEntityKey": "EhhVQ3VUUTNRczlIalQ3emszZ2d6aFBDOWcgjAEoAQ%3D%3D",
+                        "notificationsLabel": {
+                          "runs": [
+                            {
+                              "text": "Subscribed"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "subscribedEntityKey": "EhhVQ3VUUTNRczlIalQ3emszZ2d6aFBDOWcgMygB"
+                  }
+                }
+              ],
+              "selectableDescription": {
+                "selectableTextRenderer": {
+                  "compactDescription": {
+                    "runs": [
+                      {
+                        "text": "An average climber with above average content"
+                      },
+                      {
+                        "text": " ...more"
+                      }
+                    ]
+                  },
+                  "onSelectCommand": {
+                    "showEngagementPanelEndpoint": {
+                      "engagementPanel": {
+                        "engagementPanelSectionListRenderer": {
+                          "header": {
+                            "engagementPanelTitleHeaderRenderer": {
+                              "title": {
+                                "simpleText": "Description"
+                              }
+                            }
+                          },
+                          "content": {
+                            "aboutChannelViewModel": {
+                              "description": "An average climber with above average content",
+                              "additionalInfoLabel": {
+                                "content": "More info"
+                              },
+                              "infoRows": [
+                                {
+                                  "label": "Australia",
+                                  "icon": {
+                                    "iconType": "PRIVACY_PUBLIC"
+                                  }
+                                },
+                                {
+                                  "label": "Joined Jun 24, 2019",
+                                  "icon": {
+                                    "iconType": "INFO_OUTLINE"
+                                  }
+                                },
+                                {
+                                  "label": "8.66K subscribers",
+                                  "icon": {
+                                    "iconType": "PERSON_RADAR"
+                                  }
+                                },
+                                {
+                                  "label": "230 videos",
+                                  "icon": {
+                                    "iconType": "MY_VIDEOS"
+                                  }
+                                },
+                                {
+                                  "label": "15,598,367 views",
+                                  "icon": {
+                                    "iconType": "TRENDING_UP"
+                                  }
+                                }
+                              ],
+                              "rendererContext": {
+                                "loggingContext": {}
+                              }
+                            }
+                          },
+                          "backgroundScrimStyle": "ENGAGEMENT_PANEL_BACKGROUND_SCRIM_STYLE_DEFAULT"
+                        }
+                      },
+                      "identifier": {
+                        "surface": "ENGAGEMENT_PANEL_SURFACE_BROWSE",
+                        "tag": "detailed-description-ep-identifier"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
