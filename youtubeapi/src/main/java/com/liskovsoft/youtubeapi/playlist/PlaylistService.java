@@ -25,17 +25,20 @@ public class PlaylistService {
     }
 
     public void addToPlaylist(String playlistId, String videoId) {
-        Call<ActionResult> wrapper =
-                mPlaylistManager.editPlaylist(PlaylistApiHelper.getAddToPlaylistQuery(playlistId, videoId));
-
-        RetrofitHelper.get(wrapper); // ignore result
+        editPlaylist(PlaylistApiHelper.getAddToPlaylistQuery(playlistId, videoId));
     }
 
     public void removeFromPlaylist(String playlistId, String videoId) {
-        Call<ActionResult> wrapper =
-                mPlaylistManager.editPlaylist(PlaylistApiHelper.getRemoveFromPlaylistsQuery(playlistId, videoId));
+        editPlaylist(PlaylistApiHelper.getRemoveFromPlaylistsQuery(playlistId, videoId));
+    }
 
-        RetrofitHelper.get(wrapper); // ignore result
+    /**
+     * Throws when YouTube refused the edit or never got it (e.g. the playlist is full, 5000 videos at most)
+     */
+    private void editPlaylist(String editPlaylistQuery) {
+        Call<ActionResult> wrapper = mPlaylistManager.editPlaylist(editPlaylistQuery);
+
+        RetrofitHelper.getWithErrorsStrict(wrapper);
     }
 
     public void renamePlaylist(String playlistId, String newName) {

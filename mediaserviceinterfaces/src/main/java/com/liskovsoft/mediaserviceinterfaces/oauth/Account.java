@@ -19,4 +19,9 @@ public interface Account {
      * copy of it. Null when it never shared one.
      */
     String getSharedProfileName();
+
+    /**
+     * The account has a YouTube channel. Without one YouTube refuses to create a playlist through the TV sign-in.
+     */
+    boolean hasChannel();
 }

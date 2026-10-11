@@ -91,6 +91,25 @@ public class RetrofitHelper {
         return get(wrapper, auth, true);
     }
 
+    /**
+     * For an edit whose answer isn't read: throws unless the server took it, so that a lost edit isn't taken for a saved one
+     */
+    public static <T> T getWithErrorsStrict(Call<T> wrapper) {
+        Response<T> response = getResponse(wrapper);
+
+        handleResponseErrors(response);
+
+        if (response == null) {
+            throw new IllegalStateException("Can't connect to the server");
+        }
+
+        if (!response.isSuccessful()) {
+            throw new IllegalStateException(String.format("Unknown %s error", response.code()));
+        }
+
+        return response.body();
+    }
+
     private static <T> T get(Call<T> wrapper, boolean auth, boolean withErrors) {
         if (!auth) {
             RetrofitOkHttpHelper.addAuthSkip(wrapper.request());

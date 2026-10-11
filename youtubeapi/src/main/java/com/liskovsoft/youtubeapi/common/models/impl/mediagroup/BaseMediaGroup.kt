@@ -3,9 +3,9 @@ package com.liskovsoft.youtubeapi.common.models.impl.mediagroup
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem
-import com.liskovsoft.youtubeapi.browse.v2.BrowseApiHelper
 import com.liskovsoft.youtubeapi.common.models.gen.*
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.WrapperMediaItem
+import com.liskovsoft.youtubeapi.playlist.PlaylistOrder
 
 internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): MediaGroup {
     private val filter: ((ItemWrapper) -> Boolean) = {
@@ -39,19 +39,11 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
             ?.let { WrapperMediaItem(it).apply { playlistIndex = index } }
             ?.let { if (legacyFilter.invoke(it)) { countFiltered(it.videoId); null } else it }
         }?.let {
-            // Move Watch Later to the top
+            // By title
             if (options.groupType != MediaGroup.TYPE_USER_PLAYLISTS)
                 return@let it
 
-            val idx = it.indexOfFirst { it.channelId == BrowseApiHelper.WATCH_LATER_CHANNEL_ID }
-
-            if (idx == -1 || idx >= it.size)
-                return@let it
-
-            val mutable = it.toMutableList()
-            val item = mutable.removeAt(idx)
-            mutable.add(0, item)
-            mutable
+            PlaylistOrder.sort(it) { it.title }
         }
     }
     private val nextPageKeyItem by lazy { getNextPageKeyInt() }

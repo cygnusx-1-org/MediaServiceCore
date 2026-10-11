@@ -19,16 +19,22 @@ import com.liskovsoft.youtubeapi.next.v2.WatchNextServiceWrapper;
 import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo;
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl;
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService;
+import com.liskovsoft.youtubeapi.service.internal.MediaServicePrefs;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PlaylistServiceWrapper extends PlaylistService {
+public class PlaylistServiceWrapper extends PlaylistService implements MediaServicePrefs.ProfileChangeListener {
     private static final String TAG = PlaylistServiceWrapper.class.getSimpleName();
     private static final int LOCAL_PLAYLIST_ID_MAX_LENGTH = 12; // ItemGroupImpl GROUP_ID_LENGTH
     private static PlaylistServiceWrapper sInstance;
     private @Nullable List<PlaylistInfo> mCachedPlaylistInfos;
+    private final RecentPlaylistEdits mRecentEdits = new RecentPlaylistEdits();
+
+    private PlaylistServiceWrapper() {
+        MediaServicePrefs.INSTANCE.addListener(this);
+    }
 
     public static PlaylistServiceWrapper instance() {
         if (sInstance == null) {
@@ -36,6 +42,20 @@ public class PlaylistServiceWrapper extends PlaylistService {
         }
 
         return sInstance;
+    }
+
+    @Override
+    public void onProfileChanged() {
+        // Watch later and Liked videos have the same id for every account
+        mRecentEdits.clear();
+    }
+
+    /**
+     * @return the video was added to the playlist (true) or removed from it (false) in the app, null when it wasn't
+     */
+    @Nullable
+    public Boolean getRecentEdit(String playlistId, String videoId) {
+        return mRecentEdits.get(playlistId, videoId);
     }
 
     @Override
@@ -95,7 +115,9 @@ public class PlaylistServiceWrapper extends PlaylistService {
      * while a YouTube playlist id (that a copy of one here is keyed by) is longer, e.g. PL and 11 characters.
      */
     public static boolean isCachedPlaylist(@Nullable String playlistId) {
+        // Adding to Watch later keeps a copy of it here too (see addToCachedPlaylist)
         return playlistId != null && playlistId.length() <= LOCAL_PLAYLIST_ID_MAX_LENGTH
+                && !Helpers.equalsAny(playlistId, BrowseApiHelper.LIKED_PLAYLIST, BrowseApiHelper.WATCH_LATER_PLAYLIST)
                 && PlaylistGroupServiceImpl.findPlaylistGroup(playlistId) != null;
     }
 
@@ -126,7 +148,14 @@ public class PlaylistServiceWrapper extends PlaylistService {
 
     @Override
     public List<PlaylistInfo> getPlaylistsInfo(String videoId) {
-        return getCachedPlaylistInfo(super.getPlaylistsInfo(videoId), videoId);
+        List<PlaylistInfo> playlistInfos = getCachedPlaylistInfo(super.getPlaylistsInfo(videoId), videoId);
+        mRecentEdits.apply(playlistInfos, videoId);
+
+        if (playlistInfos == null) {
+            return null;
+        }
+
+        return PlaylistOrder.sort(playlistInfos, PlaylistInfo::getTitle);
     }
 
     private List<PlaylistInfo> getCachedPlaylistInfo(List<PlaylistInfo> playlistsInfos, String videoId) {
@@ -187,7 +216,17 @@ public class PlaylistServiceWrapper extends PlaylistService {
 
     @Override
     public void addToPlaylist(String playlistId, String videoId) {
-        super.addToPlaylist(playlistId, videoId);
+        RecentPlaylistEdits.Edit edit = mRecentEdits.put(playlistId, videoId, true);
+
+        try {
+            // Kept on this device only: YouTube doesn't know it
+            if (!isCachedPlaylist(playlistId)) {
+                super.addToPlaylist(playlistId, videoId);
+            }
+        } catch (RuntimeException e) {
+            mRecentEdits.undo(playlistId, videoId, edit);
+            throw e;
+        }
 
         addToCachedPlaylist(playlistId, videoId);
     }
@@ -267,7 +306,17 @@ public class PlaylistServiceWrapper extends PlaylistService {
 
     @Override
     public void removeFromPlaylist(String playlistId, String videoId) {
-        super.removeFromPlaylist(playlistId, videoId);
+        RecentPlaylistEdits.Edit edit = mRecentEdits.put(playlistId, videoId, false);
+
+        try {
+            // Kept on this device only: YouTube doesn't know it
+            if (!isCachedPlaylist(playlistId)) {
+                super.removeFromPlaylist(playlistId, videoId);
+            }
+        } catch (RuntimeException e) {
+            mRecentEdits.undo(playlistId, videoId, edit);
+            throw e;
+        }
 
         removeFromCachedPlaylist(playlistId, videoId);
     }

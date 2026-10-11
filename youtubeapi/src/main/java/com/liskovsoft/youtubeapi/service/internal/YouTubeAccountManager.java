@@ -352,8 +352,15 @@ public class YouTubeAccountManager {
             Account selectedAccount = getSelectedAccount();
 
             if (newAccounts != null) {
+                // They're the accounts of the selected one's sign-in (see persistRefreshToken). Matched by it, not by the name,
+                // which changes, e.g. when a channel is created: else the renamed account is added apart and the selected one stays stale.
+                String refreshToken = selectedAccount != null ? ((YouTubeAccount) selectedAccount).getRefreshToken() : null;
+
                 for (AccountInt newAccount : newAccounts) {
                     YouTubeAccount account = YouTubeAccount.from(newAccount);
+                    if (refreshToken != null) {
+                        account.setRefreshToken(refreshToken);
+                    }
                     account.setSelected(account.equals(selectedAccount));
                     addAccount(account);
                 }

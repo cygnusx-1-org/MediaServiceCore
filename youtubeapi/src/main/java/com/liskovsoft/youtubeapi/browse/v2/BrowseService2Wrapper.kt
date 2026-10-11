@@ -3,6 +3,7 @@ package com.liskovsoft.youtubeapi.browse.v2
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl
+import com.liskovsoft.youtubeapi.playlist.PlaylistOrder
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl
 import com.liskovsoft.youtubeapi.rss.RssService
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
@@ -88,7 +89,7 @@ internal object BrowseService2Wrapper: BrowseService2() {
         if (playlistGroups.isNotEmpty()) {
             val result: MutableList<MediaItem> = mutableListOf()
             // Pin playlists
-            myPlaylists?.mediaItems?.getOrNull(0)?.let { result.add(it) } // WatchLater
+            myPlaylists?.mediaItems?.firstOrNull { it.channelId == BrowseApiHelper.WATCH_LATER_CHANNEL_ID }?.let { result.add(it) } // WatchLater
             myPlaylists?.mediaItems?.firstOrNull { it.channelId?.startsWith(BrowseApiHelper.LIKED_CHANNEL_ID) ?: false }?.let { result.add(it) } // Liked
 
             var firstIdx: Int = -1
@@ -137,7 +138,7 @@ internal object BrowseService2Wrapper: BrowseService2() {
             }
 
             return YouTubeMediaGroup(myPlaylists?.type ?: MediaGroup.TYPE_USER_PLAYLISTS).apply {
-                mediaItems = result
+                mediaItems = PlaylistOrder.sort(result) { it.title }
             }
         }
 

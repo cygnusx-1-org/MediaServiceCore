@@ -538,6 +538,16 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     /**
+     * YouTube tells about an edit only a while after it's saved, so this comes before what it tells
+     *
+     * @return the video was added to the playlist (true) or removed from it (false) in the app, null when it wasn't
+     */
+    @Nullable
+    public Boolean getRecentPlaylistEdit(String playlistId, String videoId) {
+        return PlaylistServiceWrapper.instance().getRecentEdit(playlistId, videoId);
+    }
+
+    /**
      * Creates a playlist kept on this device on YouTube, with its videos
      */
     public Observable<Void> copyPlaylistToYouTubeObserve(String playlistId) {
