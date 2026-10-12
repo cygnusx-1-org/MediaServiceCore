@@ -138,7 +138,7 @@ internal object BrowseService2Wrapper: BrowseService2() {
             }
 
             return YouTubeMediaGroup(myPlaylists?.type ?: MediaGroup.TYPE_USER_PLAYLISTS).apply {
-                mediaItems = PlaylistOrder.sort(result) { it.title }
+                mediaItems = PlaylistOrder.sort(result)
             }
         }
 

@@ -155,7 +155,8 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
             return null;
         }
 
-        return PlaylistOrder.sort(playlistInfos, PlaylistInfo::getTitle);
+        return PlaylistOrder.sort(playlistInfos, PlaylistInfo::getTitle, info -> BrowseApiHelper.WATCH_LATER_PLAYLIST.equals(info.getPlaylistId()),
+                info -> BrowseApiHelper.LIKED_PLAYLIST.equals(info.getPlaylistId()));
     }
 
     private List<PlaylistInfo> getCachedPlaylistInfo(List<PlaylistInfo> playlistsInfos, String videoId) {

@@ -39,11 +39,11 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
             ?.let { WrapperMediaItem(it).apply { playlistIndex = index } }
             ?.let { if (legacyFilter.invoke(it)) { countFiltered(it.videoId); null } else it }
         }?.let {
-            // By title
+            // Watch later and Liked videos on top, then by title
             if (options.groupType != MediaGroup.TYPE_USER_PLAYLISTS)
                 return@let it
 
-            PlaylistOrder.sort(it) { it.title }
+            PlaylistOrder.sort(it)
         }
     }
     private val nextPageKeyItem by lazy { getNextPageKeyInt() }
