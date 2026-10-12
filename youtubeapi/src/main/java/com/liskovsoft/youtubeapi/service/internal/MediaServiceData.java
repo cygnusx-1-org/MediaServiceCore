@@ -70,6 +70,8 @@ public class MediaServiceData {
             | CONTENT_SHORTS_CHANNEL | CONTENT_SHORTS_NEWS;
     public static final int CONTENT_SHORTS_ALL = (CONTENT_SHORTS_ALL_OLD & ~CONTENT_SHORTS_TRENDING_OLD) | CONTENT_SHORTS_GAMING
             | CONTENT_SHORTS_MUSIC | CONTENT_SHORTS_SPORTS | CONTENT_SHORTS_LIVE | CONTENT_SHORTS_MY_VIDEOS;
+    public static final int CONTENT_HIDDEN_DEFAULT = CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_NEWS
+            | CONTENT_UPCOMING_HOME;
     private static MediaServiceData sInstance;
     private String mScreenId;
     private String mDeviceId;
@@ -238,6 +240,19 @@ public class MediaServiceData {
         return (mHiddenContent & content) == content;
     }
 
+    /**
+     * All the CONTENT_* chosen in the settings, whether the Shorts quick toggle is on or off
+     */
+    public int getHiddenContentInSettings() {
+        return mHiddenContent;
+    }
+
+    public void setHiddenContentInSettings(int content) {
+        mHiddenContent = content;
+
+        persistData();
+    }
+
     private int getHiddenContent() {
         if (!mIsShortsQuickToggleEnabled || mIsShortsQuickToggleHiding) {
             return mHiddenContent;
@@ -389,8 +404,7 @@ public class MediaServiceData {
         mAppInfo = Helpers.parseItem(split, 15, AppInfoCached::fromString);
         mPlayerData = Helpers.parseItem(split, 16, PlayerDataCached::fromString);
         mClientData = Helpers.parseItem(split, 17, ClientDataCached::fromString);
-        mHiddenContent = Helpers.parseInt(split, 18,
-                CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_NEWS | CONTENT_UPCOMING_HOME);
+        mHiddenContent = Helpers.parseInt(split, 18, CONTENT_HIDDEN_DEFAULT);
         mIsMoreSubtitlesUnlocked = Helpers.parseBoolean(split, 19);
         //mIsPremiumFixEnabled = Helpers.parseBoolean(split, 20);
         mVisitorCookie = Helpers.parseStr(split, 21);
