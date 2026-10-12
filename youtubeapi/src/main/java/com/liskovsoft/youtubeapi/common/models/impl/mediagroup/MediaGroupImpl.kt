@@ -47,6 +47,18 @@ internal data class BrowseMediaGroupTV(
     override fun getTitleInt(): String? = null
 }
 
+/**
+ * Items read before, e.g. kept between visits (see NotificationFeed)
+ */
+internal data class ItemsMediaGroup(
+    private val items: List<ItemWrapper?>,
+    private val options: MediaGroupOptions
+): BaseMediaGroup(options) {
+    override fun getItemWrappersInt(): List<ItemWrapper?> = items
+    override fun getNextPageKeyInt(): String? = null
+    override fun getTitleInt(): String? = null
+}
+
 internal data class LiveMediaGroup(
     private val liveResult: BrowseResult,
     private val options: MediaGroupOptions

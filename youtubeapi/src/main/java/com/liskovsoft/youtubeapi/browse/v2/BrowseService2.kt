@@ -11,17 +11,29 @@ import com.liskovsoft.youtubeapi.common.models.gen.ItemWrapper
 import com.liskovsoft.youtubeapi.common.models.gen.getCurrentStateIndex
 import com.liskovsoft.youtubeapi.common.models.gen.getPlaylistId
 import com.liskovsoft.youtubeapi.common.models.gen.getVideoId
+import com.liskovsoft.youtubeapi.common.models.gen.isLive
+import com.liskovsoft.youtubeapi.common.models.gen.isUpcoming
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.ShortsMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.getItems
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 
 private const val PLAYLIST_MAX_PAGES = 500 // 15 videos a page on TV. A playlist holds 5000 at most.
 private const val CHANNEL_ID_PREFIX = "UC"
 private const val SHORTS_PLAYLIST_PREFIX = "UUSH" // the uploads playlist of a channel is "UU", its shorts "UUSH"
+// The Subscriptions read for some channels (see getSubscriptions). About 15 videos a page on TV, 0.4 s each.
+private const val CHANNEL_ITEMS_MAX_AGE_S = 21 * 24 * 60 * 60L
+private const val CHANNEL_ITEMS_PARTS = 4 // of time, read at once
+private const val CHANNEL_ITEMS_MAX_PAGES = 40 // a part, or all of them when read one after another: three weeks of 126 channels
+private const val KNOWN_MAX_PAGES = 10 // looking for the ones read before: past them, all of them are read again
+private const val NEWEST_VIDEO_COUNT = 5 // a few, as one can be deleted
 
 internal open class BrowseService2 {
-    private val mBrowseApi = RetrofitHelper.create(BrowseApi::class.java)
+    private var mBrowseApi = RetrofitHelper.create(BrowseApi::class.java)
 
     //fun getHome(): List<MediaGroup?>? {
     //    val home = getBrowseRows(BrowseApiHelper.getHomeQueryWeb(), MediaGroup.TYPE_HOME)
@@ -160,6 +172,149 @@ internal open class BrowseService2 {
         // A channel is listed again under each sorting
         return RetrofitHelper.get(browseResult)?.getTabs()?.mapNotNull { it?.getSubscribedChannelId() }?.distinct()
     }
+
+    /**
+     * The videos of the given channels among the Subscriptions, newest first: e.g. the ones with the bell on All (see NotificationStorage).
+     * All of them at once, down to a depth as the channels may post rarely, or down to the ones read before.
+     * @param knownVideoIds the newest videos of the Subscriptions when read before (see [ChannelSubscriptions.newestVideoIds])
+     * @return null when the first page can't be read
+     */
+    fun getSubscriptions(channelIds: Set<String>, knownVideoIds: Collection<String> = emptyList()): ChannelSubscriptions? {
+        val options = MediaGroupOptions.create(MediaGroup.TYPE_NOTIFICATIONS)
+        val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getSubscriptionsQuery(options.clientTV))
+        val firstPage = RetrofitHelper.get(browseResult) ?: return null
+        val firstItems = firstPage.getItems()
+        val firstKey = firstPage.getContinuationToken()
+        val newestVideoIds = firstItems.orEmpty()
+            .mapNotNull { if (it == null || it.isLive() || it.isUpcoming()) null else it.getVideoId() }.take(NEWEST_VIDEO_COUNT)
+
+        if (knownVideoIds.isNotEmpty()) {
+            readDownToKnownTV(firstItems, firstKey, knownVideoIds, channelIds, newestVideoIds, options)?.let { return it }
+        }
+
+        val pages = firstKey?.let {
+            readPartsTV(it, channelIds, options) ?: readPagesTV(it, channelIds, options, CHANNEL_ITEMS_MAX_PAGES - 1)
+        }
+
+        return ChannelSubscriptions(firstItems.ofChannels(channelIds) + pages?.items.orEmpty(), newestVideoIds,
+            isKnownReached = false, isComplete = pages?.isComplete ?: true)
+    }
+
+    /**
+     * The ones newer than the known ones, read one page after another, as they're usually on the first ones
+     * @return null when they aren't within [KNOWN_MAX_PAGES]
+     */
+    private fun readDownToKnownTV(firstItems: List<ItemWrapper?>?, firstKey: String?, knownVideoIds: Collection<String>,
+                                  channelIds: Set<String>, newestVideoIds: List<String>, options: MediaGroupOptions): ChannelSubscriptions? {
+        val channelItems = mutableListOf<ItemWrapper?>()
+        var items = firstItems
+        var key = firstKey
+        var pages = 1
+
+        while (true) {
+            val knownIndex = items.orEmpty().indexOfFirst { it?.getVideoId() in knownVideoIds }
+
+            if (knownIndex != -1) {
+                channelItems.addAll(items.orEmpty().take(knownIndex).ofChannels(channelIds))
+                return ChannelSubscriptions(channelItems, newestVideoIds, isKnownReached = true, isComplete = true)
+            }
+
+            channelItems.addAll(items.ofChannels(channelIds))
+
+            if (key == null || pages >= KNOWN_MAX_PAGES) {
+                return null
+            }
+
+            val continuationResult =
+                mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(options.clientTV, key))
+            val continuation = RetrofitHelper.get(continuationResult)
+                ?: return ChannelSubscriptions(channelItems, newestVideoIds, isKnownReached = false, isComplete = false)
+
+            items = continuation.getItems()
+            key = continuation.getContinuationToken()
+            pages++
+        }
+    }
+
+    /**
+     * The pages after the first one down to [CHANNEL_ITEMS_MAX_AGE_S], in [CHANNEL_ITEMS_PARTS] parts of time read at once,
+     * joined newest first. The continuation of each part is moved to its time (see SubscriptionsCursor).
+     * The parts after one that stops short at its most pages are left out, so that none are missing between the ones joined.
+     * @return null when the continuation isn't understood, or a moved one doesn't start at its time: to be read one page after another
+     */
+    private fun readPartsTV(key: String, channelIds: Set<String>, options: MediaGroupOptions): PagesRead? {
+        val startTime = SubscriptionsCursor.getTime(key) ?: return null
+        val times = (0..CHANNEL_ITEMS_PARTS).map { startTime - CHANNEL_ITEMS_MAX_AGE_S * it / CHANNEL_ITEMS_PARTS }
+        val keys = (0 until CHANNEL_ITEMS_PARTS).map { if (it == 0) key else SubscriptionsCursor.withTime(key, times[it]) ?: return null }
+
+        val parts = try {
+            runBlocking {
+                keys.mapIndexed { index, partKey ->
+                    async(Dispatchers.IO) {
+                        // The first part starts where the first page ends
+                        readPagesTV(partKey, channelIds, options, CHANNEL_ITEMS_MAX_PAGES, if (index == 0) null else times[index], times[index + 1])
+                    }
+                }.awaitAll()
+            }
+        } catch (e: InterruptedException) {
+            // Left: not complete, so not kept (see NotificationFeed)
+            Thread.currentThread().interrupt()
+            return PagesRead(emptyList(), isComplete = false, isEnded = false)
+        }
+
+        val readParts = parts.filterNotNull()
+
+        if (readParts.size < parts.size) {
+            return null
+        }
+
+        val shortPart = readParts.indexOfFirst { !it.isEnded }
+        val joinedParts = if (shortPart == -1) readParts else readParts.take(shortPart + 1)
+
+        return PagesRead(joinedParts.flatMap { it.items }, joinedParts.all { it.isComplete }, joinedParts.last().isEnded)
+    }
+
+    /**
+     * The channels' ones on the pages from the given one on
+     * @param startTime the time the first page has to start at, if any: one of a moved continuation
+     * @param endTime the time to stop at, if any (see SubscriptionsCursor)
+     * @return null when the first page doesn't start at [startTime]
+     */
+    private fun readPagesTV(key: String, channelIds: Set<String>, options: MediaGroupOptions, maxPages: Int,
+                            startTime: Long? = null, endTime: Long? = null): PagesRead? {
+        val channelItems = mutableListOf<ItemWrapper?>()
+        var nextKey: String? = key
+        var pages = 0
+
+        while (nextKey != null && pages < maxPages) {
+            val continuationResult =
+                mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(options.clientTV, nextKey))
+            val continuation = RetrofitHelper.get(continuationResult) ?: return PagesRead(channelItems, isComplete = false, isEnded = false)
+
+            channelItems.addAll(continuation.getItems().ofChannels(channelIds))
+            nextKey = continuation.getContinuationToken()
+            pages++
+
+            val nextTime = nextKey?.let { SubscriptionsCursor.getTime(it) }
+
+            // Newer than asked: the moved continuation was read from the top instead
+            if (pages == 1 && startTime != null && nextTime != null && nextTime > startTime) {
+                return null
+            }
+
+            if (endTime != null && (nextTime == null || nextTime <= endTime)) {
+                return PagesRead(channelItems, isComplete = true, isEnded = true)
+            }
+        }
+
+        return PagesRead(channelItems, isComplete = true, isEnded = nextKey == null)
+    }
+
+    /**
+     * @param isComplete no page failed
+     * @param isEnded down to the time asked, or the end of the Subscriptions: not stopped short at the most pages
+     */
+    private class PagesRead(val items: List<ItemWrapper?>, val isComplete: Boolean, val isEnded: Boolean)
 
     /**
      * The bell of a channel on the account, from its page: the index of its state among All, Personalized and None
@@ -671,6 +826,10 @@ internal open class BrowseService2 {
     private fun getBrowseRedirect(browseId: String, browseExpression: (String) -> BrowseResult?): BrowseResult? {
         val result = browseExpression(browseId)
         return if (result?.getRedirectBrowseId() != null) browseExpression(result.getRedirectBrowseId()!!) else result
+    }
+
+    fun setBrowseApi(browseApi: BrowseApi) {
+        mBrowseApi = browseApi
     }
 
     private fun continueIfNeededTV(items: List<ItemWrapper?>?, continuationKey: String?, options: MediaGroupOptions): Pair<List<ItemWrapper?>?, String?> {
