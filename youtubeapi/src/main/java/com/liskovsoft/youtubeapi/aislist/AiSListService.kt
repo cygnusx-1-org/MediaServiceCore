@@ -1,10 +1,15 @@
 package com.liskovsoft.youtubeapi.aislist
 
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.mediaserviceinterfaces.data.AiSListData
+import com.liskovsoft.mediaserviceinterfaces.data.AiSListReport
 import com.liskovsoft.sharedutils.helpers.FileHelpers
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import java.io.File
@@ -17,6 +22,9 @@ internal object AiSListService {
     private const val WARNLIST_FILE = "warnlist.txt"
     private const val REFRESH_PERIOD_MS = 4 * 60 * 60 * 1_000L // 4 hours
     private const val MAX_RESPONSE_BYTES = 5 * 1024 * 1024 // 5 MB
+    private const val MAX_MESSAGE_BYTES = 64 * 1024
+    private const val MAX_MESSAGE_LENGTH = 200 // a toast
+    private val JSON_TYPE = MediaType.parse("application/json; charset=utf-8")
     private val mAiSListApi = RetrofitHelper.create(AiSListApi::class.java)
 
     /**
@@ -41,6 +49,66 @@ internal object AiSListService {
             override fun getBlocklist(): Set<String> = blocklist
             override fun getWarnlist(): Set<String> = warnlist
             override fun getUpdatedTimeMs(): Long = updatedTimeMs
+        }
+    }
+
+    /**
+     * Sends the channel to AiSList's review as the AiBlock extension does: the video is the evidence.<br/>
+     * Must be called off the main thread.
+     * @return the answer, with the status 0 when the server wasn't reached
+     */
+    @JvmStatic
+    fun report(channelHandle: String, videoUrl: String, username: String): AiSListReport {
+        val call = mAiSListApi.reportChannel(RequestBody.create(JSON_TYPE, createReportJson(channelHandle, videoUrl, username)))
+
+        val response = try {
+            call?.let { RetrofitHelper.getResponse(it) }
+        } catch (e: IllegalStateException) {
+            Log.e(TAG, "Can't report $channelHandle: ${e.message}")
+            null
+        } ?: return createReport(0, null)
+
+        // The message comes with the error codes too, e.g. "Channel already submitted"
+        val message = (if (response.isSuccessful) response.body() else response.errorBody())?.use {
+            if (it.contentLength() > MAX_MESSAGE_BYTES) null else parseMessage(it.string())
+        }
+
+        return createReport(response.code(), message)
+    }
+
+    /**
+     * The fields the AiBlock extension sends
+     */
+    @JvmStatic
+    fun createReportJson(channelHandle: String, videoUrl: String, username: String): String {
+        return GsonBuilder().disableHtmlEscaping().create().toJson(linkedMapOf("channel_handle" to channelHandle, "video_url" to videoUrl, "username" to username))
+    }
+
+    /**
+     * @return the "message" of the answer, null when there's none
+     */
+    @JvmStatic
+    fun parseMessage(content: String?): String? {
+        if (content.isNullOrBlank()) {
+            return null
+        }
+
+        val message = try {
+            val json = JsonParser().parse(content)
+            val field = if (json.isJsonObject) json.asJsonObject.get("message") else null
+            if (field != null && field.isJsonPrimitive) field.asString else null
+        } catch (e: RuntimeException) { // not JSON, e.g. the error page of a proxy
+            null
+        }
+
+        return message?.trim()?.take(MAX_MESSAGE_LENGTH)?.ifEmpty { null }
+    }
+
+    private fun createReport(status: Int, message: String?): AiSListReport {
+        return object : AiSListReport {
+            override fun isAccepted(): Boolean = status in 200..299
+            override fun getStatus(): Int = status
+            override fun getMessage(): String? = message
         }
     }
 

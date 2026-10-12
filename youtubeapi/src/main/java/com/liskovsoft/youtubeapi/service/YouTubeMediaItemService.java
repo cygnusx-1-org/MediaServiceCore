@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.MediaItemService;
 import com.liskovsoft.mediaserviceinterfaces.data.AiSListData;
+import com.liskovsoft.mediaserviceinterfaces.data.AiSListReport;
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
@@ -592,6 +593,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     @Override
     public Observable<AiSListData> getAiSListDataObserve() {
         return RxHelper.fromCallable(AiSListService::getData);
+    }
+
+    @Override
+    public Observable<AiSListReport> reportAiSListChannelObserve(String channelHandle, String videoUrl, String username) {
+        return RxHelper.fromCallable(() -> AiSListService.report(channelHandle, videoUrl, username));
     }
 
     @Override

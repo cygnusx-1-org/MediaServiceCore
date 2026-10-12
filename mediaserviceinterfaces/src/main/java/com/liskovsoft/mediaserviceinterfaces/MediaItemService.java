@@ -1,6 +1,7 @@
 package com.liskovsoft.mediaserviceinterfaces;
 
 import com.liskovsoft.mediaserviceinterfaces.data.AiSListData;
+import com.liskovsoft.mediaserviceinterfaces.data.AiSListReport;
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
@@ -99,6 +100,13 @@ public interface MediaItemService {
     Observable<DeArrowData> getDeArrowDataObserve(String videoId);
     Observable<DeArrowData> getDeArrowDataObserve(List<String> videoIds);
     Observable<AiSListData> getAiSListDataObserve();
+    /**
+     * Sends the channel to AiSList's review as one that publishes AI-generated content.
+     * @param channelHandle the handle with the leading "@"
+     * @param videoUrl a video of the channel, the evidence
+     * @param username who the report is credited to, e.g. "Anonymous"
+     */
+    Observable<AiSListReport> reportAiSListChannelObserve(String channelHandle, String videoUrl, String username);
     /**
      * The channel handles (e.g. "@handle") of the video's owners -> their channel ids (or null), the uploader first.
      * A collaboration has one per channel. An error when none is found.

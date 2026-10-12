@@ -100,6 +100,28 @@ class AiSListTest {
     }
 
     @Test
+    fun testThatReportHasTheExtensionFields() {
+        assertEquals("{\"channel_handle\":\"@Канал\",\"video_url\":\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\",\"username\":\"Anonymous\"}",
+            AiSListService.createReportJson("@Канал", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "Anonymous"))
+        // A name with quotes stays one field
+        assertEquals("{\"channel_handle\":\"@a\",\"video_url\":\"u\",\"username\":\"Jo \\\"JJ\\\" Doe\"}",
+            AiSListService.createReportJson("@a", "u", "Jo \"JJ\" Doe"))
+    }
+
+    @Test
+    fun testReportMessageParsing() {
+        assertEquals("Channel submitted for review", AiSListService.parseMessage("{\"message\":\" Channel submitted for review \",\"id\":5}"))
+        assertNull(AiSListService.parseMessage("{\"error\":\"x\"}"))
+        assertNull(AiSListService.parseMessage("{\"message\":{\"text\":\"x\"}}"))
+        assertNull(AiSListService.parseMessage("{\"message\":\"  \"}"))
+        assertNull(AiSListService.parseMessage("<html>502 Bad Gateway</html>"))
+        assertNull(AiSListService.parseMessage("[1, 2]"))
+        assertNull(AiSListService.parseMessage(""))
+        assertNull(AiSListService.parseMessage(null))
+        assertEquals(200, AiSListService.parseMessage("{\"message\":\"${"a".repeat(500)}\"}")?.length)
+    }
+
+    @Test
     fun testThatHomeTilesHaveHandles() {
         val api = MockUtils.mockWithGson(HomeApiMock2::class.java)
         val browseResult = api.getBrowseResultTV("").execute().body()
