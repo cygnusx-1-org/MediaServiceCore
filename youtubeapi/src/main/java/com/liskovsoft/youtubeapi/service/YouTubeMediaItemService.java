@@ -24,6 +24,7 @@ import com.liskovsoft.youtubeapi.actions.ActionsService;
 import com.liskovsoft.youtubeapi.actions.ActionsServiceWrapper;
 import com.liskovsoft.youtubeapi.block.SponsorBlockService;
 import com.liskovsoft.youtubeapi.block.data.SegmentList;
+import com.liskovsoft.youtubeapi.browse.v2.BrowseApiHelper;
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.BaseMediaItem;
 import com.liskovsoft.youtubeapi.aislist.AiSListService;
 import com.liskovsoft.youtubeapi.videocategory.VideoCategoryService;
@@ -409,6 +410,13 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
+    public void removeWatchedFromWatchLater() {
+        checkSigned();
+
+        getPlaylistService().removeWatched(BrowseApiHelper.WATCH_LATER_PLAYLIST);
+    }
+
+    @Override
     public void renamePlaylist(String playlistId, String newName) {
         checkSigned();
 
@@ -487,6 +495,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     @Override
     public Observable<Void> removeFromPlaylistObserve(String playlistId, String videoId) {
         return RxHelper.fromRunnable(() -> removeFromPlaylist(playlistId, videoId));
+    }
+
+    @Override
+    public Observable<Void> removeWatchedFromWatchLaterObserve() {
+        return RxHelper.fromRunnable(this::removeWatchedFromWatchLater);
     }
 
     @Override

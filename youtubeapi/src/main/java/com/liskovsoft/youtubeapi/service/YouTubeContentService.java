@@ -226,6 +226,18 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
+    public MediaGroup getWatchLater() {
+        checkSigned();
+
+        return getBrowseService2().getWatchLater();
+    }
+
+    @Override
+    public Observable<MediaGroup> getWatchLaterObserve() {
+        return RxHelper.fromCallable(this::getWatchLater);
+    }
+
+    @Override
     public MediaGroup getGroup(String reloadPageKey) {
         return getBrowseService2().getGroup(reloadPageKey, MediaGroup.TYPE_UNDEFINED, null);
     }

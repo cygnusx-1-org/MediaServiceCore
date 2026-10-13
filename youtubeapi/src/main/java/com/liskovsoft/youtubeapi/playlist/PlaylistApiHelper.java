@@ -14,6 +14,8 @@ public class PlaylistApiHelper {
             "\"actions\":[{\"playlistVideoOrder\":\"%s\",\"action\":\"ACTION_SET_PLAYLIST_VIDEO_ORDER\"}]";
     private static final String REMOVE_FROM_PLAYLISTS_QUERY = "\"playlistId\":\"%s\"," +
             "\"actions\":[{\"removedVideoId\":\"%s\",\"action\":\"ACTION_REMOVE_VIDEO_BY_VIDEO_ID\"}]";
+    private static final String REMOVE_WATCHED_QUERY = "\"playlistId\":\"%s\"," +
+            "\"actions\":[{\"action\":\"ACTION_REMOVE_WATCHED_VIDEOS\"}]";
     private static final String RENAME_PLAYLISTS_QUERY = "\"playlistId\":\"%s\"," +
             "\"actions\":[{\"playlistName\":%s,\"action\":\"ACTION_SET_PLAYLIST_NAME\"}]";
     private static final String SAVE_REMOVE_PLAYLIST_QUERY = "\"target\":{\"playlistId\":\"%s\"}";
@@ -34,6 +36,14 @@ public class PlaylistApiHelper {
 
     public static String getRemoveFromPlaylistsQuery(String playlistId, String videoId) {
         String queryTemplate = String.format(REMOVE_FROM_PLAYLISTS_QUERY, playlistId, videoId);
+        return PostDataHelper.createQueryTV(queryTemplate);
+    }
+
+    /**
+     * What the YouTube app sends for Remove watched videos of Watch later. YouTube picks the videos: every one with any of it watched.
+     */
+    public static String getRemoveWatchedQuery(String playlistId) {
+        String queryTemplate = String.format(REMOVE_WATCHED_QUERY, playlistId);
         return PostDataHelper.createQueryTV(queryTemplate);
     }
 

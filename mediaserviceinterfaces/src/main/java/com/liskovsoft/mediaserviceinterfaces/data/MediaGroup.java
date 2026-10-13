@@ -30,6 +30,7 @@ public interface MediaGroup {
     int TYPE_PLAYBACK_QUEUE = 21;
     int TYPE_BLOCKED_CHANNELS = 22;
     int TYPE_BLOCKED_AI_CHANNELS = 23;
+    int TYPE_WATCH_LATER = 24;
     int TOPIC_NONE = 0;
     int TOPIC_MUSIC = 1;
     int TOPIC_GAMING = 2;

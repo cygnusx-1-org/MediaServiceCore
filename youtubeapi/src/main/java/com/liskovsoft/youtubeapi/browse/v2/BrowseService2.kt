@@ -415,6 +415,13 @@ internal open class BrowseService2 {
         return getBrowseGridTV(BrowseApiHelper::getMyHistoryQuery, MediaGroup.TYPE_HISTORY)
     }
 
+    /**
+     * The playlist opened as a channel, like [getWatchLaterVideoIds]
+     */
+    fun getWatchLater(): MediaGroup? {
+        return getBrowseGridTV({ BrowseApiHelper.getChannelQuery(it, BrowseApiHelper.WATCH_LATER_CHANNEL_ID) }, MediaGroup.TYPE_WATCH_LATER)
+    }
+
     private fun getLikedMusicWeb(): MediaGroup? {
         val options = MediaGroupOptions.create(MediaGroup.TYPE_MUSIC)
         val result = mBrowseApi.getBrowseResult(BrowseApiHelper.getLikedMusicQuery(AppClient.WEB))
@@ -624,8 +631,8 @@ internal open class BrowseService2 {
             return null
         }
 
-        val channelOptions = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL, channelId)
-        val uploadOptions = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL_UPLOADS, channelId)
+        val channelOptions = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL)
+        val uploadOptions = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL_UPLOADS)
         val result = mutableListOf<MediaGroup>()
 
         val homeResult = getBrowseRedirect(channelId) {

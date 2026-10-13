@@ -55,6 +55,10 @@ public interface MediaItemService {
     FeedbackEndpoint getHomeFeedbackEndpoint(String videoId);
     List<PlaylistInfo> getPlaylistsInfo(String videoId);
     void removeFromPlaylist(String playlistId, String videoId);
+    /**
+     * Removes the watched videos from Watch later, the ones YouTube picks: every one with any of it watched
+     */
+    void removeWatchedFromWatchLater();
     void renamePlaylist(String playlistId, String newName);
     void setPlaylistOrder(String playlistId, int playlistOrder);
     void removePlaylist(String playlistId);
@@ -88,6 +92,7 @@ public interface MediaItemService {
     Observable<Void> addToPlaylistObserve(String playlistId, String videoId);
     Observable<Void> addToPlaylistObserve(String playlistId, MediaItem item);
     Observable<Void> removeFromPlaylistObserve(String playlistId, String videoId);
+    Observable<Void> removeWatchedFromWatchLaterObserve();
     Observable<Void> renamePlaylistObserve(String playlistId, String newName);
     Observable<Void> setPlaylistOrderObserve(String playlistId, int playlistOrder);
     Observable<Void> savePlaylistObserve(String playlistId);

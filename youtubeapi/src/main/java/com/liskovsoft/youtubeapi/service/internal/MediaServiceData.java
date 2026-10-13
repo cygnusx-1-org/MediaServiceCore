@@ -38,7 +38,7 @@ public class MediaServiceData {
     public static final int CONTENT_WATCHED_SUBSCRIPTIONS = 1 << 2;
     public static final int CONTENT_SHORTS_HOME = 1 << 3;
     public static final int CONTENT_SHORTS_SEARCH = 1 << 4;
-    public static final int CONTENT_WATCHED_WATCH_LATER = 1 << 5;
+    // 1 << 5 was Watched in Watch later, which the Remove watched videos of the Watch later section replaced. Not reused: settings saved before keep it.
     public static final int CONTENT_SHORTS_SUBSCRIPTIONS = 1 << 6;
     public static final int CONTENT_SHORTS_HISTORY = 1 << 7;
     public static final int CONTENT_UPCOMING_CHANNEL = 1 << 8;

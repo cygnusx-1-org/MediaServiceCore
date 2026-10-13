@@ -322,6 +322,16 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
         removeFromCachedPlaylist(playlistId, videoId);
     }
 
+    @Override
+    public void removeWatched(String playlistId) {
+        try {
+            super.removeWatched(playlistId);
+        } finally {
+            // YouTube picked the videos: one added in the app might be gone. Also after an error: it might have removed them all the same.
+            mRecentEdits.forgetAdded(playlistId);
+        }
+    }
+
     private void removeFromCachedPlaylist(String playlistId, String videoId) {
         ItemGroup playlistGroup = PlaylistGroupServiceImpl.findPlaylistGroup(playlistId);
 

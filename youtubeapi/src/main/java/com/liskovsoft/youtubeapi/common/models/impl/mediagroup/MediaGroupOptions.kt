@@ -1,7 +1,6 @@
 package com.liskovsoft.youtubeapi.common.models.impl.mediagroup
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
-import com.liskovsoft.youtubeapi.browse.v2.BrowseApiHelper
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData
 
@@ -14,7 +13,7 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
     val clientTV by lazy { if (enableLegacyUI) AppClient.TV_LEGACY else AppClient.TV }
 
     companion object {
-        fun create(groupType: Int, channelId: String? = null): MediaGroupOptions {
+        fun create(groupType: Int): MediaGroupOptions {
             val data = MediaServiceData.instance()
             val removeShorts = (MediaGroup.TYPE_SUBSCRIPTIONS == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS))
                     || (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_HOME))
@@ -34,8 +33,7 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                     (MediaGroup.TYPE_CHANNEL_UPLOADS == groupType && data.isContentHidden(MediaServiceData.CONTENT_UPCOMING_CHANNEL)) ||
                     (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_UPCOMING_HOME))
             val removeWatched = (MediaGroup.TYPE_SUBSCRIPTIONS == groupType && data.isContentHidden(MediaServiceData.CONTENT_WATCHED_SUBSCRIPTIONS)) ||
-                    (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_WATCHED_HOME)) ||
-                    (channelId == BrowseApiHelper.WATCH_LATER_CHANNEL_ID && data.isContentHidden(MediaServiceData.CONTENT_WATCHED_WATCH_LATER))
+                    (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_WATCHED_HOME))
             // NOTE: The modern grid ui contains shorts on a separate row
             // NOTE: The legacy ui subscriptions is out of order and cannot be fixed
             val isBrowseSection = groupType != MediaGroup.TYPE_SUGGESTIONS // legacy suggestions ui doesn't have chapters

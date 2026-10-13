@@ -51,6 +51,23 @@ class RecentPlaylistEditsTest {
     }
 
     /**
+     * YouTube removed the watched videos of Watch later: an added one might be gone, a removed one is still gone
+     */
+    @Test
+    fun forgetAddedKeepsTheRemovedAndOtherPlaylists() {
+        edits.put("WL", "video1", true)
+        edits.put("WL", "video2", false)
+        edits.put("PL1", "video1", true)
+        edits.put("WLX", "video1", true)
+        edits.forgetAdded("WL")
+
+        assertNull(edits.get("WL", "video1"))
+        assertEquals(false, edits.get("WL", "video2"))
+        assertEquals(true, edits.get("PL1", "video1"))
+        assertEquals(true, edits.get("WLX", "video1"))
+    }
+
+    /**
      * Another account: Watch later has the same id there
      */
     @Test

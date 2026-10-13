@@ -17,6 +17,10 @@ public interface ContentService {
      */
     MediaGroup getRecommended();
     MediaGroup getHistory();
+    /**
+     * The signed-in account's Watch later as a grid (MediaGroup.TYPE_WATCH_LATER), unfiltered
+     */
+    MediaGroup getWatchLater();
     List<MediaGroup> getHome();
     /**
      * The rows of My videos on this thread: the videos, then the shorts (see getMyVideosObserve)
@@ -57,6 +61,7 @@ public interface ContentService {
      */
     Observable<MediaGroup> getRecommendedObserve();
     Observable<MediaGroup> getHistoryObserve();
+    Observable<MediaGroup> getWatchLaterObserve();
     Observable<List<MediaGroup>> getHomeObserve();
     Observable<MediaGroup> getShortsObserve();
     Observable<List<MediaGroup>> getKidsHomeObserve();

@@ -32,6 +32,10 @@ public class PlaylistService {
         editPlaylist(PlaylistApiHelper.getRemoveFromPlaylistsQuery(playlistId, videoId));
     }
 
+    public void removeWatched(String playlistId) {
+        editPlaylist(PlaylistApiHelper.getRemoveWatchedQuery(playlistId));
+    }
+
     /**
      * Throws when YouTube refused the edit or never got it (e.g. the playlist is full, 5000 videos at most)
      */

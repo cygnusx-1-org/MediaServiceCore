@@ -3,6 +3,7 @@ package com.liskovsoft.youtubeapi.playlist;
 import androidx.annotation.Nullable;
 
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
+import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo;
 
 import java.util.List;
@@ -64,6 +65,14 @@ final class RecentPlaylistEdits {
                 ((YouTubePlaylistInfo) playlistInfo).setSelected(isAdded);
             }
         }
+    }
+
+    /**
+     * Forgets the videos added to the playlist, e.g. once YouTube removed videos of it it picked itself
+     */
+    void forgetAdded(String playlistId) {
+        String prefix = getKey(playlistId, "");
+        Helpers.removeIf(mEdits.entrySet(), entry -> entry.getKey().startsWith(prefix) && entry.getValue().mIsAdded);
     }
 
     void clear() {
