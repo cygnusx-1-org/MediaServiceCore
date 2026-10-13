@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.next.v2.gen.Menu
 import com.liskovsoft.youtubeapi.next.v2.gen.VideoOwnerItem
 
 internal data class NavigationEndpointItem(
+    val clickTrackingParams: String?,
     val browseEndpoint: BrowseEndpoint?,
     val watchEndpoint: WatchEndpointItem?,
     val reelWatchEndpoint: ReelWatchEndpoint?,

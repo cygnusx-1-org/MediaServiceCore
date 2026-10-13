@@ -84,6 +84,10 @@ internal data class SuggestionsGroup(val shelf: ShelfRenderer): MediaGroup {
         return false
     }
 
+    override fun getRowKind(): Int {
+        return MediaGroup.ROW_KIND_NONE
+    }
+
     override fun getFilteredVideoCount(): Int {
         return 0
     }

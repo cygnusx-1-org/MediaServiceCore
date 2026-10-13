@@ -35,6 +35,15 @@ public interface MediaGroup {
     int TOPIC_GAMING = 2;
     int TOPIC_SPORTS = 3;
     int TOPIC_NEWS = 4;
+    int ROW_KIND_NONE = 0;
+    int ROW_KIND_RECOMMENDED = 1;
+    int ROW_KIND_RECENTLY_UPLOADED = 2;
+    int ROW_KIND_CONTINUE_WATCHING = 3;
+    int ROW_KIND_WATCH_LATER = 4;
+    int ROW_KIND_SHOWS = 5;
+    int ROW_KIND_TOP_CHANNELS = 6;
+    int ROW_KIND_SEARCH_TOPICS = 7;
+    int ROW_KIND_SHORTS = 8;
     int getType();
     @Nullable
     List<MediaItem> getMediaItems();
@@ -61,6 +70,12 @@ public interface MediaGroup {
      * Found by its items, unlike its title, which is translated.
      */
     boolean isSearchTopicRow();
+    /**
+     * Which of the rows the service shows on every load the row is (e.g. <b>"Recently uploaded"</b> of Home), one of ROW_KIND_*,
+     * or ROW_KIND_NONE (e.g. a row about a topic).<br/>
+     * Found by its items, unlike its title, which is translated.
+     */
+    int getRowKind();
     /**
      * The videos the service left out of the row before its items (e.g. the watched ones of <b>"Hide watched videos from Home"</b>).
      * Not the cards without a video.<br/>

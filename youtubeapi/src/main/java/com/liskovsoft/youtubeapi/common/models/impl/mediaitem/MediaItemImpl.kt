@@ -92,10 +92,15 @@ internal class GuideMediaItem(private val guideItem: GuideItem): BaseMediaItem()
     override val hasUploadsItem = true
 }
 
-internal class TabMediaItem(private val tabItem: TabRenderer, private val groupType: Int): BaseMediaItem() {
+/**
+ * @param withChannelId with the id of the channel the tab filters the Subscriptions by. Not for the Channels section: its cards open
+ * the tab (the reload page key), and a channel id would make them channels.
+ */
+internal class TabMediaItem(private val tabItem: TabRenderer, private val groupType: Int, private val withChannelId: Boolean = false): BaseMediaItem() {
     override val titleItem by lazy { tabItem.getTitle() }
     override val reloadPageKeyItem by lazy { tabItem.getReloadToken() }
     //override val channelIdItem by lazy { tabItem.getBrowseId() }
+    override val channelIdItem by lazy { if (withChannelId) tabItem.getSubscribedChannelId() else null }
     //override val playlistParamsItem by lazy { tabItem.getBrowseParams() }
     override val cardThumbImageUrl by lazy { tabItem.getThumbnails()?.getOptimalResThumbnailUrl() }
     override val backgroundThumbImageUrl by lazy { tabItem.getThumbnails()?.getHighResThumbnailUrl() }

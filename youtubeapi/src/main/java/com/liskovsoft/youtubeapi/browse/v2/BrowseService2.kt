@@ -326,11 +326,20 @@ internal open class BrowseService2 {
         return RetrofitHelper.get(browseResult)?.getNotificationPreference()?.getCurrentStateIndex()
     }
 
-    private fun getSubscribedChannelsTV(sortByName: Boolean = false): MediaGroup? {
+    private fun getSubscribedChannelsTV(sortByName: Boolean = false, withChannelIds: Boolean = false): MediaGroup? {
         val options = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL_UPLOADS)
         val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getSubscriptionsQuery(options.clientTV))
 
-        return RetrofitHelper.get(browseResult)?.let { it.getTabs()?.let { ChannelListMediaGroup(it, options, if (sortByName) SORT_BY_NAME else SORT_DEFAULT) } }
+        return RetrofitHelper.get(browseResult)?.let { it.getTabs()?.let {
+            ChannelListMediaGroup(it, options, if (sortByName) SORT_BY_NAME else SORT_DEFAULT, withChannelIds) } }
+    }
+
+    /**
+     * The subscribed channels by name, each with its channel id (unlike [getSubscribedChannelsByName], whose cards open the
+     * channel's tab of the Subscriptions)
+     */
+    open fun getSubscribedChannelsWithIds(): MediaGroup? {
+        return getSubscribedChannelsTV(sortByName = true, withChannelIds = true) ?: getSubscribedChannelsByNameWeb()
     }
 
     open fun getSubscribedChannelsByName(): MediaGroup? {

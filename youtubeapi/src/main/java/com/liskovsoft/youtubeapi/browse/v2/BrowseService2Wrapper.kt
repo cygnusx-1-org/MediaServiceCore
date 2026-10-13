@@ -49,6 +49,11 @@ internal object BrowseService2Wrapper: BrowseService2() {
         return getCachedChannels(super.getSubscribedChannelsByName())
     }
 
+    override fun getSubscribedChannelsWithIds(): MediaGroup? {
+        // The channels kept on the device have their ids
+        return getCachedChannels(super.getSubscribedChannelsWithIds())
+    }
+
     override fun getSubscribedChannelsByNewContent(): MediaGroup? {
         // Backup channels ones
         // Add each channel on subscribe

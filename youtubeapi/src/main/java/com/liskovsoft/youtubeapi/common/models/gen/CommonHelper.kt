@@ -10,6 +10,7 @@ import com.liskovsoft.sharedutils.helpers.Helpers
 import com.liskovsoft.youtubeapi.browse.v2.gen.getFeedbackToken
 import com.liskovsoft.youtubeapi.browse.v2.gen.getFeedbackTokens
 import com.liskovsoft.youtubeapi.browse.v2.gen.getItems
+import com.liskovsoft.youtubeapi.common.helpers.ProtoReader
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 
 // A badge before the image
@@ -185,6 +186,10 @@ private const val TILE_CONTENT_TYPE_PLAYLIST = "TILE_CONTENT_TYPE_PLAYLIST"
 private const val TILE_CONTENT_TYPE_VIDEO = "TILE_CONTENT_TYPE_VIDEO"
 private const val TILE_CONTENT_TYPE_EDU = "TILE_CONTENT_TYPE_EDU" // a search query tile in Home section
 
+// The fields of the click tracking params of a tile (see getSourceId)
+private const val TRACKING_FIELD_SOURCE = 19 // a message
+private const val TRACKING_FIELD_SOURCE_ID = 3 // a number in it
+
 // 'tileRenderer.contentType' values:
 private const val TILE_STYLE_DEFAULT = "TILE_STYLE_YTLR_DEFAULT"
 private const val TILE_STYLE_SHORTS = "TILE_STYLE_YTLR_SHORTS"
@@ -233,6 +238,12 @@ internal fun TileItem.isMovie() = STATUS_STYLE_MOVIE == getStatusStyle() && getV
 internal fun TileItem.isShorts() = BADGE_STYLE_SHORTS == getBadgeStyle() || TILE_STYLE_SHORTS == getTileStyle()
 // On Home a show is a video tile (its latest episode) that opens the show page
 internal fun TileItem.isShow() = onSelectCommand?.browseEndpoint?.isShowPage() == true || BADGE_ICON_SHOW == getBadgeIconType()
+/**
+ * Where YouTube took the tile from: the same for each tile of a row of Home TV that's on every load (e.g. 198 for "Recently uploaded"),
+ * in every language. Field 19, then 3 of the protobuf of its click tracking params.
+ */
+internal fun TileItem.getSourceId(): Int? = onSelectCommand?.clickTrackingParams?.let { ProtoReader.fromBase64(it) }
+    ?.let { if (it.enterMessage(TRACKING_FIELD_SOURCE)) it.readNumber(TRACKING_FIELD_SOURCE_ID)?.toInt() else null }
 internal fun TileItem.getQuery() = onSelectCommand?.getQuery()
 private fun TileItem.Header.getBadgeStyle() = tileHeaderRenderer?.thumbnailOverlays?.firstNotNullOfOrNull { it?.thumbnailOverlayTimeStatusRenderer?.style }
 private fun TileItem.getBadgeIconType() = header?.tileHeaderRenderer?.thumbnailOverlays
@@ -383,6 +394,7 @@ internal fun ItemWrapper.isLive() = getVideoItem()?.isLive() ?: getMusicItem()?.
 internal fun ItemWrapper.isUpcoming() = getVideoItem()?.isUpcoming() ?: getMusicItem()?.isUpcoming() ?: getTileItem()?.isUpcoming() ?: false
 internal fun ItemWrapper.isMovie() = getVideoItem()?.isMovie() ?: getTileItem()?.isMovie() ?: false
 internal fun ItemWrapper.isShow() = getTileItem()?.isShow() ?: getLockupItem()?.isShow() ?: false
+internal fun ItemWrapper.getSourceId() = getTileItem()?.getSourceId()
 internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts() ?: false
 /**
  * No date comes with the item: a shelf of shorts gives the channel (TV tile without lines) or the views (web lockup) only.

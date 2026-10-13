@@ -13,6 +13,7 @@ import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.TabMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.WatchNextResultContinuation
 import com.liskovsoft.youtubeapi.next.v2.gen.getItems
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
+import com.liskovsoft.youtubeapi.next.v2.gen.getRowKind
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
 import com.liskovsoft.youtubeapi.next.v2.gen.getTopic
 import com.liskovsoft.youtubeapi.next.v2.gen.isChannelRow
@@ -108,6 +109,7 @@ internal data class ShelfSectionMediaGroup(
     override fun getTopicInt(): Int = shelf.shelfRenderer?.getTopic() ?: MediaGroup.TOPIC_NONE
     override fun isChannelRowInt(): Boolean = shelf.shelfRenderer?.isChannelRow() ?: false
     override fun isSearchTopicRowInt(): Boolean = shelf.shelfRenderer?.isSearchTopicRow() ?: false
+    override fun getRowKindInt(): Int = shelf.shelfRenderer?.getRowKind() ?: MediaGroup.ROW_KIND_NONE
 }
 
 internal data class ItemSectionMediaGroup(
@@ -184,7 +186,8 @@ internal data class GuideMediaGroup(
 internal data class ChannelListMediaGroup(
     private val tabs: List<TabRenderer>,
     private val options: MediaGroupOptions,
-    private val sortBy: Int = SORT_DEFAULT
+    private val sortBy: Int = SORT_DEFAULT,
+    private val withChannelIds: Boolean = false // see TabMediaItem
 ): BaseMediaGroup(options) {
     override fun getItemWrappersInt(): List<ItemWrapper?>? = null
     override fun getNextPageKeyInt(): String? = null
@@ -198,7 +201,7 @@ internal data class ChannelListMediaGroup(
                 return@forEachIndexed
             }
 
-            result.add(TabMediaItem(it, options.groupType))
+            result.add(TabMediaItem(it, options.groupType, withChannelIds))
         }
 
         if (sortBy == SORT_BY_NAME) result.sortBy { it.title?.lowercase() }

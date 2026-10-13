@@ -670,6 +670,18 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
+    public MediaGroup getSubscribedChannelsWithIds() {
+        checkSigned();
+
+        return getBrowseService2().getSubscribedChannelsWithIds();
+    }
+
+    @Override
+    public Observable<MediaGroup> getSubscribedChannelsWithIdsObserve() {
+        return RxHelper.fromCallable(this::getSubscribedChannelsWithIds);
+    }
+
+    @Override
     public Observable<List<String>> getSubscribedChannelIdsObserve() {
         return RxHelper.fromCallable(() -> {
             checkSigned();

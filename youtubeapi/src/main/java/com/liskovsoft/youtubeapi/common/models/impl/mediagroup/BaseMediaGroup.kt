@@ -58,6 +58,7 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
     protected open fun getTopicInt(): Int = MediaGroup.TOPIC_NONE
     protected open fun isChannelRowInt(): Boolean = false
     protected open fun isSearchTopicRowInt(): Boolean = false
+    protected open fun getRowKindInt(): Int = MediaGroup.ROW_KIND_NONE
 
     override fun getType(): Int {
         return options.groupType
@@ -117,6 +118,10 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
 
     override fun isSearchTopicRow(): Boolean {
         return isSearchTopicRowInt()
+    }
+
+    override fun getRowKind(): Int {
+        return getRowKindInt()
     }
 
     override fun getFilteredVideoCount(): Int {

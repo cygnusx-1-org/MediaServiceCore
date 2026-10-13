@@ -14,6 +14,19 @@ private const val TOPIC_CHANNEL_MUSIC = "UC-9-kyTW8ZkZNDHQJ6FgpwQ"
 private const val TOPIC_CHANNEL_GAMING = "UCOpNcN46UbXVtpKMrmU4Abg"
 private const val TOPIC_CHANNEL_SPORTS = "UCEgdi0XIXXZ-qJOFPf4JSKw"
 private const val TOPIC_CHANNEL_NEWS = "UCYfdidRxbB8Qhf0Nx7ioOYw"
+/**
+ * An item of a kind that isn't read, e.g. an ad among the videos of Recommended (adSlotRenderer)
+ */
+private val UNKNOWN_ITEM = ItemWrapper()
+/**
+ * The rows of Home TV that are on every load, by the source of their tiles (see TileItem.getSourceId)
+ */
+private val ROW_KINDS_BY_SOURCE = mapOf(
+    158 to MediaGroup.ROW_KIND_RECOMMENDED,
+    198 to MediaGroup.ROW_KIND_RECENTLY_UPLOADED,
+    197 to MediaGroup.ROW_KIND_CONTINUE_WATCHING,
+    1865 to MediaGroup.ROW_KIND_WATCH_LATER // "From your Watch later playlist"
+)
 
 //////
 
@@ -166,6 +179,22 @@ internal fun ShelfRenderer.isChannelRow() =
  */
 internal fun ShelfRenderer.isSearchTopicRow() =
     getItemWrappers()?.filterNotNull()?.let { items -> items.isNotEmpty() && items.all { it.isSearchTopic() } } ?: false
+/**
+ * Which row of Home TV that's on every load it is, by its tiles and its type, e.g. "Recently uploaded" or "Recommended shows"
+ * (every tile a show). The first tile with a source tells. The ads among them don't count.
+ */
+internal fun ShelfRenderer.getRowKind(): Int {
+    val items = getItemWrappers()?.filterNotNull()?.filterNot { it == UNKNOWN_ITEM }
+
+    return when {
+        containsShorts() -> MediaGroup.ROW_KIND_SHORTS
+        items.isNullOrEmpty() -> MediaGroup.ROW_KIND_NONE
+        isChannelRow() -> MediaGroup.ROW_KIND_TOP_CHANNELS
+        isSearchTopicRow() -> MediaGroup.ROW_KIND_SEARCH_TOPICS
+        items.all { it.isShow() } -> MediaGroup.ROW_KIND_SHOWS
+        else -> items.firstNotNullOfOrNull { it.getSourceId() }?.let { ROW_KINDS_BY_SOURCE[it] } ?: MediaGroup.ROW_KIND_NONE
+    }
+}
 private fun ShelfRenderer.getShelf() = headerRenderer?.shelfHeaderRenderer
 
 ///////
