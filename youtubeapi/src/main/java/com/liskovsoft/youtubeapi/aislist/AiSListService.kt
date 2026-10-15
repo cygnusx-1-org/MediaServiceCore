@@ -8,8 +8,8 @@ import com.liskovsoft.mediaserviceinterfaces.data.AiSListReport
 import com.liskovsoft.sharedutils.helpers.FileHelpers
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
-import okhttp3.MediaType
-import okhttp3.RequestBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import java.io.File
@@ -24,7 +24,7 @@ internal object AiSListService {
     private const val MAX_RESPONSE_BYTES = 5 * 1024 * 1024 // 5 MB
     private const val MAX_MESSAGE_BYTES = 64 * 1024
     private const val MAX_MESSAGE_LENGTH = 200 // a toast
-    private val JSON_TYPE = MediaType.parse("application/json; charset=utf-8")
+    private val JSON_TYPE = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val mAiSListApi = RetrofitHelper.create(AiSListApi::class.java)
 
     /**
@@ -59,7 +59,7 @@ internal object AiSListService {
      */
     @JvmStatic
     fun report(channelHandle: String, videoUrl: String, username: String): AiSListReport {
-        val call = mAiSListApi.reportChannel(RequestBody.create(JSON_TYPE, createReportJson(channelHandle, videoUrl, username)))
+        val call = mAiSListApi.reportChannel(createReportJson(channelHandle, videoUrl, username).toRequestBody(JSON_TYPE))
 
         val response = try {
             call?.let { RetrofitHelper.getResponse(it) }

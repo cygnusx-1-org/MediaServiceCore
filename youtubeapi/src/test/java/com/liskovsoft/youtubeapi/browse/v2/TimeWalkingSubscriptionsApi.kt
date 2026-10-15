@@ -8,6 +8,7 @@ import com.liskovsoft.youtubeapi.next.v2.gen.WatchNextResultContinuation
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.mock.MockUtils
 import okhttp3.Request
+import okio.Timeout
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -69,4 +70,5 @@ internal class FixedCall<T>(private val body: T): Call<T> {
     override fun isCanceled(): Boolean = false
     override fun clone(): Call<T> = FixedCall(body)
     override fun request(): Request = Request.Builder().url("https://www.youtube.com/youtubei/v1/browse").build()
+    override fun timeout(): Timeout = Timeout.NONE
 }
