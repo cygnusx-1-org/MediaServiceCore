@@ -3,6 +3,8 @@ package com.liskovsoft.youtubeapi.playlist;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.liskovsoft.googleapi.youtubedata3.YouTubeDataServiceInt;
+import com.liskovsoft.googleapi.youtubedata3.impl.ItemMetadata;
 import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
@@ -17,13 +19,18 @@ import com.liskovsoft.youtubeapi.channelgroups.models.ItemImpl;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextService;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextServiceWrapper;
 import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo;
+import com.liskovsoft.youtubeapi.playlistgroups.PlaylistFile;
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl;
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService;
 import com.liskovsoft.youtubeapi.service.internal.MediaServicePrefs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PlaylistServiceWrapper extends PlaylistService implements MediaServicePrefs.ProfileChangeListener {
     private static final String TAG = PlaylistServiceWrapper.class.getSimpleName();
@@ -144,6 +151,151 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
         PlaylistGroupServiceImpl.removePlaylistGroup(playlist);
         PlaylistGroupServiceImpl.addPlaylistGroup(PlaylistGroupServiceImpl.createPlaylistGroup(
                 newPlaylistId, playlist.getTitle(), playlist.getIconUrl(), playlist.getItems()));
+    }
+
+    /**
+     * The titles of the playlists on YouTube and on this device. A new playlist can't have one: a playlist kept on this device
+     * with the title of a YouTube one is shown as that one (see getCachedPlaylistInfo).
+     */
+    public Set<String> getPlaylistTitles() {
+        Set<String> result = new HashSet<>();
+
+        for (ItemGroup playlist : PlaylistGroupServiceImpl.getPlaylistGroups()) {
+            result.add(playlist.getTitle());
+        }
+
+        if (YouTubeSignInService.instance().isSigned()) {
+            List<PlaylistInfo> playlistInfos = super.getPlaylistsInfo(null);
+
+            if (playlistInfos == null) {
+                throw new IllegalStateException("Can't read the playlists on YouTube");
+            }
+
+            for (PlaylistInfo info : playlistInfos) {
+                result.add(info.getTitle());
+            }
+
+            // The saved playlists of other channels are in the Playlists section only
+            MediaGroup myPlaylists = BrowseService2Wrapper.INSTANCE.getMyPlaylists();
+
+            if (myPlaylists != null && myPlaylists.getMediaItems() != null) {
+                for (MediaItem playlist : myPlaylists.getMediaItems()) {
+                    result.add(playlist.getTitle());
+                }
+            }
+        }
+
+        result.remove(null);
+
+        return result;
+    }
+
+    /**
+     * The playlists of the Playlists section as a file (see PlaylistFile), videos included
+     */
+    public String exportPlaylists(List<MediaItem> playlists) {
+        List<ItemGroup> result = new ArrayList<>();
+
+        for (MediaItem playlist : playlists) {
+            String title = playlist.getTitle() != null ? playlist.getTitle() : playlist.getChannelId();
+            result.add(PlaylistGroupServiceImpl.createPlaylistGroup(title, null, getPlaylistItems(playlist)));
+        }
+
+        return PlaylistFile.write(result);
+    }
+
+    private static List<ItemGroup.Item> getPlaylistItems(MediaItem playlist) {
+        // Kept on this device: the Playlists section gives it its id as the channel id (see BrowseService2Wrapper)
+        ItemGroup cachedPlaylist = PlaylistGroupServiceImpl.findPlaylistGroup(playlist.getChannelId());
+
+        if (cachedPlaylist != null) {
+            return cachedPlaylist.getItems();
+        }
+
+        // On YouTube, opened as a channel ("VL" + the playlist id). All of it: a copy kept here has only the videos added in the app.
+        List<MediaItem> videos = playlist.getChannelId() != null && playlist.getChannelId().startsWith("VL") ?
+                BrowseService2Wrapper.INSTANCE.getPlaylistItems(playlist.getChannelId()) : null;
+
+        if (videos == null) {
+            throw new IllegalStateException("Can't read the playlist: " + playlist.getTitle());
+        }
+
+        List<ItemGroup.Item> result = new ArrayList<>();
+
+        for (MediaItem video : videos) {
+            result.add(ItemImpl.fromMediaItem(video));
+        }
+
+        return result;
+    }
+
+    /**
+     * Adds the playlists read from a file (see PlaylistFile) to this device or to YouTube, each a new one: never merged into another
+     *
+     * @param playlists keyed by the title each is added under, one not taken (see getPlaylistTitles)
+     */
+    public void importPlaylists(Map<String, ItemGroup> playlists, boolean toYouTube) {
+        for (Map.Entry<String, ItemGroup> entry : playlists.entrySet()) {
+            String title = entry.getKey();
+            List<ItemGroup.Item> items = addMetadata(entry.getValue().getItems());
+            String playlistId = null;
+
+            if (toYouTube) {
+                List<String> videoIds = new ArrayList<>();
+
+                for (ItemGroup.Item item : items) {
+                    videoIds.add(item.getVideoId());
+                }
+
+                playlistId = super.createPlaylist(title, videoIds);
+            }
+
+            // A copy is kept here, keyed by the YouTube id, as for a playlist created in the app (see createCachedPlaylist)
+            PlaylistGroupServiceImpl.addPlaylistGroup(PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, title, null, items));
+        }
+    }
+
+    /**
+     * The title, channel and thumbnail of the videos that have only an id (a list of links)
+     */
+    private static List<ItemGroup.Item> addMetadata(List<ItemGroup.Item> items) {
+        List<String> videoIds = new ArrayList<>();
+
+        for (ItemGroup.Item item : items) {
+            if (item.getTitle() == null) {
+                videoIds.add(item.getVideoId());
+            }
+        }
+
+        if (videoIds.isEmpty()) {
+            return items;
+        }
+
+        Map<String, ItemGroup.Item> found = new HashMap<>();
+        // 50 videos a request
+        List<ItemMetadata> metadataList = YouTubeDataServiceInt.getVideoMetadata(videoIds.toArray(new String[0]));
+
+        if (metadataList != null) {
+            for (ItemMetadata metadata : metadataList) {
+                found.put(metadata.getVideoId(), ItemImpl.fromMetadata(metadata));
+            }
+        }
+
+        List<ItemGroup.Item> result = new ArrayList<>();
+
+        for (ItemGroup.Item item : items) {
+            ItemGroup.Item withMetadata = item.getTitle() == null ? found.get(item.getVideoId()) : item;
+
+            if (withMetadata == null) { // Google api quota exceeded
+                MediaItemMetadata ytMetadata = getWatchNextService().getMetadata(item.getVideoId());
+                withMetadata = ytMetadata == null ? item : new ItemImpl(ytMetadata.getChannelId(), ytMetadata.getTitle(), null,
+                        item.getVideoId(), ytMetadata.getSecondTitle(), ytMetadata.getBadgeText(), -1);
+            }
+
+            result.add(withMetadata);
+        }
+
+        return result;
     }
 
     @Override

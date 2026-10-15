@@ -353,14 +353,8 @@ class YouTubeContentService implements ContentService {
 
     @Override
     public Observable<List<MediaGroup>> getMyVideosObserve() {
-        return RxHelper.create(emitter -> {
-            checkSigned();
-
-            MediaGroup videos = getBrowseService2().getMyVideos();
-            emitGroupsPartial(emitter, Collections.singletonList(videos));
-
-            emitGroups(emitter, Collections.singletonList(getBrowseService2().getMyShorts(videos)));
-        });
+        // One emission: the shorts row is there with the videos, not popped in under them
+        return RxHelper.create(emitter -> emitGroups(emitter, getMyVideos()));
     }
 
     @Override

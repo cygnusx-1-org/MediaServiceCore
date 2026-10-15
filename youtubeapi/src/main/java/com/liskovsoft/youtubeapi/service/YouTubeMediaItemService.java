@@ -10,6 +10,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackReasons;
+import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
@@ -36,6 +37,7 @@ import com.liskovsoft.youtubeapi.next.v2.WatchNextServiceWrapper;
 import com.liskovsoft.youtubeapi.panel.PanelService;
 import com.liskovsoft.youtubeapi.playlist.PlaylistService;
 import com.liskovsoft.youtubeapi.playlist.PlaylistServiceWrapper;
+import com.liskovsoft.youtubeapi.playlistgroups.PlaylistFile;
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl;
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItem;
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo;
@@ -45,6 +47,7 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import io.reactivex.Observable;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -568,6 +571,43 @@ public class YouTubeMediaItemService implements MediaItemService {
         return RxHelper.fromRunnable(() -> {
             checkSigned();
             PlaylistServiceWrapper.instance().copyCachedPlaylist(playlistId);
+        });
+    }
+
+    /**
+     * The titles of the playlists on YouTube and on this device, which a new playlist can't have
+     */
+    public Observable<Set<String>> getPlaylistTitlesObserve() {
+        return RxHelper.fromCallable(() -> PlaylistServiceWrapper.instance().getPlaylistTitles());
+    }
+
+    /**
+     * The playlists of the Playlists section as a file, videos included. One on YouTube is read whole, page after page.
+     */
+    public Observable<String> exportPlaylistsObserve(List<MediaItem> playlists) {
+        return RxHelper.fromCallable(() -> PlaylistServiceWrapper.instance().exportPlaylists(playlists));
+    }
+
+    /**
+     * The playlists in a file made by exportPlaylistsObserve, or in a list of YouTube links or video ids, one a line.
+     * Not added anywhere yet (see importPlaylistsObserve).
+     */
+    public Observable<List<ItemGroup>> readPlaylistsObserve(File file) {
+        return RxHelper.fromCallable(() -> PlaylistFile.read(file));
+    }
+
+    /**
+     * Adds the playlists read from a file, each a new playlist on this device or on YouTube
+     *
+     * @param playlists keyed by the title each is added under, one not taken (see getPlaylistTitlesObserve)
+     */
+    public Observable<Void> importPlaylistsObserve(Map<String, ItemGroup> playlists, boolean toYouTube) {
+        return RxHelper.fromRunnable(() -> {
+            if (toYouTube) {
+                checkSigned();
+            }
+
+            PlaylistServiceWrapper.instance().importPlaylists(playlists, toYouTube);
         });
     }
 

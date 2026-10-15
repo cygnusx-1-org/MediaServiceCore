@@ -67,6 +67,9 @@ public interface ContentService {
     Observable<List<MediaGroup>> getKidsHomeObserve();
     Observable<List<MediaGroup>> getSportsObserve();
     Observable<List<MediaGroup>> getLiveObserve();
+    /**
+     * The rows of My videos (see getMyVideos), emitted together once both are read
+     */
     Observable<List<MediaGroup>> getMyVideosObserve();
     Observable<List<MediaGroup>> getMusicObserve();
     Observable<List<MediaGroup>> getNewsObserve();

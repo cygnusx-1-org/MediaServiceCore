@@ -14,6 +14,7 @@ import com.liskovsoft.youtubeapi.common.models.gen.getVideoId
 import com.liskovsoft.youtubeapi.common.models.gen.isLive
 import com.liskovsoft.youtubeapi.common.models.gen.isUpcoming
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.ShortsMediaItem
+import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.WrapperMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.getItems
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
@@ -485,12 +486,21 @@ internal open class BrowseService2 {
      * @return null when a page failed, so a partial list is never taken for the whole
      */
     fun getPlaylistVideoIds(channelId: String): List<String>? {
+        return getPlaylistItems(channelId)?.mapNotNull { it.videoId }
+    }
+
+    /**
+     * Every video in a playlist with its title, channel and thumbnail, page after page. Nothing is filtered out, as in [getPlaylistVideoIds].
+     * @param channelId the playlist opened as a channel ("VL" + the playlist id)
+     * @return null when a page failed, so a partial list is never taken for the whole
+     */
+    fun getPlaylistItems(channelId: String): List<MediaItem>? {
         val options = MediaGroupOptions.create(MediaGroup.TYPE_UNDEFINED)
         val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelQuery(options.clientTV, channelId))
         val firstPage = RetrofitHelper.get(browseResult) ?: return null
-        val result = mutableListOf<String>()
+        val result = mutableListOf<MediaItem>()
 
-        firstPage.getItems()?.forEach { it?.getVideoId()?.let { result.add(it) } }
+        firstPage.getItems()?.forEach { addPlaylistItem(result, it) }
         var nextKey = firstPage.getContinuationToken()
 
         // The cap stops a key that never ends
@@ -501,11 +511,17 @@ internal open class BrowseService2 {
             val continuation = mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(options.clientTV, nextKey))
             val page = RetrofitHelper.get(continuation) ?: return null
 
-            page.getItems()?.forEach { it?.getVideoId()?.let { result.add(it) } }
+            page.getItems()?.forEach { addPlaylistItem(result, it) }
             nextKey = page.getContinuationToken()
         }
 
         return result
+    }
+
+    private fun addPlaylistItem(result: MutableList<MediaItem>, item: ItemWrapper?) {
+        if (item?.getVideoId() != null) {
+            result.add(WrapperMediaItem(item))
+        }
     }
 
     private fun continueShortsWeb(continuationKey: String?, auth: Boolean = false): MediaGroup? {
