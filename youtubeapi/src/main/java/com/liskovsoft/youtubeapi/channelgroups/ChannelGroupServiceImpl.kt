@@ -241,9 +241,11 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
 
     fun persistData() {
         RxHelper.disposeActions(mPersistAction)
-        mPersistAction = RxHelper.runAsync(::persistDataReal, 5_000)
+        mPersistAction = RxHelper.runAsync(::persistDataReal)
     }
 
+    // One write at a time, each taking the groups as they are when it starts: the one that runs last writes the newest
+    @Synchronized
     private fun persistDataReal() {
         MediaServicePrefs.setProfileData(CHANNEL_GROUP_DATA, Helpers.mergeData(mChannelGroups))
     }

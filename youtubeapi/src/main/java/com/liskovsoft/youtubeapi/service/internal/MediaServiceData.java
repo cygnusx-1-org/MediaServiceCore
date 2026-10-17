@@ -81,6 +81,7 @@ public class MediaServiceData {
     private int mEnabledFormats;
     private int mHiddenContent;
     private Disposable mPersistAction;
+    private final Object mPersistLock = new Object();
     private MediaServiceCache mCachedPrefs;
     private GlobalPreferences mGlobalPrefs;
     private PoTokenResponse mPoToken;
@@ -472,16 +473,23 @@ public class MediaServiceData {
     }
 
     public void persistNow() {
-        RxHelper.disposeActions(mPersistAction);
-
-        mPersistAction = RxHelper.runAsync(() -> { persistDataInt(); persistCachedDataInt(); });
+        persistData();
     }
 
     private void persistData() {
         RxHelper.disposeActions(mPersistAction);
 
-        // Improve memory usage by merging multiple persist requests
-        mPersistAction = RxHelper.runAsync(() -> { persistDataInt(); persistCachedDataInt(); }, 5_000);
+        mPersistAction = RxHelper.runAsync(this::persistAllInt);
+    }
+
+    /**
+     * One write at a time, each taking the data as it is when it starts: the one that runs last writes the newest
+     */
+    private void persistAllInt() {
+        synchronized (mPersistLock) {
+            persistDataInt();
+            persistCachedDataInt();
+        }
     }
 
     private void resetSensitiveData() {

@@ -11,7 +11,6 @@ import io.reactivex.disposables.Disposable
 
 internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListener {
     const val PLAYLIST_GROUP_DATA = "playlist_group_data"
-    private const val PERSIST_DELAY_MS: Long = 5_000
     private lateinit var mPlaylists: MutableList<ItemGroup>
     private var mPersistAction: Disposable? = null
     @JvmField
@@ -117,9 +116,11 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
 
     private fun persistData() {
         RxHelper.disposeActions(mPersistAction)
-        mPersistAction = RxHelper.runAsync(::persistDataReal, PERSIST_DELAY_MS)
+        mPersistAction = RxHelper.runAsync(::persistDataReal)
     }
 
+    // One write at a time, each taking the groups as they are when it starts: the one that runs last writes the newest
+    @Synchronized
     private fun persistDataReal() {
         MediaServicePrefs.setProfileData(PLAYLIST_GROUP_DATA, Helpers.mergeData(mPlaylists))
     }
