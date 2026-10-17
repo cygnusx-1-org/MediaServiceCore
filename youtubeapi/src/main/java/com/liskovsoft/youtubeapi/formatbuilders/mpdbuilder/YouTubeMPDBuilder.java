@@ -395,7 +395,7 @@ public class YouTubeMPDBuilder implements MPDBuilder {
     private void writeMediaFormatTag(MediaFormat format) {
         startTag("", "Representation");
 
-        attribute("", "id", format.isDrc() ? format.getITag() + "-drc" : format.getITag());
+        attribute("", "id", createRepresentationId(format));
         attribute("", "codecs", MediaFormatUtils.extractCodecs(format));
         attribute("", "startWithSAP", "1");
         attribute("", "bandwidth", format.getBitrate());
@@ -436,6 +436,24 @@ public class YouTubeMPDBuilder implements MPDBuilder {
         }
 
         endTag("", "Representation");
+    }
+
+    /**
+     * Copies of the same itag differ only by their suffixes: "-vb" (voice boost) and "-drc".<br/>
+     * "-drc" stays last, the player detects it as an id ending.
+     */
+    private static String createRepresentationId(MediaFormat format) {
+        String id = format.getITag();
+
+        if (format.isVb()) {
+            id += "-vb";
+        }
+
+        if (format.isDrc()) {
+            id += "-drc";
+        }
+
+        return id;
     }
 
     private void writeSegmentBase(MediaFormat item) {
