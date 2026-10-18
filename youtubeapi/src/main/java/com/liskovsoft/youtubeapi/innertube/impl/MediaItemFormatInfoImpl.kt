@@ -10,7 +10,7 @@ import com.liskovsoft.sharedutils.querystringparser.UrlQueryString
 import com.liskovsoft.sharedutils.querystringparser.UrlQueryStringFactory
 import com.liskovsoft.sharedutils.rx.RxHelper
 import com.liskovsoft.youtubeapi.app.AppService
-import com.liskovsoft.youtubeapi.app.PoTokenGate.isWebPotExpired
+import com.liskovsoft.youtubeapi.app.PoTokenGate
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.formatbuilders.hlsbuilder.YouTubeUrlListBuilder
 import com.liskovsoft.youtubeapi.formatbuilders.mpdbuilder.YouTubeMPDBuilder
@@ -60,7 +60,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
     val sabrUrlHolder by lazy { VideoUrlHolder(playerResult.getServerAbrStreamingUrl()) }
     private val videoDetails by lazy { playerResult.videoDetails }
     private val _videoPlaybackUstreamerConfig by lazy { playerResult.getVideoPlaybackUstreamerConfig() }
-    private val _clientInfo by lazy { AppClient.WEB } // TODO: replace with innertube client
+    private val _clientInfo by lazy { AppClient.WEB } // TODO: replace with real innertube client
     private val _adaptiveFormats by lazy {
         playerResult.getAdaptiveFormats()?.map { MediaFormatImpl(it) }
     }
@@ -68,7 +68,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         playerResult.getLegacyFormats()?.map { MediaFormatImpl(it) }
     }
     private val _subtitles by lazy {
-        playerResult.getMergeCaptionTracks()?.map { MediaSubtitleImpl(it) }
+        playerResult.getMergeCaptionTracks()?.map { MediaSubtitleImpl(it, poToken, clientInfo) }
     }
     private val _hlsManifestUrl by lazy { playerResult.streamingData?.hlsManifestUrl }
     private val _dashManifestUrl by lazy { playerResult.streamingData?.dashManifestUrl }
@@ -102,7 +102,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         Helpers.toString(ServiceHelper.createInfo(playerResult.getPlayabilityReason(), playerResult.getPlayabilityDescription()))
     }
     private val _isPlayableInEmbed by lazy { playerResult.isPlayableInEmbed() }
-    private val _isUnplayable by lazy { isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() }
+    private val _isUnplayable by lazy { isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isAdaptiveFormatsBroken() }
     /**
      * Reason of unavailability unknown or we received a temporal ban
      */
@@ -293,7 +293,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         // So, also check internal cache state.
         // Future translations (no media) should be polled constantly.
 
-        return containsMedia() && AppService.instance().isPlayerCacheActual && !isWebPotExpired()
+        return containsMedia() && AppService.instance().isPlayerCacheActual && !PoTokenGate.isPotExpired(clientInfo)
     }
 
     /**
@@ -417,5 +417,17 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
             _visitorMonitoringData = queryString.get(PARAM_VM)
             _ofParam = queryString.get(PARAM_OF)
         }
+    }
+
+    /**
+     * TODO: remove when SABR parser will be fixed
+     */
+    private fun isAdaptiveFormatsBroken(): Boolean {
+        if (_adaptiveFormats?.isEmpty() ?: true) {
+            return false
+        }
+
+        // TODO: live SABR formats still broken
+        return !containsDashFormats() && (_isLive || _isLiveContent)
     }
 }

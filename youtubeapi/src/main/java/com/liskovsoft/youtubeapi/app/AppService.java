@@ -3,10 +3,15 @@ package com.liskovsoft.youtubeapi.app;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
+import com.liskovsoft.youtubeapi.app.models.AppInfo;
+import com.liskovsoft.youtubeapi.app.models.TvConfig;
+import com.liskovsoft.youtubeapi.app.playerdata.PlayerDataExtractor;
 import com.liskovsoft.youtubeapi.auth.V1.AuthApi;
+import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,11 +21,11 @@ import kotlin.Pair;
 
 public class AppService {
     private static AppService sInstance;
-    private final AppServiceInt mAppServiceInt;
+    private final AppServiceCore mAppServiceCore;
     private String mClientPlaybackNonce;
 
     private AppService() {
-        mAppServiceInt = new AppServiceIntCached();
+        mAppServiceCore = new AppServiceCoreCached();
     }
 
     public static AppService instance() {
@@ -46,19 +51,27 @@ public class AppService {
      * Extracts signature used in music videos
      */
     public List<String> extractSig(List<String> sParams) {
-        if (mAppServiceInt.getPlayerDataExtractor() == null) {
+        PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor();
+
+        if (playerDataExtractor == null) {
             return null;
         }
 
-        return mAppServiceInt.getPlayerDataExtractor().extractSig(sParams);
+        return playerDataExtractor.extractSig(sParams);
     }
 
     public String extractNSig(String nParam) {
-        if (nParam == null || mAppServiceInt.getPlayerDataExtractor() == null) {
+        if (nParam == null) {
             return null;
         }
 
-        return mAppServiceInt.getPlayerDataExtractor().extractNSig(nParam);
+        PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor();
+
+        if (playerDataExtractor == null) {
+            return null;
+        }
+
+        return playerDataExtractor.extractNSig(nParam);
     }
 
     /**
@@ -66,11 +79,25 @@ public class AppService {
      * sParams - signature used in music videos
      */
     public Pair<List<String>, List<String>> bulkSigExtract(List<String> nParams, List<String> sParams) {
-        if (Helpers.allNulls(nParams, sParams) || mAppServiceInt.getPlayerDataExtractor() == null) {
+        return bulkSigExtract(null, nParams, sParams);
+    }
+
+    /**
+     * nParams - throttle params<br/>
+     * sParams - signature used in music videos
+     */
+    public Pair<List<String>, List<String>> bulkSigExtract(@Nullable AppClient client, List<String> nParams, List<String> sParams) {
+        if (Helpers.allNulls(nParams, sParams)) {
             return null;
         }
 
-        return mAppServiceInt.getPlayerDataExtractor().bulkSigExtract(nParams, sParams);
+        PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor(client);
+
+        if (playerDataExtractor == null) {
+            return null;
+        }
+
+        return playerDataExtractor.bulkSigExtract(nParams, sParams);
     }
 
     public List<String> extractNSig(List<String> nParams) {
@@ -100,66 +127,85 @@ public class AppService {
         return result;
     }
 
-    public void resetClientPlaybackNonce() {
-        mClientPlaybackNonce = null;
+    /**
+     * NOTE: Unique per video info instance<br/>
+     * A nonce is a unique value chosen by an entity in a protocol, and it is used to protect that entity against attacks which fall under the very large umbrella of "replay".
+     */
+    public synchronized String getClientPlaybackNonce() {
+        return getClientPlaybackNonce(null);
     }
 
     /**
      * NOTE: Unique per video info instance<br/>
      * A nonce is a unique value chosen by an entity in a protocol, and it is used to protect that entity against attacks which fall under the very large umbrella of "replay".
      */
-    public synchronized String getClientPlaybackNonce() {
+    public synchronized String getClientPlaybackNonce(@Nullable AppClient client) {
         if (mClientPlaybackNonce != null) {
             return mClientPlaybackNonce;
         }
 
-        if (mAppServiceInt.getPlayerDataExtractor() == null) {
+        PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor(client);
+
+        if (playerDataExtractor == null) {
             return null;
         }
 
-        mClientPlaybackNonce = mAppServiceInt.getPlayerDataExtractor().createClientPlaybackNonce();
+        mClientPlaybackNonce = playerDataExtractor.createClientPlaybackNonce();
 
         return mClientPlaybackNonce;
+    }
+
+    public void resetClientPlaybackNonce() {
+        mClientPlaybackNonce = null;
     }
 
     /**
      * Constant used in {@link AuthApi}
      */
     public String getClientId() {
-        return mAppServiceInt.getClientId();
+        return mAppServiceCore.getClientId();
     }
 
     /**
      * Constant used in {@link AuthApi}
      */
     public String getClientSecret() {
-        return mAppServiceInt.getClientSecret();
+        return mAppServiceCore.getClientSecret();
     }
 
     /**
      * Used in get_video_info
      */
     public String getSignatureTimestamp() {
-        if (mAppServiceInt.getPlayerDataExtractor() == null) {
+        return getSignatureTimestamp(null);
+    }
+
+    /**
+     * Used in get_video_info
+     */
+    public String getSignatureTimestamp(@Nullable AppClient client) {
+        PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor(client);
+
+        if (playerDataExtractor == null) {
             return null;
         }
 
-        return mAppServiceInt.getPlayerDataExtractor().getSignatureTimestamp();
+        return playerDataExtractor.getSignatureTimestamp();
     }
 
     /**
      * Used with get_video_info, anonymous search and suggestions
      */
     public String getVisitorData() {
-        return mAppServiceInt.getVisitorData();
+        return mAppServiceCore.getVisitorData();
     }
 
     public void invalidateCache() {
-        mAppServiceInt.invalidateCache();
+        mAppServiceCore.invalidateCache();
     }
 
     public void refreshCacheIfNeeded() {
-        mAppServiceInt.refreshCacheIfNeeded();
+        mAppServiceCore.refreshCacheIfNeeded();
     }
 
     /**
@@ -167,11 +213,11 @@ public class AppService {
      * After reset user will get the latest js file versions.
      */
     public void invalidateVisitorData() {
-        mAppServiceInt.invalidateVisitorData();
+        mAppServiceCore.invalidateVisitorData();
     }
 
     public boolean isPlayerCacheActual() {
-        return mAppServiceInt.isPlayerCacheActual();
+        return mAppServiceCore.isPlayerCacheActual();
     }
 
     @NonNull
@@ -183,5 +229,13 @@ public class AppService {
         }
 
         return context;
+    }
+
+    public TvConfig getTvConfig() {
+        return mAppServiceCore.getTvConfig();
+    }
+
+    public AppInfo getAppInfo(String userAgent) {
+        return mAppServiceCore.getAppInfo(userAgent);
     }
 }

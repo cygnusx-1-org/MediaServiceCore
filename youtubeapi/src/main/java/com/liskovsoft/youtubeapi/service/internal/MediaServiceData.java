@@ -14,16 +14,12 @@ import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.app.PoTokenGate;
 import com.liskovsoft.youtubeapi.app.models.cached.AppInfoCached;
 import com.liskovsoft.youtubeapi.app.models.cached.ClientDataCached;
-import com.liskovsoft.youtubeapi.app.models.cached.PlayerDataCached;
-import com.liskovsoft.youtubeapi.app.playerdata.NSigData;
 import com.liskovsoft.youtubeapi.app.playerdata.PlayerExtractorCache;
 import com.liskovsoft.youtubeapi.app.potokencloud.PoTokenResponse;
-import com.liskovsoft.youtubeapi.service.YouTubeMediaItemService;
 
 import java.util.UUID;
 
 import io.reactivex.disposables.Disposable;
-import kotlin.Triple;
 
 public class MediaServiceData {
     private static final String TAG = MediaServiceData.class.getSimpleName();
@@ -87,11 +83,9 @@ public class MediaServiceData {
     private PoTokenResponse mPoToken;
     private AppInfoCached mAppInfo;
     private AppInfoCached mFailedAppInfo;
-    private PlayerDataCached mPlayerData;
     private PlayerExtractorCache mPlayerExtractorCache;
+    private PlayerExtractorCache mTclPlayerExtractorCache;
     private ClientDataCached mClientData;
-    private NSigData mNSigData;
-    private NSigData mSigData;
     private boolean mIsMoreSubtitlesUnlocked;
     private boolean mIsLegacyUIEnabled;
     private String mDataApiKey;
@@ -177,17 +171,6 @@ public class MediaServiceData {
         persistData();
     }
 
-    public Triple<NSigData, NSigData, PlayerDataCached> getPlayerExtractorData() {
-        return new Triple<>(mNSigData, mSigData, mPlayerData);
-    }
-
-    public void setPlayerExtractorData(NSigData nSigData, NSigData sigData, PlayerDataCached playerData) {
-        mNSigData = nSigData;
-        mSigData = sigData;
-        mPlayerData = playerData;
-        persistData();
-    }
-
     @Nullable
     public PlayerExtractorCache getPlayerExtractorCache() {
         return mPlayerExtractorCache;
@@ -195,6 +178,16 @@ public class MediaServiceData {
 
     public void setPlayerExtractorCache(PlayerExtractorCache playerCache) {
         mPlayerExtractorCache = playerCache;
+        persistData();
+    }
+
+    @Nullable
+    public PlayerExtractorCache getTclPlayerExtractorCache() {
+        return mTclPlayerExtractorCache;
+    }
+
+    public void setTclPlayerExtractorCache(PlayerExtractorCache playerCache) {
+        mTclPlayerExtractorCache = playerCache;
         persistData();
     }
 
@@ -224,7 +217,7 @@ public class MediaServiceData {
 
         persistData();
 
-        YouTubeMediaItemService.instance().invalidateCache(); // Remove current cached video
+        FormatInfoWrapper.invalidateCache();
     }
 
     /**
@@ -354,11 +347,11 @@ public class MediaServiceData {
         mIsMoreSubtitlesUnlocked = unlock;
         persistData();
 
-        YouTubeMediaItemService.instance().invalidateCache(); // Remove current cached video
+        FormatInfoWrapper.invalidateCache();
     }
 
     public boolean isPotSupported() {
-        return PoTokenGate.isWebPotSupported();
+        return PoTokenGate.isPotSupported();
     }
 
     public boolean isLegacyUIEnabled() {
@@ -403,7 +396,7 @@ public class MediaServiceData {
         // null
         mPoToken = Helpers.parseItem(split, 14, PoTokenResponse::fromString);
         mAppInfo = Helpers.parseItem(split, 15, AppInfoCached::fromString);
-        mPlayerData = Helpers.parseItem(split, 16, PlayerDataCached::fromString);
+        //mPlayerData = Helpers.parseItem(split, 16, PlayerDataCached::fromString);
         mClientData = Helpers.parseItem(split, 17, ClientDataCached::fromString);
         mHiddenContent = Helpers.parseInt(split, 18, CONTENT_HIDDEN_DEFAULT);
         mIsMoreSubtitlesUnlocked = Helpers.parseBoolean(split, 19);
@@ -441,11 +434,9 @@ public class MediaServiceData {
         String cache = mCachedPrefs.getMediaServiceCache();
 
         String[] split = Helpers.splitData(cache);
-
-        mNSigData = Helpers.parseItem(split, 8, NSigData::fromString);
-        mSigData = Helpers.parseItem(split, 9, NSigData::fromString);
-        //mPlayerExtractorVersion = Helpers.parseStr(split, 10);
+        
         mPlayerExtractorCache = Helpers.parseItem(split, 11, PlayerExtractorCache::fromString);
+        mTclPlayerExtractorCache = Helpers.parseItem(split, 12, PlayerExtractorCache::fromString);
     }
 
     private void persistDataInt() {
@@ -457,7 +448,7 @@ public class MediaServiceData {
                 Helpers.mergeData(null, mScreenId, mDeviceId, mOldAppVersion,
                         mVideoInfoType, null, null, null, null, null,
                         null, mEnabledFormats, null, null, mPoToken, mAppInfo,
-                        mPlayerData, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
+                        null, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
                         null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey,
                         mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding, true));
     }
@@ -469,7 +460,7 @@ public class MediaServiceData {
 
         mCachedPrefs.setMediaServiceCache(
                 Helpers.mergeData(null, null, null, null, null, null,
-                        null, null, mNSigData, mSigData, null, mPlayerExtractorCache));
+                        null, null, null, null, null, mPlayerExtractorCache, mTclPlayerExtractorCache));
     }
 
     public void persistNow() {

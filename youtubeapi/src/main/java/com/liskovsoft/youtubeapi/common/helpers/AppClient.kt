@@ -57,6 +57,7 @@ internal enum class AppClient(
         userAgent = DefaultHeaders.USER_AGENT_WEB, referer = CLIENTS.YTMUSIC.REFERER),
     WEB_SAFARI(CLIENTS.WEB.NAME, CLIENTS.WEB.VERSION, CLIENT_NAME_IDS[CLIENTS.WEB.NAME],
         userAgent = DefaultHeaders.USER_AGENT_SAFARI, referer = CLIENTS.WEB.REFERER),
+    WEB_DUMMY(WEB), // used for metadata fetching like available translation languages
     MWEB(CLIENTS.MWEB.NAME, CLIENTS.MWEB.VERSION, CLIENT_NAME_IDS[CLIENTS.MWEB.NAME],
         userAgent = CLIENTS.MWEB.USER_AGENT!!, referer = CLIENTS.MWEB.REFERER),
     ANDROID(CLIENTS.ANDROID.NAME, CLIENTS.ANDROID.VERSION, CLIENT_NAME_IDS[CLIENTS.ANDROID.NAME],
@@ -109,6 +110,7 @@ internal enum class AppClient(
 
     val isAuthSupported by lazy { Helpers.equalsAny(this, TV, TV_LEGACY, TV_EMBED, TV_KIDS, TV_DOWNGRADED) } // NOTE: TV_SIMPLY doesn't support auth
     val isWebPotRequired by lazy { Helpers.equalsAny(this, WEB, MWEB, WEB_EMBED, WEB_SAFARI, INITIAL, GEO) }
+    val isTvPotRequired by lazy { Helpers.equalsAny(this, TV) }
     // TODO: remove after implement SABR
     val isPlaybackBroken by lazy { Helpers.equalsAny(this, INITIAL, WEB, WEB_CREATOR, WEB_MUSIC, WEB_SAFARI, ANDROID_VR, GEO, MWEB, WEB_EMBED, TV_EMBED, IOS) }
     val isReelClient by lazy { Helpers.equalsAny(this, ANDROID_REEL) }

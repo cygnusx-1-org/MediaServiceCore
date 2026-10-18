@@ -1,8 +1,6 @@
 package com.liskovsoft.youtubeapi.app.potokennp2.generators
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
@@ -23,6 +21,7 @@ import com.liskovsoft.youtubeapi.app.potokennp2.misc.hasUsbServiceBug
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.parseChallengeData
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.parseIntegrityTokenData
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.potLibPrefix
+import com.liskovsoft.youtubeapi.app.potokennp2.misc.runOnMainThread
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.stringToU8
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.u8ToBase64
 import io.reactivex.SingleEmitter
@@ -38,8 +37,9 @@ internal class PoTokenWebView private constructor(
 ) : PoTokenGenerator {
     private val webView = WebView(context)
     private val poTokenEmitters = mutableListOf<Pair<String, (String) -> Unit>>()
-    private var expirationMs: Long = -1
-    var initError: Throwable? = null
+    private var initError: Throwable? = null
+    override var expirationMs: Long = -1
+        private set
 
     //region Initialization
     init {
@@ -47,9 +47,6 @@ internal class PoTokenWebView private constructor(
         //noinspection SetJavaScriptEnabled we want to use JavaScript!
         webViewSettings.javaScriptEnabled = true
         // MOD: fix AbstractMethodError (Android 8/9)
-        //if (WebViewFeature.isFeatureSupported(WebViewFeature.SAFE_BROWSING_ENABLE)) {
-        //    WebSettingsCompat.setSafeBrowsingEnabled(webViewSettings, false)
-        //}
         setSafeBrowsingEnabled(webViewSettings, false)
 
         webViewSettings.userAgentString = USER_AGENT
@@ -68,9 +65,6 @@ internal class PoTokenWebView private constructor(
 
                     val fmt = "\"${m.message()}\", source: ${m.sourceId()} (${m.lineNumber()})"
                     Log.e(TAG, "This WebView implementation is broken: $fmt")
-
-                    // TODO: not needed anymore?
-                    //isBroken = true
 
                     // Next line cause crashes
                     onInitializationErrorCloseAndCancel(BadWebViewException(fmt))
@@ -177,7 +171,6 @@ internal class PoTokenWebView private constructor(
 
         // MOD: backport Instant.now().plusSeconds
         // leave 10 minutes of margin just to be sure
-        //expirationInstant = Instant.now().plusSeconds(expirationTimeInSeconds - 600)
         expirationMs = System.currentTimeMillis() + ((expirationTimeInSeconds - 600) * 1_000)
 
         runOnMainThread {
@@ -257,12 +250,6 @@ internal class PoTokenWebView private constructor(
 
         Log.d(TAG, "Generated poToken: identifier=$identifier poToken=$poToken")
         popPoTokenEmitter(identifier)?.invoke(poToken)
-    }
-
-    override fun isExpired(): Boolean {
-        // MOD: java.time backport
-        //return Instant.now().isAfter(expirationInstant)
-        return System.currentTimeMillis() > expirationMs
     }
 
     //endregion
@@ -417,18 +404,6 @@ internal class PoTokenWebView private constructor(
             potWv.initError?.let { throw it }
 
             return potWv
-        }
-
-        /**
-         * Runs [runnable] on the main thread using `Handler(Looper.getMainLooper()).post()`, and
-         * if the `post` fails emits an error on [emitterIfPostFails].
-         */
-        private fun runOnMainThread(
-            runnable: Runnable
-        ) {
-            if (!Handler(Looper.getMainLooper()).post(runnable)) {
-                throw PoTokenException("Could not run on main thread")
-            }
         }
     }
 }

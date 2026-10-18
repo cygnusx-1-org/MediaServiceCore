@@ -3,14 +3,21 @@ package com.liskovsoft.youtubeapi.app.potokennp2.misc
 import android.content.Context
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.webkit.ValueCallback
 import android.webkit.WebView
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import com.liskovsoft.sharedutils.mylogger.Log
+import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "WebViewUtil"
+
+private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
 internal const val potLibPrefix = "potokennp2/"
 
@@ -108,4 +115,43 @@ internal fun WebView.evaluateJavascriptLegacy(script: String, resultCallback: Va
         // NOTE: callbacks not supported. Use jsInterface instead
         loadUrl("javascript:(function() { $script })();")
     }
+}
+
+/**
+ * Runs [runnable] on the main thread. If already on the main thread, it runs immediately
+ * and synchronously; otherwise it is posted via `Handler(Looper.getMainLooper()).post()`.
+ *
+ * @throws PoTokenException if the `post` fails.
+ */
+internal fun runOnMainThread(
+    runnable: Runnable
+) {
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+        runnable.run()
+        return
+    }
+    if (!mainHandler.post(runnable)) {
+        throw PoTokenException("Could not run on main thread")
+    }
+}
+
+/**
+ * Runs [block] on the main thread and waits up to [waitSec] seconds for it to complete.
+ *
+ * Exceptions thrown by [block] are logged and swallowed, not propagated. A block that
+ * throws still counts as completed.
+ *
+ * @return `true` if [block] finished within [waitSec] seconds, `false` if the wait timed out.
+ * On timeout the block may still run later.
+ * @throws PoTokenException if posting to the main thread fails.
+ */
+internal fun runOnMainThreadSync(waitSec: Long, block: () -> Unit): Boolean {
+    val latch = CountDownLatch(1)
+
+    runOnMainThread {
+        runCatching { block() }.onFailure { Log.w(TAG, "runOnMainThreadSync: block failed", it) }
+        latch.countDown()
+    }
+
+    return latch.await(waitSec, TimeUnit.SECONDS)
 }

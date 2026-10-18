@@ -304,16 +304,45 @@ public final class YouTubeHelper {
         return RandomStringFromAlphabetGenerator.generate2(16);
     }
 
+    /**
+     * Converts a SABR track description to the app's internal format
+     * @param audioTrackId lang/id (4 - original, 2 - descriptive aka audio description)
+     * @param isAutoDubbed ai dubbed
+     * @param isDefaultAudio track language match app locale
+     */
     @Nullable
     public static String getSabrLanguage(String audioTrackId, boolean isAutoDubbed, boolean isDefaultAudio) {
         if (audioTrackId == null) {
             return null;
         }
 
-        String lang = audioTrackId.split("\\.")[0];
+        String[] langAndId = splitToLangAndId(audioTrackId);
+        String lang = langAndId[0];
+        boolean isOriginal = langAndId.length == 2 ? "4".equals(langAndId[1]) : isDefaultAudio;
+        boolean isDescriptive = langAndId.length == 2 && "2".equals(langAndId[1]);
         // original, descriptive, dubbed, dubbed-auto, secondary
-        String acont = isAutoDubbed ? "dubbed-auto" : isDefaultAudio ? "original" : "dubbed";
+        String acont = isAutoDubbed ? "dubbed-auto" : isOriginal ? "original" : isDescriptive ? "descriptive" : "dubbed";
 
         return String.format("%s (%s)", exoNameFix(lang), acont);
+    }
+
+    /**
+     * Splits an audio track id into its language and id parts.<br/>
+     * Id: 4 - original, 2 - descriptive aka audio description
+     *
+     * @param audioTrackId e.g. "de-DE.10"
+     * @return array of [lang, id], e.g. ["de-DE", "10"]
+     */
+    @NonNull
+    private static String[] splitToLangAndId(@NonNull String audioTrackId) {
+        return audioTrackId.split("\\."); // de-DE.10 -> ["de-DE", "10"]
+    }
+
+    /**
+     * Returns the first element of {@link #splitToLangAndId(String)}
+     */
+    @NonNull
+    public static String extractLang(@NonNull String audioTrackId) {
+        return splitToLangAndId(audioTrackId)[0];
     }
 }

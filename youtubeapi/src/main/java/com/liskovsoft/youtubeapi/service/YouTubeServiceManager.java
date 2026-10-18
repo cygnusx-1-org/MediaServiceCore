@@ -15,8 +15,10 @@ import com.liskovsoft.mediaserviceinterfaces.SignInService;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.app.AppService;
+import com.liskovsoft.youtubeapi.app.ReloadPlaybackGate;
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl;
 import com.liskovsoft.googlecommon.common.locale.LocaleManager;
+import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService;
 
@@ -85,8 +87,8 @@ public class YouTubeServiceManager implements ServiceManager {
         getYouTubeSignInService().invalidateCache(); // sections infinite loading fix (request timed out fix)
         getAppService().invalidateCache();
         //AppService.instance().invalidateVisitorData();
-        getYouTubeMediaItemService().invalidateCache();
-        getVideoInfoService().resetInfoType();
+        FormatInfoWrapper.invalidateCache();
+        FormatInfoWrapper.resetFormat();
     }
 
     @Override
@@ -96,20 +98,30 @@ public class YouTubeServiceManager implements ServiceManager {
 
     @Override
     public void switchNextClient() {
-        getYouTubeMediaItemService().invalidateCache();
-        getVideoInfoService().switchNextFormat(false);
+        FormatInfoWrapper.invalidateCache();
+        FormatInfoWrapper.switchNextFormat(false);
     }
 
     @Override
     public void switchNextClientNow() {
-        getYouTubeMediaItemService().invalidateCache();
-        getVideoInfoService().switchNextFormat(true);
+        FormatInfoWrapper.invalidateCache();
+        FormatInfoWrapper.switchNextFormat(true);
     }
 
     @Override
     public void switchNextSubsFormat() {
-        getYouTubeMediaItemService().invalidateCache();
+        FormatInfoWrapper.invalidateCache();
         getVideoInfoService().switchNextSubtitle();
+    }
+
+    /**
+     * SABR server sent ReloadPlayerResponse and won't send any media until the player response is re-fetched.<br/>
+     * The next player request for this video will include the token (reloadPlaybackContext).
+     */
+    @Override
+    public void reloadPlayerResponse(String videoId, String reloadPlaybackToken) {
+        FormatInfoWrapper.invalidateCache();
+        ReloadPlaybackGate.setToken(videoId, reloadPlaybackToken);
     }
 
     private void refreshCacheIfNeededInt() {

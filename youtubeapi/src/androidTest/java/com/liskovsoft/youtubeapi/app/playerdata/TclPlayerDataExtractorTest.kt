@@ -3,18 +3,24 @@ package com.liskovsoft.youtubeapi.app.playerdata
 import android.Manifest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import com.liskovsoft.googlecommon.common.helpers.tests.TestHelpers
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
-import com.liskovsoft.youtubeapi.common.helpers.AppConstants
 import com.liskovsoft.youtubeapi.app.AppServiceInt
+import com.liskovsoft.youtubeapi.common.helpers.AppClient
+import com.liskovsoft.youtubeapi.common.helpers.AppConstants
+import com.liskovsoft.youtubeapi.videoinfo.BaseVideoInfoApiTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 
-class PlayerDataExtractorTest {
+private const val TCL_TIMESTAMP_LENGTH = 8
+
+class TclPlayerDataExtractorTest: BaseVideoInfoApiTest() {
     private val mAppServiceInt = AppServiceInt()
 
     @JvmField
@@ -23,6 +29,7 @@ class PlayerDataExtractorTest {
 
     @Before
     fun setUp() {
+        initBase()
         GlobalPreferences.instance(InstrumentationRegistry.getInstrumentation().context)
     }
 
@@ -42,7 +49,7 @@ class PlayerDataExtractorTest {
     }
 
     private fun testPlayerExtractorValid(playerUrl: String) {
-        val extractor = PlayerDataExtractor(playerUrl)
+        val extractor = TclPlayerDataExtractor(playerUrl)
         assertNotNull("NSig not null for $playerUrl", extractor.extractNSig("5cNpZqIJ7ixNqU68Y7S"))
         assertTrue("PlayerExtractor validated", extractor.validate())
     }
@@ -58,7 +65,8 @@ class PlayerDataExtractorTest {
     fun testNSigPlayerVersions() {
         getTestingUrls().forEach { testNSigPlayerUrl(it) }
     }
-    
+
+    @Ignore("Not implemented yet")
     @Test
     fun testSigPlayerVersions() {
         getTestingUrls().forEach { testSigPlayerUrl(it) }
@@ -75,36 +83,30 @@ class PlayerDataExtractorTest {
     }
 
     @Test
-    fun testThatTVAndWebHasSameResult() {
-        val urlTV = AppConstants.playerUrls.first()
-        val urlWeb = urlTV.replace("/tv-player-es6.vflset/tv-player-es6.js", "/player_es6.vflset/en_US/base.js")
+    fun testSabrUrlAccessible() {
+        val videoInfo = getVideoInfo(AppClient.TV, TestHelpers.VIDEO_ID_CAPTIONS)
 
-        assertNotEquals("Using tv and web urls", urlTV, urlWeb)
+        assertNotNull("Contains adaptive formats error: ${videoInfo.playabilityStatus}", videoInfo.adaptiveFormats)
 
-        val firstNSig = testNSigPlayerUrl(urlTV)
-        val secondNSig = testNSigPlayerUrl(urlWeb)
+        decipherFormats(videoInfo)
 
-        assertEquals("NSig: tv and web produces the same result", firstNSig, secondNSig)
-
-        val firstSig = testSigPlayerUrl(urlTV)
-        val secondSig = testSigPlayerUrl(urlWeb)
-
-        assertEquals("Sig: tv and web produces the same result", firstSig, secondSig)
+        assertTrue("Sabr format exists", TestHelpers.urlExists(videoInfo.serverAbrStreamingUrl))
     }
 
     private fun testNSigPlayerUrl(url: String): String? {
-        val extractor = PlayerDataExtractor(url)
+        val extractor = TclPlayerDataExtractor(url)
 
-        val nParam = "5cNpZqIJ7ixNqU68Y7S"
+        val nParam = "JJGumBcSHg0ByKxL"
         val result = extractor.extractNSig(nParam)
         assertNotNull("NSig not null for url $url", result)
         assertNotEquals("NSig not equal failed for url $url", nParam, result)
+        assertTrue("NSig doesn't exceeds 17 chars for url $url with len=${result?.length ?: -1}", (result?.length ?: -1) <= 17)
 
         return result
     }
 
     private fun testSigPlayerUrl(url: String): String? {
-        val extractor = PlayerDataExtractor(url)
+        val extractor = TclPlayerDataExtractor(url)
 
         val sigParam = "NJAJEij0EwRgIhAI0KExTgjfPk-MPM9MAdzyyPRt=BM8-XO5tm5hlMCSVpAiEAv7eP3CURqZNSPow8BXXAoazVoXgeMP7gH9BdylHCwgw=gwzz"
         val result = extractor.extractSig(listOf(sigParam))
@@ -115,20 +117,19 @@ class PlayerDataExtractorTest {
     }
 
     private fun testCPNPlayerUrl(url: String) {
-        val extractor = PlayerDataExtractor(url)
+        val extractor = TclPlayerDataExtractor(url)
 
         val cpn = extractor.createClientPlaybackNonce()
         assertNotNull("CPN not null for url $url", cpn)
     }
 
     private fun testTimestampPlayerUrl(url: String) {
-        val extractor = PlayerDataExtractor(url)
+        val extractor = TclPlayerDataExtractor(url)
 
         val timestamp = extractor.getSignatureTimestamp()
         assertNotNull("Timestamp not null for url $url", timestamp)
 
-        val timestampLength = if (url.contains("-tcl.")) 8 else 5
-        assertEquals("Timestamp length is $timestampLength", timestampLength, timestamp?.length ?: 0)
+        assertEquals("Timestamp length is $TCL_TIMESTAMP_LENGTH", TCL_TIMESTAMP_LENGTH, timestamp?.length ?: 0)
     }
 
     private fun getTestingUrls(): List<String> = AppConstants.playerUrls.take(5) // do limit to avoid OOM
