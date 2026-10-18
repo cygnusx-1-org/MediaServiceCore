@@ -16,7 +16,10 @@ import com.liskovsoft.youtubeapi.app.models.cached.AppInfoCached;
 import com.liskovsoft.youtubeapi.app.models.cached.ClientDataCached;
 import com.liskovsoft.youtubeapi.app.playerdata.PlayerExtractorCache;
 import com.liskovsoft.youtubeapi.app.potokencloud.PoTokenResponse;
+import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import io.reactivex.disposables.Disposable;
@@ -91,6 +94,7 @@ public class MediaServiceData {
     private String mDataApiKey;
     private boolean mIsShortsQuickToggleEnabled;
     private boolean mIsShortsQuickToggleHiding;
+    private List<String> mClientOrder = new ArrayList<>();
 
     private static class MediaServiceCache extends SharedPreferencesBase {
         private static final String PREF_NAME = MediaServiceCache.class.getSimpleName();
@@ -377,6 +381,52 @@ public class MediaServiceData {
         persistData();
     }
 
+    /**
+     * The names of the clients in the order they're tried to get the formats of a video: the order chosen in the settings, then the
+     * ones not in it (e.g. new ones), in their default order
+     */
+    public List<String> getClientOrder() {
+        return orderClients(mClientOrder, VideoInfoService.getDefaultClientOrder());
+    }
+
+    /**
+     * Not kept when it's the default order: a change of the default one applies then. The first one is tried next.
+     */
+    public void setClientOrder(List<String> clients) {
+        List<String> defaultOrder = VideoInfoService.getDefaultClientOrder();
+        List<String> order = orderClients(clients, defaultOrder);
+
+        mClientOrder = order.equals(defaultOrder) ? new ArrayList<>() : order;
+
+        persistData();
+
+        VideoInfoService.instance().resetClient();
+        FormatInfoWrapper.invalidateCache();
+    }
+
+    /**
+     * The ordered ones that are clients, once, then the other clients in their default order
+     */
+    static List<String> orderClients(List<String> ordered, List<String> defaultOrder) {
+        List<String> result = new ArrayList<>();
+
+        if (ordered != null) {
+            for (String client : ordered) {
+                if (defaultOrder.contains(client) && !result.contains(client)) {
+                    result.add(client);
+                }
+            }
+        }
+
+        for (String client : defaultOrder) {
+            if (!result.contains(client)) {
+                result.add(client);
+            }
+        }
+
+        return result;
+    }
+
     private void restoreData() {
         String data = mGlobalPrefs.getMediaServiceData();
 
@@ -409,6 +459,7 @@ public class MediaServiceData {
         mIsShortsQuickToggleEnabled = Helpers.parseBoolean(split, 27);
         mIsShortsQuickToggleHiding = Helpers.parseBoolean(split, 28);
         boolean isShortsSectionsMigrated = Helpers.parseBoolean(split, 29);
+        mClientOrder = Helpers.parseStrList(split, 30);
 
         if (!isShortsSectionsMigrated) {
             mHiddenContent = migrateShortsSections(mHiddenContent);
@@ -450,7 +501,8 @@ public class MediaServiceData {
                         null, mEnabledFormats, null, null, mPoToken, mAppInfo,
                         null, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
                         null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey,
-                        mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding, true));
+                        mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding, true,
+                        mClientOrder.isEmpty() ? null : mClientOrder));
     }
 
     private void persistCachedDataInt() {

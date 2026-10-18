@@ -18,6 +18,7 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoHls;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoReel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -30,6 +31,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private static VideoInfoService sInstance;
     private final VideoInfoApi mVideoInfoApi;
     // TODO: TV clients are broken because of recently introduced '-tcl' player variant (different nParam and nSignature)
+    // The default order. The one chosen in the settings is the one used (see getVideoInfoTypes)
     private final static AppClient[] VIDEO_INFO_TYPE_LIST = {
             AppClient.TV, // Supports auth. Fixes "please sign in" bug! (the best for Premium users)
             AppClient.VISIONOS, // no url formats
@@ -116,8 +118,9 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private VideoInfo firstInfoWith(String videoId, String clickTrackingParams, InfoTester infoTester) {
+        final AppClient[] types = getVideoInfoTypes();
         //final AppClient beginType = getDefaultClient();
-        final AppClient beginType = mNextInfoType != null ? mNextInfoType : VIDEO_INFO_TYPE_LIST[0];
+        final AppClient beginType = mNextInfoType != null ? mNextInfoType : types[0];
         AppClient nextType = beginType;
 
         do {
@@ -127,7 +130,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 return result;
             }
 
-            nextType = Helpers.getNextValue(VIDEO_INFO_TYPE_LIST, nextType);
+            nextType = Helpers.getNextValue(types, nextType);
         } while (nextType != beginType);
 
         return null;
@@ -141,7 +144,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         // And last, try to switch the client
         nextVideoInfoType();
-        return mNextInfoType == VIDEO_INFO_TYPE_LIST[0];
+        return mNextInfoType == getVideoInfoTypes()[0];
     }
 
     public void switchNextSubtitle() {
@@ -153,8 +156,41 @@ public class VideoInfoService extends VideoInfoServiceBase {
         PoTokenGate.resetCache();
     }
 
+    /**
+     * The first one of the new order is tried next (see MediaServiceData#setClientOrder)
+     */
+    public void resetClient() {
+        resetInfoTypeToDefault();
+    }
+
+    /**
+     * The names of the clients in their default order
+     */
+    public static List<String> getDefaultClientOrder() {
+        List<String> result = new ArrayList<>();
+
+        for (AppClient client : VIDEO_INFO_TYPE_LIST) {
+            result.add(client.name());
+        }
+
+        return result;
+    }
+
+    /**
+     * The clients in the order they're tried, see MediaServiceData#getClientOrder
+     */
+    private static AppClient[] getVideoInfoTypes() {
+        List<AppClient> result = new ArrayList<>();
+
+        for (String name : getData().getClientOrder()) {
+            result.add(AppClient.valueOf(name));
+        }
+
+        return result.toArray(new AppClient[0]);
+    }
+
     private void nextVideoInfoType() {
-        mNextInfoType = Helpers.getNextValue(VIDEO_INFO_TYPE_LIST, mActualInfoType);
+        mNextInfoType = Helpers.getNextValue(getVideoInfoTypes(), mActualInfoType);
     }
 
     private VideoInfo getVideoInfoWithRentFix(AppClient client, String videoId, String clickTrackingParams) {
@@ -281,7 +317,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
     private void resetInfoTypeToDefault() {
         mNextInfoType = null;
-        mActualInfoType = VIDEO_INFO_TYPE_LIST[0];
+        mActualInfoType = getVideoInfoTypes()[0];
         persistVideoInfoType();
     }
 
