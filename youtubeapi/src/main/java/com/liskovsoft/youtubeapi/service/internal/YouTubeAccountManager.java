@@ -338,34 +338,46 @@ public class YouTubeAccountManager {
     }
 
     /**
-     * Sync avatars, names and emails
+     * The ones to sync the avatars, names and emails with, once (see syncStorage). Fetched apart: this makes a request.
+     * @return null when synced already, none is stored or they can't be fetched
      */
-    public void syncStorage() {
+    @Nullable
+    public List<AccountInt> getAccountsToSync() {
         if (mStorageSynced)
-            return;
+            return null;
 
         List<Account> storedAccounts = getAccounts();
 
-        if (storedAccounts != null && !storedAccounts.isEmpty()) {
-            List<AccountInt> newAccounts = getAuthService().getAccounts();
+        if (storedAccounts == null || storedAccounts.isEmpty()) {
+            return null;
+        }
 
+        return getAuthService().getAccounts();
+    }
+
+    /**
+     * Sync avatars, names and emails
+     * @param newAccounts the ones fetched with the selected account's authorization (see getAccountsToSync)
+     */
+    public void syncStorage(@Nullable List<AccountInt> newAccounts) {
+        if (mStorageSynced)
+            return;
+
+        if (newAccounts != null) {
             Account selectedAccount = getSelectedAccount();
+            // They're the accounts of the selected one's sign-in (see persistRefreshToken). Matched by it, not by the name,
+            // which changes, e.g. when a channel is created: else the renamed account is added apart and the selected one stays stale.
+            String refreshToken = selectedAccount != null ? ((YouTubeAccount) selectedAccount).getRefreshToken() : null;
 
-            if (newAccounts != null) {
-                // They're the accounts of the selected one's sign-in (see persistRefreshToken). Matched by it, not by the name,
-                // which changes, e.g. when a channel is created: else the renamed account is added apart and the selected one stays stale.
-                String refreshToken = selectedAccount != null ? ((YouTubeAccount) selectedAccount).getRefreshToken() : null;
-
-                for (AccountInt newAccount : newAccounts) {
-                    YouTubeAccount account = YouTubeAccount.from(newAccount);
-                    if (refreshToken != null) {
-                        account.setRefreshToken(refreshToken);
-                    }
-                    account.setSelected(account.equals(selectedAccount));
-                    addAccount(account);
+            for (AccountInt newAccount : newAccounts) {
+                YouTubeAccount account = YouTubeAccount.from(newAccount);
+                if (refreshToken != null) {
+                    account.setRefreshToken(refreshToken);
                 }
-                persistAccounts();
+                account.setSelected(account.equals(selectedAccount));
+                addAccount(account);
             }
+            persistAccounts();
         }
 
         mStorageSynced = true;

@@ -9,6 +9,7 @@ import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.youtubeapi.auth.V2.AuthService;
 import com.liskovsoft.googlecommon.common.models.auth.AccessToken;
+import com.liskovsoft.googlecommon.common.models.auth.info.AccountInt;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper;
 import com.liskovsoft.googlecommon.service.oauth.YouTubeAccount;
 import com.liskovsoft.youtubeapi.service.internal.YouTubeAccountManager;
@@ -30,6 +31,15 @@ public class YouTubeSignInService implements SignInService {
     private final YouTubeAccountManager mAccountManager;
     private String mCachedAuthorizationHeader;
     private long mCacheUpdateTime;
+    /**
+     * One update of the authorization header at a time, the others wait for it. Not this object's lock, which selectAccount takes:
+     * the update makes requests, which can take long (e.g. a slow network), and the account is changed on the main thread.
+     */
+    private final Object mAuthHeadersLock = new Object();
+    /**
+     * Changes when the header is invalidated, e.g. with the account (see invalidateCache): an update made before isn't used
+     */
+    private int mAuthHeadersVersion;
     /**
      * The account of the requests made on this thread, when it has one of its own (see callAs)
      */
@@ -90,24 +100,57 @@ public class YouTubeSignInService implements SignInService {
         updateAuthHeadersIfNeeded();
     }
 
-    private synchronized void updateAuthHeadersIfNeeded() {
-        if (mCachedAuthorizationHeader != null && Helpers.equals(mCachedAuthorizationHeader, RetrofitOkHttpHelper.getAuthHeaders().get("Authorization"))
-                && System.currentTimeMillis() - mCacheUpdateTime < TOKEN_REFRESH_PERIOD_MS) {
-            return;
+    private void updateAuthHeadersIfNeeded() {
+        synchronized (mAuthHeadersLock) {
+            while (!updateAuthHeaders()) {
+                Log.d(TAG, "Authorization header invalidated while updated. Updating again...");
+            }
         }
-
-        updateAuthHeaders();
-
-        mCacheUpdateTime = System.currentTimeMillis();
     }
 
-    private void updateAuthHeaders() {
-        Account account = mAccountManager.getSelectedAccount();
+    /**
+     * The requests are made off this object's lock, what they get is set under it
+     * @return false when invalidated meanwhile (e.g. the account changed): it's not set
+     */
+    private boolean updateAuthHeaders() {
+        int version;
+        Account account;
+
+        synchronized (this) {
+            if (mCachedAuthorizationHeader != null && Helpers.equals(mCachedAuthorizationHeader, RetrofitOkHttpHelper.getAuthHeaders().get("Authorization"))
+                    && System.currentTimeMillis() - mCacheUpdateTime < TOKEN_REFRESH_PERIOD_MS) {
+                return true;
+            }
+
+            version = mAuthHeadersVersion;
+            account = mAccountManager.getSelectedAccount();
+        }
+
         String refreshToken = account != null ? ((YouTubeAccount) account).getRefreshToken() : null;
         // get or create authorization on fly
-        mCachedAuthorizationHeader = createAuthorizationHeader(refreshToken);
-        syncWithRetrofit();
-        mAccountManager.syncStorage();
+        String authorizationHeader = createAuthorizationHeader(refreshToken);
+
+        synchronized (this) {
+            if (version != mAuthHeadersVersion) {
+                return false;
+            }
+
+            mCachedAuthorizationHeader = authorizationHeader;
+            syncWithRetrofit();
+            mCacheUpdateTime = System.currentTimeMillis();
+        }
+
+        // Fetched with the header above: no other update sets one meanwhile
+        List<AccountInt> accounts = mAccountManager.getAccountsToSync();
+
+        synchronized (this) {
+            // Else synced on the next update
+            if (version == mAuthHeadersVersion) {
+                mAccountManager.syncStorage(accounts);
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -127,12 +170,14 @@ public class YouTubeSignInService implements SignInService {
         return mAccountManager.getSelectedAccount();
     }
 
-    public void invalidateCache() {
+    public synchronized void invalidateCache() {
         mCachedAuthorizationHeader = null;
         mCacheUpdateTime = 0;
+        mAuthHeadersVersion++;
     }
 
     // Fix empty content when quickly switch accounts???
+    // An update of the header isn't waited for (see updateAuthHeaders): one made for the account before isn't used.
     @Override
     public synchronized void selectAccount(Account account) {
         mAccountManager.selectAccount(account);
