@@ -4,6 +4,7 @@ import com.liskovsoft.mediaserviceinterfaces.RemoteControlService;
 import com.liskovsoft.sharedutils.helpers.AppInfoHelpers;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
+import com.liskovsoft.sharedutils.okhttp.OkHttpManager;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
 import com.liskovsoft.googlecommon.common.converters.jsonpath.typeadapter.JsonPathTypeAdapter;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
@@ -171,6 +172,9 @@ public class LoungeService {
                 mGSessionId);
         Request request = new Builder().url(url).build();
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+        // The app's lookups, e.g. IPv4 only when IPv6 doesn't connect (see OkHttpManager.isIpv6Disabled)
+        builder.dns(OkHttpManager.instance().getClient().dns());
 
         // No command during one minute could be a sign of hanged connection.
         builder.readTimeout(60_000, TimeUnit.MILLISECONDS);
