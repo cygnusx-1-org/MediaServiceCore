@@ -41,6 +41,13 @@ public class YouTubeServiceManager implements ServiceManager {
         return sInstance;
     }
 
+    /**
+     * The YouTube client the formats are fetched with, e.g. TV or INNERTUBE (see FormatInfoWrapper#getClientName)
+     */
+    public static String getCurrentClientName() {
+        return FormatInfoWrapper.getClientName();
+    }
+
     @Override
     public SignInService getSignInService() {
         return getYouTubeSignInService();

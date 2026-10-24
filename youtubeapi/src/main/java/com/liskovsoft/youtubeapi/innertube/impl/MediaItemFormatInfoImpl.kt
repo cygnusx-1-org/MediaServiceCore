@@ -239,6 +239,8 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
 
     override fun getPlayabilityReason(): String? = _playabilityReason
 
+    override fun getPlayabilityStatus(): String? = _playabilityStatus
+
     override fun isStreamSeekable() = _isHfr || _isStreamSeekable
 
     override fun getStartTimestamp() = _startTimestamp

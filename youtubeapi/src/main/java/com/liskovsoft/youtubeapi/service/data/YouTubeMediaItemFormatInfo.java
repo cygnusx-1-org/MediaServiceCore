@@ -49,6 +49,7 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     private String mOfParam; // used in tracking
     private String mStoryboardSpec;
     private boolean mIsUnplayable;
+    private String mPlayabilityReason;
     private String mPlayabilityStatus;
     private String mStartTimestamp;
     private String mUploadDate;
@@ -126,7 +127,8 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
         formatInfo.mIsUnplayable = videoInfo.isUnplayable() && !formatInfo.containsUrlFormats();
         formatInfo.mIsAuth = videoInfo.isAuth();
         formatInfo.mIsUnknownError = videoInfo.isUnknownRestricted();
-        formatInfo.mPlayabilityStatus = videoInfo.getPlayabilityStatus();
+        formatInfo.mPlayabilityReason = videoInfo.getPlayabilityStatus();
+        formatInfo.mPlayabilityStatus = videoInfo.getPlayabilityStatusName();
         formatInfo.mIsStreamSeekable = videoInfo.isHfr() || videoInfo.isStreamSeekable();
         formatInfo.mStartTimestamp = videoInfo.getStartTimestamp();
         formatInfo.mUploadDate = videoInfo.getUploadDate();
@@ -371,6 +373,11 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
 
     @Override
     public String getPlayabilityReason() {
+        return mPlayabilityReason;
+    }
+
+    @Override
+    public String getPlayabilityStatus() {
         return mPlayabilityStatus;
     }
 

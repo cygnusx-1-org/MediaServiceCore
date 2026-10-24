@@ -308,6 +308,13 @@ public class VideoInfo {
         return Helpers.toString(ServiceHelper.createInfo(mPlayabilityReason, mPlayabilityDescription));
     }
 
+    /**
+     * E.g. OK, LOGIN_REQUIRED or UNPLAYABLE. Why, as the user is shown it, is {@link #getPlayabilityStatus()}.
+     */
+    public String getPlayabilityStatusName() {
+        return mPlayabilityStatus;
+    }
+
     public String getStoryboardSpec() {
         return mStoryboardSpec;
     }

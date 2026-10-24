@@ -36,6 +36,10 @@ public interface MediaItemFormatInfo extends FormatInfoProvision {
     boolean isUnplayable();
     boolean isUnknownError();
     String getPlayabilityReason();
+    /**
+     * E.g. OK, LOGIN_REQUIRED or UNPLAYABLE. Why, as the user is shown it, is {@link #getPlayabilityReason()}.
+     */
+    String getPlayabilityStatus();
     boolean isStreamSeekable();
     /**
      * Stream start time in UTC (!!!).<br/>

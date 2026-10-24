@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.liskovsoft.youtubeapi.innertube.initialresponse.InitialResponseService;
+import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt;
 import com.liskovsoft.youtubeapi.videoinfo.VideoInfoServiceBase;
 import com.liskovsoft.youtubeapi.videoinfo.models.CaptionTrack;
 import com.liskovsoft.youtubeapi.videoinfo.models.TranslationLanguage;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.Response;
 
 public class VideoInfoService extends VideoInfoServiceBase {
     private static final String TAG = VideoInfoService.class.getSimpleName();
@@ -56,6 +58,11 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private boolean mUseAuth;
     private List<TranslationLanguage> mCachedTranslationLanguages;
     private boolean mIsUnplayable;
+    /**
+     * Of the last video info request on the thread, 0 when it got no response (see firstInfoWith). Per thread: the history's
+     * auth info (see getAuthVideoInfo) is fetched while the next video's formats are.
+     */
+    private final ThreadLocal<Integer> mLastResponseCode = new ThreadLocal<>();
 
     private VideoInfoService() {
         mVideoInfoApi = RetrofitHelper.create(VideoInfoApi.class);
@@ -124,9 +131,15 @@ public class VideoInfoService extends VideoInfoServiceBase {
         AppClient nextType = beginType;
 
         do {
-            VideoInfo result = getVideoInfoWithRentFix(nextType, videoId, clickTrackingParams);
+            final AppClient type = nextType;
+            mLastResponseCode.set(0);
+            VideoInfo result = ClientAttempts.recordException(videoId, type.name(),
+                    () -> getVideoInfoWithRentFix(type, videoId, clickTrackingParams));
+            boolean accepted = result != null && infoTester.test(result);
 
-            if (result != null && infoTester.test(result)) {
+            ClientAttempts.record(videoId, toAttempt(type, result, accepted));
+
+            if (accepted) {
                 return result;
             }
 
@@ -134,6 +147,24 @@ public class VideoInfoService extends VideoInfoServiceBase {
         } while (nextType != beginType);
 
         return null;
+    }
+
+    private Attempt toAttempt(AppClient client, @Nullable VideoInfo result, boolean accepted) {
+        if (accepted) {
+            return Attempt.ok(client.name());
+        }
+
+        if (result == null) {
+            Integer code = mLastResponseCode.get();
+
+            return code != null && code != 0 && code != 200 ? Attempt.http(client.name(), code) : Attempt.nullResponse(client.name());
+        }
+
+        if (result.isUnplayable()) {
+            return Attempt.unplayable(client.name(), result.getPlayabilityStatusName(), result.getPlayabilityStatus());
+        }
+
+        return Attempt.noRegularFormats(client.name());
     }
 
     public boolean switchNextFormat(boolean force) {
@@ -145,6 +176,15 @@ public class VideoInfoService extends VideoInfoServiceBase {
         // And last, try to switch the client
         nextVideoInfoType();
         return mNextInfoType == getVideoInfoTypes()[0];
+    }
+
+    /**
+     * The client switched to (tried first next), else the one the last formats came from, else the first of the order
+     */
+    public String getClientName() {
+        AppClient client = mNextInfoType != null ? mNextInfoType : mActualInfoType;
+
+        return client != null ? client.name() : getVideoInfoTypes()[0].name();
     }
 
     public void switchNextSubtitle() {
@@ -236,7 +276,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private @Nullable VideoInfo getVideoInfo(Call<VideoInfo> wrapper, boolean auth) {
-        VideoInfo videoInfo = RetrofitHelper.get(wrapper, auth);
+        VideoInfo videoInfo = getBody(RetrofitHelper.getAuthResponse(wrapper, auth));
 
         if (videoInfo == null) {
             return null;
@@ -248,7 +288,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private @Nullable VideoInfo getVideoInfoReel(Call<VideoInfoReel> wrapper, boolean auth) {
-        VideoInfoReel videoInfo = RetrofitHelper.get(wrapper, auth);
+        VideoInfoReel videoInfo = getBody(RetrofitHelper.getAuthResponse(wrapper, auth));
 
         if (videoInfo == null || videoInfo.getVideoInfo() == null) {
             return null;
@@ -257,6 +297,15 @@ public class VideoInfoService extends VideoInfoServiceBase {
         videoInfo.getVideoInfo().setAuth(auth);
 
         return videoInfo.getVideoInfo();
+    }
+
+    /**
+     * The code is kept for the client's attempt (see firstInfoWith)
+     */
+    private @Nullable <T> T getBody(@Nullable Response<T> response) {
+        mLastResponseCode.set(response != null ? response.code() : 0);
+
+        return response != null ? response.body() : null;
     }
 
     private VideoInfoHls getVideoInfoIOSHls(String videoId, String clickTrackingParams) {

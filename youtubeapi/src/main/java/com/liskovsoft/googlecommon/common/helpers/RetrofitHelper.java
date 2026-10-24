@@ -111,11 +111,7 @@ public class RetrofitHelper {
     }
 
     private static <T> T get(Call<T> wrapper, boolean auth, boolean withErrors) {
-        if (!auth) {
-            RetrofitOkHttpHelper.addAuthSkip(wrapper.request());
-        }
-
-        Response<T> response = getResponse(wrapper);
+        Response<T> response = getAuthResponse(wrapper, auth);
 
         if (withErrors) {
             // NOTE: Be careful. Best suited for transaction like methods (e.g. authentication).
@@ -124,6 +120,17 @@ public class RetrofitHelper {
         }
 
         return response != null ? response.body() : null;
+    }
+
+    /**
+     * The response as {@link #get(Call, boolean)} gets it, to read its code before the body. Null when the server is down.
+     */
+    public static <T> Response<T> getAuthResponse(Call<T> wrapper, boolean auth) {
+        if (!auth) {
+            RetrofitOkHttpHelper.addAuthSkip(wrapper.request());
+        }
+
+        return getResponse(wrapper);
     }
 
     public static <T> Headers getHeaders(Call<T> wrapper) {

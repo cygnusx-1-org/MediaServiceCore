@@ -9,18 +9,33 @@ import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.innertube.InnertubeService
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo
+import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts
+import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService
 
 internal object FormatInfoWrapper {
+    /**
+     * Its attempt, among the legacy clients' (see ClientAttempts)
+     */
+    private const val INNERTUBE_CLIENT = "INNERTUBE"
     private var mCachedFormatInfo: MediaItemFormatInfo? = null
     private var mTryInnertubeFirst: Boolean = false
     private val mInnertubeResult = object { var isUnplayable: Boolean = false; var client: AppClient? = null }
     private val mInnertubeProvider: (String, String?) -> MediaItemFormatInfo? =
         { videoId, clickTrackingParams ->
-            getFormatInfoInnertube(videoId, clickTrackingParams).also {
+            // A cached one was recorded when it was fetched
+            val isCached = getCachedFormatInfo(videoId) != null
+
+            ClientAttempts.recordException(videoId, INNERTUBE_CLIENT) {
+                getFormatInfoInnertube(videoId, clickTrackingParams)
+            }.also {
                 mInnertubeResult.isUnplayable = it?.isUnplayable ?: true
                 mInnertubeResult.client = it?.clientInfo as? AppClient
                 persistFormatInfoType(it)
+
+                if (!isCached) {
+                    ClientAttempts.record(videoId, toAttempt(it))
+                }
             }
         }
     private val mLegacyProvider: (String, String?) -> MediaItemFormatInfo? =
@@ -50,6 +65,14 @@ internal object FormatInfoWrapper {
             if (endReached)
                 mTryInnertubeFirst = true
         }
+    }
+
+    /**
+     * Innertube when it's tried first, else the legacy client in use (see VideoInfoService#getClientName)
+     */
+    @JvmStatic
+    fun getClientName(): String {
+        return if (mTryInnertubeFirst) INNERTUBE_CLIENT else getVideoInfoService().clientName
     }
 
     @JvmStatic
@@ -83,6 +106,11 @@ internal object FormatInfoWrapper {
     }
 
     private fun selectPlaybackFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
+        // Fetched again: the attempts are this fetch's. A cached one keeps the attempts it was fetched with.
+        if (getCachedFormatInfo(videoId) == null) {
+            ClientAttempts.clear(videoId)
+        }
+
         var formatInfo = getPrimaryProvider()(videoId, clickTrackingParams)
 
         if (formatInfo != null && formatInfo.isUnplayable()) {
@@ -90,6 +118,14 @@ internal object FormatInfoWrapper {
         }
 
         return formatInfo
+    }
+
+    private fun toAttempt(formatInfo: MediaItemFormatInfo?): Attempt {
+        return when {
+            formatInfo == null -> Attempt.nullResponse(INNERTUBE_CLIENT)
+            formatInfo.isUnplayable() -> Attempt.unplayable(INNERTUBE_CLIENT, formatInfo.getPlayabilityStatus(), formatInfo.getPlayabilityReason())
+            else -> Attempt.ok(INNERTUBE_CLIENT)
+        }
     }
 
     private fun getPrimaryProvider(): (String, String?) -> MediaItemFormatInfo? {
