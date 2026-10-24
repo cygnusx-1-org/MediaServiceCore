@@ -622,6 +622,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
+    public Observable<Map<String, Boolean>> getStreamedObserve(List<String> videoIds) {
+        return RxHelper.fromCallable(() -> VideoCategoryService.getStreamed(videoIds));
+    }
+
+    @Override
     public Observable<String> checkDataApiKeyObserve(String key) {
         return RxHelper.fromCallable(() -> VideoCategoryService.checkKey(key));
     }

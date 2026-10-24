@@ -27,7 +27,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The categories of videos (e.g. "Music") and, with the user's own Data API key, their topics.
- * The same sources give the publish dates (e.g. of the shorts, whose cards come without).<br/>
+ * The same sources give the publish dates (e.g. of the shorts, whose cards come without).
+ * Only the player tells the live streams that ended (e.g. on the History cards, which come without the date that says it).<br/>
  * With a key, one Data API request covers 50 videos. Without one, or when it fails, it's one WEB player request per video:
  * only the player response carries the category and the date (microformat). It's there even when the video isn't playable
  * with this client, so no po token or signature is needed.<br/>
@@ -132,6 +133,25 @@ internal object VideoCategoryService {
         result.putAll(getPlayerValues(ids.filterNot { result.containsKey(it) }, ::getPublishedDate))
 
         Log.d(TAG, "Publish dates of %s videos: %s from the Data API, %s from the player", ids.size, dataApiCount, result.size - dataApiCount)
+
+        return result
+    }
+
+    /**
+     * The player only: the Data API gives a premiere the same live details as a stream
+     * @return video id -> the video is a live stream that ended. The live and upcoming ones are left out, like the failed ones.
+     */
+    @JvmStatic
+    fun getStreamed(videoIds: List<String>): Map<String, Boolean> {
+        val ids = videoIds.distinct()
+
+        if (ids.isEmpty()) {
+            return emptyMap()
+        }
+
+        val result = getPlayerValues(ids, ::getStreamed)
+
+        Log.d(TAG, "Live streams of %s videos: %s known, %s streamed", ids.size, result.size, result.count { it.value })
 
         return result
     }
@@ -320,10 +340,41 @@ internal object VideoCategoryService {
     }
 
     /**
-     * Retries a failed request [MAX_RETRIES] times.
+     * @return whether the video is a live stream that ended, null when it's live or upcoming or every request failed
+     */
+    private fun getStreamed(videoId: String): Boolean? {
+        return getPlayerResult(videoId)?.let { isStreamed(it) }
+    }
+
+    /**
+     * A live stream that ended. A premiere isn't one, it has the live details too.
+     * @return null while it's live or upcoming, or when the response doesn't tell (e.g. a bot check, a removed video): it isn't known yet
+     */
+    @JvmStatic
+    internal fun isStreamed(result: VideoCategoryResult): Boolean? {
+        val details = result.videoDetails ?: return null
+        val isLiveContent = details.isLiveContent ?: return null
+        val isLiveNow = result.microformat?.playerMicroformatRenderer?.liveBroadcastDetails?.isLiveNow
+
+        if (details.isUpcoming == true || isLiveNow == true) {
+            return null
+        }
+
+        return isLiveContent
+    }
+
+    /**
      * @return the microformat, empty when the response has none or null when every request failed
      */
     private fun getMicroformat(videoId: String): PlayerMicroformatRenderer? {
+        return getPlayerResult(videoId)?.let { it.microformat?.playerMicroformatRenderer ?: EMPTY_MICROFORMAT }
+    }
+
+    /**
+     * Retries a failed request [MAX_RETRIES] times.
+     * @return null when every request failed
+     */
+    private fun getPlayerResult(videoId: String): VideoCategoryResult? {
         for (attempt in 0..MAX_RETRIES) {
             if (Thread.currentThread().isInterrupted) {
                 return null // the batch timed out or was dropped
@@ -332,7 +383,7 @@ internal object VideoCategoryService {
             val result = requestCategory(videoId)
 
             if (result != null) {
-                return result.microformat?.playerMicroformatRenderer ?: EMPTY_MICROFORMAT
+                return result
             }
         }
 

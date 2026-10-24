@@ -133,6 +133,11 @@ public interface MediaItemService {
      */
     Observable<Map<String, Long>> getPublishedDatesObserve(List<String> videoIds);
     /**
+     * Video id -> the video is a live stream that ended (a premiere isn't one). From the player, a request per video.
+     * Live and upcoming videos are left out, like the ones the response doesn't tell (e.g. removed) or whose lookup failed.
+     */
+    Observable<Map<String, Boolean>> getStreamedObserve(List<String> videoIds);
+    /**
      * Tries the user's Data API key with one request.
      * @return why the key doesn't work, empty when it works
      */
