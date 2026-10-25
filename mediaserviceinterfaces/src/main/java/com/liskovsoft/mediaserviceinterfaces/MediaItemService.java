@@ -12,6 +12,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemStoryboard;
 import com.liskovsoft.mediaserviceinterfaces.data.SponsorSegment;
 import com.liskovsoft.mediaserviceinterfaces.data.VideoCategory;
+import com.liskovsoft.mediaserviceinterfaces.data.VideoChannel;
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import io.reactivex.Observable;
 
@@ -117,6 +118,12 @@ public interface MediaItemService {
      * A collaboration has one per channel. An error when none is found.
      */
     Observable<Map<String, String>> getChannelHandlesObserve(String videoId);
+    /**
+     * Video id -> the channel that uploaded the video, with its handle, from the user's Data API key only
+     * (the uploader alone, not each channel of a collaboration).<br/>
+     * Empty without a usable key. Videos whose channel has no handle, or whose lookup failed, are left out.
+     */
+    Observable<Map<String, VideoChannel>> getVideoChannelsObserve(List<String> videoIds);
     /**
      * Video id -> the category of the video and, with the user's Data API key, its topics.<br/>
      * Videos whose lookup failed are left out.

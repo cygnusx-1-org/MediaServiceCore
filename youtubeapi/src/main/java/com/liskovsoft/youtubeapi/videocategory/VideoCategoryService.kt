@@ -5,11 +5,14 @@ import com.liskovsoft.googleapi.youtubedata3.YouTubeDataApi
 import com.liskovsoft.googleapi.youtubedata3.data.SnippetResponse
 import com.liskovsoft.googleapi.youtubedata3.data.SnippetWrapper
 import com.liskovsoft.googleapi.youtubedata3.data.getCategoryId
+import com.liskovsoft.googleapi.youtubedata3.data.getChannelUrl
+import com.liskovsoft.googleapi.youtubedata3.data.getTitle
 import com.liskovsoft.googleapi.youtubedata3.data.getPublishedAt
 import com.liskovsoft.googleapi.youtubedata3.data.getTopics
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper
 import com.liskovsoft.mediaserviceinterfaces.data.VideoCategory
+import com.liskovsoft.mediaserviceinterfaces.data.VideoChannel
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.youtubeapi.app.AppService
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
@@ -28,7 +31,8 @@ import java.util.concurrent.TimeUnit
 /**
  * The categories of videos (e.g. "Music") and, with the user's own Data API key, their topics.
  * The same sources give the publish dates (e.g. of the shorts, whose cards come without).
- * Only the player tells the live streams that ended (e.g. on the History cards, which come without the date that says it).<br/>
+ * Only the player tells the live streams that ended (e.g. on the History cards, which come without the date that says it).
+ * Only the Data API gives the channels of many videos at once, with their handles.<br/>
  * With a key, one Data API request covers 50 videos. Without one, or when it fails, it's one WEB player request per video:
  * only the player response carries the category and the date (microformat). It's there even when the video isn't playable
  * with this client, so no po token or signature is needed.<br/>
@@ -133,6 +137,60 @@ internal object VideoCategoryService {
         result.putAll(getPlayerValues(ids.filterNot { result.containsKey(it) }, ::getPublishedDate))
 
         Log.d(TAG, "Publish dates of %s videos: %s from the Data API, %s from the player", ids.size, dataApiCount, result.size - dataApiCount)
+
+        return result
+    }
+
+    /**
+     * The Data API only, two requests per 50 videos (the channels, then their handles and names): the player has no handle,
+     * the caller looks up the rest its own way
+     * @return video id -> the channel that uploaded it, empty without a usable key.
+     * The videos whose channel has no handle, or whose lookup failed, are left out.
+     */
+    @JvmStatic
+    fun getVideoChannels(videoIds: List<String>): Map<String, VideoChannel> {
+        val ids = videoIds.distinct()
+        val key = getDataApiKey()
+
+        if (ids.isEmpty() || key == null) {
+            return emptyMap()
+        }
+
+        val channelIds = mutableMapOf<String, String>()
+
+        getDataApiItems(ids, key) { requestDataApi(mYouTubeDataApi.getVideoChannelIds(it.joinToString(","), key)) }.forEach { item ->
+            val videoId = item.id ?: return@forEach
+            item.snippet?.channelId?.let { channelIds[videoId] = it }
+        }
+
+        val channels = mutableMapOf<String, SnippetWrapper>()
+
+        getDataApiItems(channelIds.values.distinct(), key) { requestDataApi(mYouTubeDataApi.getChannelUrls(it.joinToString(","), key)) }.forEach { item ->
+            item.id?.let { channels[it] = item }
+        }
+
+        val result = combineChannels(channelIds, channels.mapValues { it.value.getChannelUrl() }, channels.mapValues { it.value.getTitle() })
+
+        Log.d(TAG, "Channels of %s videos: %s from the Data API", ids.size, result.size)
+
+        return result
+    }
+
+    /**
+     * @param channelIds video id -> its channel id
+     * @param channelUrls channel id -> its custom url: the handle, or an older custom url without the "@" that isn't one
+     * @param channelTitles channel id -> its name
+     * @return video id -> its channel, the ones with a handle
+     */
+    @JvmStatic
+    internal fun combineChannels(channelIds: Map<String, String>, channelUrls: Map<String, String?>,
+                                 channelTitles: Map<String, String?>): Map<String, VideoChannel> {
+        val result = mutableMapOf<String, VideoChannel>()
+
+        for ((videoId, channelId) in channelIds) {
+            val handle = channelUrls[channelId]?.takeIf { it.length > 1 && it.startsWith("@") } ?: continue
+            result[videoId] = VideoChannelItem(channelId, handle, channelTitles[channelId])
+        }
 
         return result
     }

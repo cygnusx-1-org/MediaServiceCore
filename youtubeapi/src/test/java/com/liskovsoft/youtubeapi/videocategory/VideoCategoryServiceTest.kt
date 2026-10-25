@@ -23,6 +23,19 @@ class VideoCategoryServiceTest {
         assertEquals(SEP_27_16_00_14_UTC, VideoCategoryService.parseDateMs("2026-09-27T16:00:14.123Z"))
     }
 
+    /**
+     * The custom url of a channel is its handle, or an older url that isn't one
+     */
+    @Test
+    fun handlesAreTheCustomUrlsWithTheAt() {
+        val channelIds = mapOf("v1" to "UCone", "v2" to "UCtwo", "v3" to "UCold", "v4" to "UCunknown")
+        val channelUrls = mapOf("UCone" to "@one", "UCtwo" to "@Two", "UCold" to "oldcustomname")
+        val channelTitles = mapOf("UCone" to "One", "UCold" to "Old")
+
+        assertEquals(mapOf("v1" to VideoChannelItem("UCone", "@one", "One"), "v2" to VideoChannelItem("UCtwo", "@Two", null)),
+            VideoCategoryService.combineChannels(channelIds, channelUrls, channelTitles))
+    }
+
     @Test
     fun publishDateWithoutTimeIsMidnightUtc() {
         assertEquals(SEP_27_UTC, VideoCategoryService.parseDateMs("2026-09-27"))

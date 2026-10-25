@@ -30,5 +30,17 @@ internal interface YouTubeDataApi {
     @GET("https://www.googleapis.com/youtube/v3/videos?part=snippet&fields=items(id,snippet/publishedAt)")
     fun getVideoPublishedDates(@Query("id") ids: String, @Query("key") key: String): Call<SnippetResponse?>
 
+    /**
+     * The channel of the videos only
+     */
+    @GET("https://www.googleapis.com/youtube/v3/videos?part=snippet&fields=items(id,snippet/channelId)")
+    fun getVideoChannelIds(@Query("id") ids: String, @Query("key") key: String): Call<SnippetResponse?>
+
+    /**
+     * The handle (the custom url, e.g. "@handle") and the name of the channels only
+     */
+    @GET("https://www.googleapis.com/youtube/v3/channels?part=snippet&fields=items(id,snippet/customUrl,snippet/title)")
+    fun getChannelUrls(@Query("id") ids: String, @Query("key") key: String): Call<SnippetResponse?>
+
     private fun getKey(): String? = ConstantsService.constants?.youtubeDataApiKey
 }

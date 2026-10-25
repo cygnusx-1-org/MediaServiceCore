@@ -18,6 +18,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaItemStoryboard;
 import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.SponsorSegment;
 import com.liskovsoft.mediaserviceinterfaces.data.VideoCategory;
+import com.liskovsoft.mediaserviceinterfaces.data.VideoChannel;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.rx.RxHelper;
@@ -604,6 +605,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     @Override
     public Observable<Map<String, String>> getChannelHandlesObserve(String videoId) {
         return RxHelper.fromCallable(() -> getWatchNextService().getChannelHandles(videoId));
+    }
+
+    @Override
+    public Observable<Map<String, VideoChannel>> getVideoChannelsObserve(List<String> videoIds) {
+        return RxHelper.fromCallable(() -> VideoCategoryService.getVideoChannels(videoIds));
     }
 
     @Override
