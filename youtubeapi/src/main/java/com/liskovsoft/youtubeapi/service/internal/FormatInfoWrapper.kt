@@ -1,6 +1,7 @@
 package com.liskovsoft.youtubeapi.service.internal
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo
+import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
 import com.liskovsoft.youtubeapi.app.AppService
 import com.liskovsoft.youtubeapi.app.PoTokenGate
@@ -14,6 +15,7 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService
 
 internal object FormatInfoWrapper {
+    private val TAG = FormatInfoWrapper::class.java.simpleName
     /**
      * Its attempt, among the legacy clients' (see ClientAttempts)
      */
@@ -50,6 +52,38 @@ internal object FormatInfoWrapper {
             }
         } finally {
             ReloadPlaybackGate.reset(videoId)
+        }
+    }
+
+    /**
+     * Gets ready what the first video of the run waits for, while the user browses: the poToken of the client tried first, its
+     * player's n-function and the languages that subtitles translate to.
+     * A video loaded meanwhile waits for it, then has them.
+     *
+     * @param videoId of a video that likely has subtitles (e.g. the first one shown), for the languages
+     */
+    @JvmStatic
+    fun warmUp(videoId: String?) {
+        synchronized(lock) {
+            val client = getVideoInfoService().nextClient
+
+            // Before the player data: its request makes its client the one of the player data got with none
+            // (see AppServiceCoreCached#firstValidExtractor)
+            runWarmUp("translation languages") { getVideoInfoService().warmUpTranslationLanguages(videoId) }
+
+            if (client.isTvPotRequired) {
+                runWarmUp("poToken") { PoTokenGate.getPoToken(client) }
+            }
+
+            runWarmUp("player data") { AppService.instance().warmUpPlayerData(client) }
+        }
+    }
+
+    private fun runWarmUp(name: String, warmUp: () -> Unit) {
+        try {
+            warmUp()
+        } catch (e: Exception) {
+            Log.e(TAG, "Can't warm up the %s: %s", name, e.message)
         }
     }
 

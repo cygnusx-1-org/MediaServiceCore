@@ -39,7 +39,7 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
             .replace("-es6", "-ias") // es6 no supported
     }
     // Fetched lazily, once, and shared between validation (checkSigData) and real extraction —
-    // TclChallengeProvider needs the raw player source.
+    // TclChallengeProvider needs the raw player source, unless it has the player preprocessed.
     private val playerCode: String? by lazy { loadPlayer() }
 
     init {
@@ -93,6 +93,12 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
         signatureTimestamp = timestamp
     }
 
+    override fun warmUp() {
+        if (nFuncCode) {
+            TclChallengeProvider.prepare(fixedPlayerUrl) { playerCode }
+        }
+    }
+
     override fun validate(): Boolean {
         // TODO: fix cpn code
         // return mNFuncCode && mSigFuncCode && mCPNCode != null && mSignatureTimestamp != null
@@ -107,7 +113,7 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
 
         val validNParams = nParams?.takeIf { nFuncCode }?.filterNotNull()?.takeIf { it.isNotEmpty() }?.distinct()
 
-        val nResults = validNParams?.let { params -> playerCode?.let { TclChallengeProvider.solveN(fixedPlayerUrl, it, params) } }
+        val nResults = validNParams?.let { params -> TclChallengeProvider.solveN(fixedPlayerUrl, { playerCode }, params) }
         val nProcessed = nResults?.let { results -> nParams?.map { results[it] } }
         // TCL works only in TV version, so sig isn't necessary in this client
         return Pair(nProcessed, null)
@@ -159,8 +165,7 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
 
         try {
             val nParam = "5cNpZqIJ7ixNqU68Y7S"
-            val code = playerCode ?: return
-            val result = TclChallengeProvider.solveN(fixedPlayerUrl, code, listOf(nParam))
+            val result = TclChallengeProvider.solveN(fixedPlayerUrl, { playerCode }, listOf(nParam))
             if (result[nParam]?.let { it != nParam } == true) {
                 nFuncCode = true
             }

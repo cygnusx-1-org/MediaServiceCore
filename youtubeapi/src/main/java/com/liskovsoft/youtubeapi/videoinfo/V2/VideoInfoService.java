@@ -179,6 +179,29 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     /**
+     * The client tried first by the next video info request (see firstInfoWith)
+     */
+    public AppClient getNextClient() {
+        return mNextInfoType != null ? mNextInfoType : getVideoInfoTypes()[0];
+    }
+
+    /**
+     * The full list of the languages that subtitles translate to (see applyFixesIfNeeded), fetched ahead of the first video
+     * that has subtitles. Nothing when the video has none.
+     */
+    public void warmUpTranslationLanguages(String videoId) {
+        if (videoId == null || hasFullTranslationLanguages()) {
+            return;
+        }
+
+        VideoInfo webInfo = getVideoInfo(AppClient.WEB_DUMMY, videoId, null);
+
+        if (webInfo != null && webInfo.getTranslationLanguages() != null) {
+            mCachedTranslationLanguages = webInfo.getTranslationLanguages();
+        }
+    }
+
+    /**
      * The client switched to (tried first next), else the one the last formats came from, else the first of the order
      */
     public String getClientName() {
@@ -343,7 +366,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
         if (needMoreSubtitles(result)) {
             Log.d(TAG, "Enable full list of auto generated subtitles...");
 
-            if (mCachedTranslationLanguages == null || mCachedTranslationLanguages.size() < 100) {
+            if (!hasFullTranslationLanguages()) {
                 mUseAuth = false;
                 VideoInfo webInfo = null;
                 try {
@@ -362,6 +385,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
         }
 
         mUseAuth = oldUseAuth;
+    }
+
+    private boolean hasFullTranslationLanguages() {
+        return mCachedTranslationLanguages != null && mCachedTranslationLanguages.size() >= 100;
     }
 
     private void resetInfoTypeToDefault() {

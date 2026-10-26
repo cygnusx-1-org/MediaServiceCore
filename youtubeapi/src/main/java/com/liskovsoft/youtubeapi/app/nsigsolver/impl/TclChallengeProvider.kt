@@ -9,6 +9,7 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.common.CacheService
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.CachedData
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.loadScript
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.withLock
+import java.security.MessageDigest
 
 /**
  * Solves the n-parameter challenge for TCL-flavored players (tv-player-*-tcl.vflset), whose
@@ -19,6 +20,10 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.common.withLock
  * "n" query param in place) rather than the bare n-param string — [solveN] hides that behind the
  * same bare-nParam contract the rest of the codebase uses, by wrapping/unwrapping a synthetic
  * placeholder URL.
+ *
+ * The runtime is kept between the solves with the player's n-function loaded, so a video only runs its own challenges. Its player
+ * is replaced when the url changes (YouTube rotated the build), and the one preprocessed earlier is used only when the solver
+ * scripts that made it are the ones of this version.
  */
 internal object TclChallengeProvider {
     private val tag = TclChallengeProvider::class.simpleName
@@ -31,18 +36,53 @@ internal object TclChallengeProvider {
     )
     private val solverOutputType = object : TypeToken<SolverOutput>() {}.type
     private var v8Runtime: V8? = null
+    /**
+     * Of the player whose n-function the runtime has, null when it has none
+     */
+    private var loadedPlayerUrl: String? = null
+    /**
+     * Of the loaded player, preprocessed from its source. It's cached once it solves.
+     */
+    private var pendingPreprocessed: String? = null
     private val v8Lock = Any()
     private const val cacheSection = "tcl-challenge-solver"
+    /**
+     * Of the solver scripts: a player that other ones preprocessed (e.g. before the app was updated) is preprocessed again
+     */
+    private val solverVersion: String by lazy { sha1(loadSolverScripts()) }
+    /**
+     * Each solve makes a new n-function from the loaded player, like the solves that had a runtime of their own
+     */
+    private const val solveFunctionScript = """
+        var tclSolveLoaded = function (challenges) {
+            try {
+                var nFunction = tclNFunctionFactory();
+                var results = {};
+                for (var i = 0; i < challenges.length; i++) {
+                    results[challenges[i]] = nFunction(challenges[i]);
+                }
+                return { type: "result", results: results };
+            } catch (error) {
+                return { type: "error", error: error instanceof Error ? error.message + "\n" + error.stack : "" + error };
+            }
+        };
+        "";
+    """
 
     private data class SolverOutput(val type: String?, val results: Map<String, String>?, val error: String?, val preprocessed_player: String?)
 
     /**
+     * Where the loaded player came from
+     */
+    private enum class PlayerSource { KEPT, CACHE, PLAYER_CODE }
+
+    /**
      * @param playerUrl the TCL player's url (cache key)
-     * @param playerCode the TCL player's JS source
+     * @param playerCode the TCL player's JS source. Only read when its preprocessed n-function isn't loaded or cached.
      * @param nParams bare n-parameter values (as seen in a stream url's "n" query param)
      * @return map from each input nParam to its decoded value, or null for one that failed
      */
-    fun solveN(playerUrl: String, playerCode: String, nParams: List<String>): Map<String, String?> {
+    fun solveN(playerUrl: String, playerCode: () -> String?, nParams: List<String>): Map<String, String?> {
         if (nParams.isEmpty()) {
             return emptyMap()
         }
@@ -52,60 +92,158 @@ internal object TclChallengeProvider {
         // to parse. The wrapper's own shape doesn't matter beyond being a well-formed https url.
         val challengeByParam = nParams.distinct().associateWith { "https://www.youtube.com/videoplayback?n=$it" }
 
-        val cacheKey = "player:$playerUrl"
-        val cachedPreprocessed = CacheService.load(cacheSection, cacheKey)?.code
+        val results = synchronized(v8Lock) {
+            solveSync(playerUrl, playerCode, challengeByParam.values.toList())
+        } ?: return nParams.associateWith { null }
 
-        val request = if (cachedPreprocessed != null) {
-            mapOf(
-                "type" to "preprocessed",
-                "preprocessed_player" to cachedPreprocessed,
-                "challenges" to challengeByParam.values.toList()
-            )
-        } else {
-            mapOf(
-                "type" to "player",
-                "player" to playerCode,
-                "challenges" to challengeByParam.values.toList(),
-                "output_preprocessed" to true
-            )
+        return nParams.associateWith { param -> results[challengeByParam[param]] }
+    }
+
+    /**
+     * Loads the player's n-function ahead of the first solve (e.g. while the user browses)
+     */
+    fun prepare(playerUrl: String, playerCode: () -> String?) {
+        synchronized(v8Lock) {
+            solveSync(playerUrl, playerCode, emptyList())
         }
+    }
 
-        val stdin = "JSON.stringify(tclSolver(${Gson().toJson(request)}));"
+    /**
+     * Once more when it fails, from the player's source: the player loaded may be stale (kept from a solve before, or
+     * preprocessed earlier)
+     */
+    private fun solveSync(playerUrl: String, playerCode: () -> String?, challenges: List<String>): Map<String, String>? {
+        try {
+            val source = loadPlayer(playerUrl, playerCode) ?: return null
 
-        val stdout = try {
-            synchronized(v8Lock) {
-                initRuntime()
-                val result = runV8(stdin)
-                shutdownIfNeeded()
-                result
+            solveLoaded(challenges)?.let { return it.also { storePreprocessed(playerUrl) } }
+
+            invalidate()
+
+            if (source == PlayerSource.PLAYER_CODE) {
+                return null
             }
+
+            loadPlayer(playerUrl, playerCode) ?: return null
+
+            solveLoaded(challenges)?.let { return it.also { storePreprocessed(playerUrl) } }
         } catch (e: Exception) {
             Log.e(tag, "TCL n-function solve failed: ${e.message}")
-            return nParams.associateWith { null }
+        }
+
+        invalidate()
+
+        return null
+    }
+
+    /**
+     * The player is loaded from where it is already: the runtime, else the cache, else its source. Null when it can't be.
+     */
+    private fun loadPlayer(playerUrl: String, playerCode: () -> String?): PlayerSource? {
+        if (v8Runtime != null && loadedPlayerUrl == playerUrl) {
+            return PlayerSource.KEPT
+        }
+
+        disposeRuntime()
+
+        val cached = CacheService.load(cacheSection, getCacheKey(playerUrl))?.takeIf { it.version == solverVersion }?.code
+
+        if (cached != null) {
+            if (loadNFunction(playerUrl, cached)) {
+                return PlayerSource.CACHE
+            }
+
+            // It doesn't load (e.g. it's broken)
+            CacheService.clear(cacheSection)
+        }
+
+        val preprocessed = preprocess(playerCode) ?: return null
+
+        if (!loadNFunction(playerUrl, preprocessed)) {
+            return null
+        }
+
+        pendingPreprocessed = preprocessed
+
+        return PlayerSource.PLAYER_CODE
+    }
+
+    private fun preprocess(playerCode: () -> String?): String? {
+        val code = playerCode() ?: return null.also { Log.e(tag, "No TCL player source to solve with") }
+
+        val request = mapOf(
+            "type" to "player",
+            "player" to code,
+            "challenges" to emptyList<String>(),
+            "output_preprocessed" to true
+        )
+
+        initRuntime()
+
+        return runSolver("JSON.stringify(tclSolver(${Gson().toJson(request)}));")?.preprocessed_player
+    }
+
+    private fun loadNFunction(playerUrl: String, preprocessed: String): Boolean {
+        try {
+            initRuntime()
+            runV8("var tclNFunctionFactory = new Function(${Gson().toJson(preprocessed)});\n$solveFunctionScript")
+        } catch (e: Exception) {
+            Log.e(tag, "Cannot load the TCL n-function: ${e.message}")
+            disposeRuntime()
+            return false
+        }
+
+        loadedPlayerUrl = playerUrl
+
+        return true
+    }
+
+    private fun solveLoaded(challenges: List<String>): Map<String, String>? {
+        return runSolver("JSON.stringify(tclSolveLoaded(${Gson().toJson(challenges)}));")?.let { it.results ?: emptyMap() }
+    }
+
+    /**
+     * Null when the solver fails
+     */
+    private fun runSolver(stdin: String): SolverOutput? {
+        val stdout = try {
+            runV8(stdin)
+        } catch (e: Exception) {
+            Log.e(tag, "TCL n-function solve failed: ${e.message}")
+            return null
         }
 
         val output: SolverOutput = try {
             Gson().fromJson(stdout, solverOutputType)
         } catch (e: JsonSyntaxException) {
             Log.e(tag, "Cannot parse TCL solver output: ${e.message}")
-            return nParams.associateWith { null }
+            return null
         }
 
         if (output.type == "error") {
             Log.e(tag, "TCL solver error: ${output.error}")
-            if (cachedPreprocessed != null) {
-                // cached preprocessed script may be stale (e.g. player build rotated)
-                CacheService.clear(cacheSection)
-            }
-            return nParams.associateWith { null }
+            return null
         }
 
-        output.preprocessed_player?.let { CacheService.store(cacheSection, cacheKey, CachedData(it)) }
-
-        val results = output.results ?: emptyMap()
-
-        return nParams.associateWith { param -> results[challengeByParam[param]] }
+        return output
     }
+
+    private fun storePreprocessed(playerUrl: String) {
+        val preprocessed = pendingPreprocessed ?: return
+        pendingPreprocessed = null
+        CacheService.store(cacheSection, getCacheKey(playerUrl), CachedData(preprocessed, solverVersion))
+    }
+
+    /**
+     * After a failure: the runtime and the cached player may be stale (e.g. player build rotated)
+     */
+    private fun invalidate() {
+        disposeRuntime()
+        pendingPreprocessed = null
+        CacheService.clear(cacheSection)
+    }
+
+    private fun getCacheKey(playerUrl: String) = "player:$playerUrl"
 
     private fun runV8(stdin: String): String {
         val runtime = v8Runtime ?: throw IllegalStateException("V8 runtime not initialized yet")
@@ -118,22 +256,31 @@ internal object TclChallengeProvider {
         if (v8Runtime != null) {
             return
         }
+        // Read before the runtime is made: it's never left locked to this thread (see withLock)
+        val stdin = constructCommonStdin()
         v8Runtime = V8.createV8Runtime()
-        runV8(constructCommonStdin())
+        runV8(stdin)
     }
 
     private fun constructCommonStdin(): String {
         return """
-        ${loadScript(libFilenames, "Failed to read TCL challenge solver script")}
+        ${loadSolverScripts()}
         "";
         """
     }
 
-    private fun shutdownIfNeeded() {
+    private fun loadSolverScripts() = loadScript(libFilenames, "Failed to read TCL challenge solver script")
+
+    private fun disposeRuntime() {
+        loadedPlayerUrl = null
         val runtime = v8Runtime ?: return
+        v8Runtime = null
         runtime.withLock {
             it.release(false)
         }
-        v8Runtime = null
+    }
+
+    private fun sha1(text: String): String {
+        return MessageDigest.getInstance("SHA-1").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 }

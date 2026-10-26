@@ -8,5 +8,9 @@ internal interface PlayerDataExtractor {
     fun getSignatureTimestamp(): String?
     fun setSignatureTimestamp(timestamp: String)
     fun validate(): Boolean
+    /**
+     * Gets ready ahead of the first extraction (e.g. while the user browses)
+     */
+    fun warmUp() {}
     val playerUrl: String
 }

@@ -209,6 +209,17 @@ public class AppService {
     }
 
     /**
+     * Gets the player's data ready for the client's formats, ahead of the first video (e.g. while the user browses)
+     */
+    public void warmUpPlayerData(@Nullable AppClient client) {
+        PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor(client);
+
+        if (playerDataExtractor != null) {
+            playerDataExtractor.warmUp();
+        }
+    }
+
+    /**
      * Visitor data is bound to specific js files versions.<br/>
      * After reset user will get the latest js file versions.
      */

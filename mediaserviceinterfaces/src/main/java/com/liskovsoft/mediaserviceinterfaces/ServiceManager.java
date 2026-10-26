@@ -11,6 +11,12 @@ public interface ServiceManager {
     ChannelGroupService getChannelGroupService();
     void invalidateCache();
     void refreshCacheIfNeeded();
+    /**
+     * In the background: gets ready what the first video's formats wait for (e.g. while the user browses)
+     *
+     * @param videoId of a video that likely has subtitles (e.g. the first one shown), null when there's none
+     */
+    void warmUpPlayback(String videoId);
     void switchNextClient();
     void switchNextClientNow();
     void switchNextSubsFormat();

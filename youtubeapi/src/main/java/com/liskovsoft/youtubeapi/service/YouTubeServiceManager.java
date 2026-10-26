@@ -28,6 +28,7 @@ public class YouTubeServiceManager implements ServiceManager {
     private static final String TAG = YouTubeServiceManager.class.getSimpleName();
     private static YouTubeServiceManager sInstance;
     private Disposable mRefreshCoreDataAction;
+    private Disposable mWarmUpPlaybackAction;
 
     private YouTubeServiceManager() {
         Log.d(TAG, "Starting...");
@@ -101,6 +102,15 @@ public class YouTubeServiceManager implements ServiceManager {
     @Override
     public void refreshCacheIfNeeded() {
         refreshCacheIfNeededInt();
+    }
+
+    @Override
+    public void warmUpPlayback(@Nullable String videoId) {
+        if (RxHelper.isAnyActionRunning(mWarmUpPlaybackAction)) {
+            return;
+        }
+
+        mWarmUpPlaybackAction = RxHelper.execute(RxHelper.fromRunnable(() -> FormatInfoWrapper.warmUp(videoId)));
     }
 
     @Override
