@@ -21,4 +21,12 @@ public interface ServiceManager {
     void switchNextClientNow();
     void switchNextSubsFormat();
     void reloadPlayerResponse(String videoId, String reloadPlaybackToken);
+    /**
+     * The SABR server rejected the poToken the video streamed with (attestation required): the next player request for the video
+     * goes without it when the client can
+     *
+     * @param clientName of the video's formats, e.g. TV
+     * @return false when the client can't go on without its poToken: another client is needed
+     */
+    boolean rejectPoToken(String clientName);
 }

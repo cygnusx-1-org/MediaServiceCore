@@ -15,8 +15,10 @@ import com.liskovsoft.mediaserviceinterfaces.SignInService;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.app.AppService;
+import com.liskovsoft.youtubeapi.app.PoTokenGate;
 import com.liskovsoft.youtubeapi.app.ReloadPlaybackGate;
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl;
+import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.googlecommon.common.locale.LocaleManager;
 import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
@@ -139,6 +141,21 @@ public class YouTubeServiceManager implements ServiceManager {
     public void reloadPlayerResponse(String videoId, String reloadPlaybackToken) {
         FormatInfoWrapper.invalidateCache();
         ReloadPlaybackGate.setToken(videoId, reloadPlaybackToken);
+    }
+
+    @Override
+    public boolean rejectPoToken(String clientName) {
+        AppClient client = null;
+
+        try {
+            client = clientName != null ? AppClient.valueOf(clientName) : null;
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Unknown client: %s", clientName);
+        }
+
+        FormatInfoWrapper.invalidateCache();
+
+        return client != null && PoTokenGate.rejectPoToken(client);
     }
 
     private void refreshCacheIfNeededInt() {

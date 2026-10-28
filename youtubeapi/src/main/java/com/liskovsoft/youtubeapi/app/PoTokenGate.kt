@@ -1,5 +1,6 @@
 package com.liskovsoft.youtubeapi.app
 
+import com.liskovsoft.sharedutils.rx.RxHelper
 import com.liskovsoft.youtubeapi.app.potoken.PoTokenService
 import com.liskovsoft.youtubeapi.app.potokennp2.WebPoTokenProvider
 import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider
@@ -23,6 +24,11 @@ internal object PoTokenGate {
     private var mCacheResetTimeMs: Long = -1
     private var mTvCacheResetTimeMs: Long = -1
     private const val CACHE_RESET_TIME_MS = 60_000
+    /**
+     * The server rejected the TV poToken (see rejectPoToken): the TV client goes on without one till the app restarts
+     */
+    @Volatile
+    private var mTvPotRejected = false
 
     init {
         WebPoTokenProvider.poTokenFactory = selectFactory()
@@ -65,7 +71,7 @@ internal object PoTokenGate {
      */
     @JvmStatic
     fun getLivingRoomPoTokenId(client: AppClient): String? =
-        if (client.isTvPotRequired) TvPoTokenProvider.livingRoomPoTokenId else null
+        if (client.isTvPotRequired && !mTvPotRejected) TvPoTokenProvider.livingRoomPoTokenId else null
 
     @JvmStatic
     @JvmOverloads
@@ -73,9 +79,29 @@ internal object PoTokenGate {
         releaseOtherProviders(client)
         return when {
             client.isWebPotRequired -> if (videoId != null) getWebContentPoToken(videoId) else getWebSessionPoToken()
-            client.isTvPotRequired -> getTvPoToken()
+            client.isTvPotRequired -> if (mTvPotRejected) null else getTvPoToken()
             else -> null
         }
+    }
+
+    /**
+     * The SABR server rejected the client's poToken (attestation required): e.g. the WebView's BotGuard makes tokens it won't take.
+     * Till the app restarts, the TV client goes on without one and without the living room token id, like before it had any.
+     *
+     * @return false when the client has no poToken to go on without (a web one is required, the TV one was rejected before)
+     */
+    @JvmStatic
+    fun rejectPoToken(client: AppClient): Boolean {
+        if (!client.isTvPotRequired || mTvPotRejected) {
+            return false
+        }
+
+        mTvPotRejected = true
+        mTvPoToken = null
+        // Off the caller's (main) thread: the generator is closed on the main thread and waited for (see TvPoTokenProvider#release)
+        RxHelper.runAsync { TvPoTokenProvider.reset() }
+
+        return true
     }
 
     @JvmStatic
@@ -86,7 +112,7 @@ internal object PoTokenGate {
     fun getVisitorData(client: AppClient): String? {
         return when {
             client.isWebPotRequired -> mWebPoToken?.visitorData
-            client.isTvPotRequired -> mTvPoToken?.visitorData
+            client.isTvPotRequired -> if (mTvPotRejected) null else mTvPoToken?.visitorData
             else -> null
         }
     }
@@ -98,7 +124,7 @@ internal object PoTokenGate {
     fun isPotExpired(client: AppClient): Boolean {
         return when {
             client.isWebPotRequired -> WebPoTokenProvider.isPotExpired()
-            client.isTvPotRequired -> TvPoTokenProvider.isPotExpired()
+            client.isTvPotRequired -> !mTvPotRejected && TvPoTokenProvider.isPotExpired()
             else -> false
         }
     }
@@ -107,7 +133,7 @@ internal object PoTokenGate {
     fun resetCache(client: AppClient): Boolean {
         return when {
             client.isWebPotRequired -> resetWebCache()
-            client.isTvPotRequired -> resetTvCache()
+            client.isTvPotRequired -> !mTvPotRejected && resetTvCache()
             else -> false
         }
     }
