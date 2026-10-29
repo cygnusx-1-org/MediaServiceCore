@@ -53,6 +53,10 @@ internal object CacheService {
         persistToCache(fileName, content.code)
     }
 
+    /**
+     * From several threads at once (e.g. a fetch's, and the TCL player's and the translation languages' made ahead of it)
+     */
+    @Synchronized
     private fun getSharedPrefs(name: String): SharedPreferencesBase {
         // Use standalone prefs per section to preserve RAM
         return prefs[name]?.get() ?: SharedPreferencesBase(AppService.instance().context, name)

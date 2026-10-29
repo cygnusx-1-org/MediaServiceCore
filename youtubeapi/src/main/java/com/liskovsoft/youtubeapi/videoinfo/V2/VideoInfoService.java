@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
+import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.app.AppService;
 import com.liskovsoft.youtubeapi.app.PoTokenGate;
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
@@ -21,6 +22,7 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoReel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.FutureTask;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -56,7 +58,21 @@ public class VideoInfoService extends VideoInfoServiceBase {
     @Nullable
     private AppClient mNextInfoType = null;
     private boolean mUseAuth;
-    private List<TranslationLanguage> mCachedTranslationLanguages;
+    /**
+     * The languages that subtitles translate to: the ones kept by a run before, till this run's check gets them (see
+     * checkTranslationLanguages)
+     */
+    private volatile List<TranslationLanguage> mCachedTranslationLanguages;
+    /**
+     * This run's check of the languages got them
+     */
+    private volatile boolean mAreTranslationLanguagesChecked;
+    /**
+     * The check running, one at a time
+     */
+    @Nullable
+    private FutureTask<Void> mTranslationLanguagesCheck;
+    private final Object mTranslationLanguagesLock = new Object();
     private boolean mIsUnplayable;
     /**
      * Of the last video info request on the thread, 0 when it got no response (see firstInfoWith). Per thread: the history's
@@ -197,18 +213,90 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     /**
-     * The full list of the languages that subtitles translate to (see applyFixesIfNeeded), fetched ahead of the first video
-     * that has subtitles. Nothing when the video has none.
+     * The full list of the languages that subtitles translate to (see applyFixesIfNeeded), checked ahead of the first video, on the
+     * warm-up's thread. Nothing when the video has no subtitles.
      */
     public void warmUpTranslationLanguages(String videoId) {
-        if (videoId == null || hasFullTranslationLanguages()) {
+        awaitCheck(checkTranslationLanguages(videoId, null));
+    }
+
+    /**
+     * Once a run, on its own thread, the languages that subtitles translate to are fetched again: YouTube may have added one since the
+     * run that kept them, which are used meanwhile (see applyFixesIfNeeded). Only the request of a video with subtitles gets them: the
+     * next video checks again when this one has none.
+     *
+     * @param fork of the fetch that starts it ahead (see FetchStages#fork), null for none
+     * @return the check running, null when this run has checked them
+     */
+    @Nullable
+    public FutureTask<Void> checkTranslationLanguages(String videoId, @Nullable FetchStages.Fork fork) {
+        if (videoId == null || mAreTranslationLanguagesChecked) {
+            return null;
+        }
+
+        FutureTask<Void> check;
+
+        synchronized (mTranslationLanguagesLock) {
+            if (mTranslationLanguagesCheck != null && !mTranslationLanguagesCheck.isDone()) {
+                return mTranslationLanguagesCheck;
+            }
+
+            check = new FutureTask<>(() -> {
+                if (fork != null) {
+                    fork.run(() -> FetchStages.time("subtitles", AppClient.WEB_DUMMY.name(), () -> fetchTranslationLanguages(videoId)));
+                } else {
+                    fetchTranslationLanguages(videoId);
+                }
+
+                return null;
+            });
+            mTranslationLanguagesCheck = check;
+        }
+
+        RxHelper.runAsync(check);
+
+        return check;
+    }
+
+    /**
+     * @return whether the video's request got them
+     */
+    private boolean fetchTranslationLanguages(String videoId) {
+        VideoInfo webInfo = null;
+
+        try {
+            webInfo = getVideoInfo(AppClient.WEB_DUMMY, videoId, null);
+        } catch (Exception e) {
+            Log.e(TAG, "Can't check the translation languages: %s", e.getMessage());
+        }
+
+        List<TranslationLanguage> languages = webInfo != null ? webInfo.getTranslationLanguages() : null;
+
+        if (Helpers.isNullOrEmpty(languages)) {
+            return false;
+        }
+
+        synchronized (mTranslationLanguagesLock) {
+            mCachedTranslationLanguages = languages;
+            mAreTranslationLanguagesChecked = true;
+        }
+
+        TranslationLanguagesCache.store(languages);
+
+        return true;
+    }
+
+    private static void awaitCheck(@Nullable FutureTask<Void> check) {
+        if (check == null) {
             return;
         }
 
-        VideoInfo webInfo = getVideoInfo(AppClient.WEB_DUMMY, videoId, null);
-
-        if (webInfo != null && webInfo.getTranslationLanguages() != null) {
-            setTranslationLanguages(webInfo.getTranslationLanguages());
+        try {
+            check.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            Log.e(TAG, "Can't check the translation languages: %s", e.getMessage());
         }
     }
 
@@ -377,47 +465,39 @@ public class VideoInfoService extends VideoInfoServiceBase {
         if (needMoreSubtitles(result)) {
             Log.d(TAG, "Enable full list of auto generated subtitles...");
 
-            if (!hasFullTranslationLanguages()) {
-                mUseAuth = false;
-                VideoInfo webInfo = null;
-                try {
-                    webInfo = FetchStages.time("subtitles", AppClient.WEB_DUMMY.name(),
-                            () -> getVideoInfo(AppClient.WEB_DUMMY, videoId, clickTrackingParams));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (webInfo != null) {
-                    setTranslationLanguages(webInfo.getTranslationLanguages());
-                }
+            if (!hasTranslationLanguages()) {
+                // None kept (e.g. the first run): this run's check is waited for, started now when the fetch didn't start it ahead
+                FutureTask<Void> check = checkTranslationLanguages(videoId, null);
+                FetchStages.time("subtitles", AppClient.WEB_DUMMY.name(), () -> {
+                    awaitCheck(check);
+                    return null;
+                });
             }
 
-            if (mCachedTranslationLanguages != null) {
-                result.setTranslationLanguages(mCachedTranslationLanguages);
+            List<TranslationLanguage> languages = mCachedTranslationLanguages;
+
+            if (languages != null) {
+                result.setTranslationLanguages(languages);
             }
         }
 
         mUseAuth = oldUseAuth;
     }
 
-    private boolean hasFullTranslationLanguages() {
+    private boolean hasTranslationLanguages() {
         if (mCachedTranslationLanguages == null) {
-            // The ones kept by a run before
-            mCachedTranslationLanguages = TranslationLanguagesCache.load();
+            // The ones kept by a run before, till this run's check gets them
+            List<TranslationLanguage> kept = TranslationLanguagesCache.load();
+
+            synchronized (mTranslationLanguagesLock) {
+                // Not over the ones the check got meanwhile
+                if (mCachedTranslationLanguages == null) {
+                    mCachedTranslationLanguages = kept;
+                }
+            }
         }
 
-        return isFullList(mCachedTranslationLanguages);
-    }
-
-    private void setTranslationLanguages(List<TranslationLanguage> translationLanguages) {
-        mCachedTranslationLanguages = translationLanguages;
-
-        if (isFullList(translationLanguages)) {
-            TranslationLanguagesCache.store(translationLanguages);
-        }
-    }
-
-    private static boolean isFullList(List<TranslationLanguage> translationLanguages) {
-        return translationLanguages != null && translationLanguages.size() >= 100;
+        return !Helpers.isNullOrEmpty(mCachedTranslationLanguages);
     }
 
     private void resetInfoTypeToDefault() {

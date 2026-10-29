@@ -10,15 +10,14 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.common.CachedData
 import com.liskovsoft.youtubeapi.videoinfo.models.TranslationLanguage
 
 /**
- * The languages that subtitles translate to are the same for every video: they're kept between the runs, rather than fetched again by
- * each with a request of their own (see VideoInfoService#applyFixesIfNeeded). For the language of the app, which names them, and for a
- * week: then they're fetched again.
+ * The languages that subtitles translate to are the same for every video: they're kept between the runs, and a video doesn't wait for
+ * a request of its own to get them (see VideoInfoService#applyFixesIfNeeded). For the language of the app, which names them. Each run
+ * checks them again on its own thread (see VideoInfoService#checkTranslationLanguages).
  */
 internal object TranslationLanguagesCache {
     private val TAG = TranslationLanguagesCache::class.java.simpleName
     private const val SECTION = "translation-languages"
     private const val KEY = "languages"
-    private const val MAX_AGE_MS = 7 * 24 * 60 * 60 * 1_000L
     private val listType = object : TypeToken<List<List<String?>>>() {}.type
 
     @JvmStatic
@@ -29,9 +28,8 @@ internal object TranslationLanguagesCache {
 
         return try {
             val cached = CacheService.load(SECTION, KEY) ?: return null
-            val ageMs = System.currentTimeMillis() - (cached.variant?.toLongOrNull() ?: return null)
 
-            if (cached.version != getLanguage() || ageMs !in 0..MAX_AGE_MS) {
+            if (cached.version != getLanguage()) {
                 return null
             }
 
@@ -52,7 +50,7 @@ internal object TranslationLanguagesCache {
 
         try {
             val code = Gson().toJson(languages.map { listOf(it.languageCode, it.languageName) })
-            CacheService.store(SECTION, KEY, CachedData(code, getLanguage(), System.currentTimeMillis().toString()))
+            CacheService.store(SECTION, KEY, CachedData(code, getLanguage()))
         } catch (e: Exception) {
             Log.e(TAG, "Can't store the translation languages: %s", e.message)
         }

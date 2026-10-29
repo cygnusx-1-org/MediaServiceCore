@@ -55,15 +55,13 @@ class TranslationLanguagesCacheTest {
         assertNull(TranslationLanguagesCache.load())
     }
 
+    /**
+     * However long ago they were kept: each run checks them again on its own thread (see VideoInfoService#checkTranslationLanguages)
+     */
     @Test
-    fun theOnesKeptOverAWeekAgoAreFetchedAgain() {
-        val eightDaysAgo = System.currentTimeMillis() - 8 * 24 * 60 * 60 * 1_000L
-        CacheService.store("translation-languages", "languages", CachedData("""[["af","Afrikaans"]]""", "en", eightDaysAgo.toString()))
-
-        assertNull(TranslationLanguagesCache.load())
-
-        val sixDaysAgo = System.currentTimeMillis() - 6 * 24 * 60 * 60 * 1_000L
-        CacheService.store("translation-languages", "languages", CachedData("""[["af","Afrikaans"]]""", "en", sixDaysAgo.toString()))
+    fun theKeptOnesAreTakenHoweverOld() {
+        val monthAgo = System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1_000L
+        CacheService.store("translation-languages", "languages", CachedData("""[["af","Afrikaans"]]""", "en", monthAgo.toString()))
 
         assertEquals("Afrikaans", TranslationLanguagesCache.load()!![0].languageName)
     }

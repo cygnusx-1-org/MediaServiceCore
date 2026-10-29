@@ -112,12 +112,15 @@ internal object FormatInfoWrapper {
 
     /**
      * What the fetch needs later, and not from its requests, is started now on its own thread: the poToken of the client tried first
-     * (a session one) and its player's n-function. They're made while it signs in and requests, and the stages that need them wait only
-     * as long as they still run (see TvPoTokenProvider#getPoToken and TclChallengeProvider#solveN).
+     * (a session one), its player's n-function and this run's check of the languages that subtitles translate to. They're made while it
+     * signs in and requests, and the stages that need them wait only as long as they still run (see TvPoTokenProvider#getPoToken,
+     * TclChallengeProvider#solveN and VideoInfoService#applyFixesIfNeeded).
      */
     private fun startAhead(videoId: String?) {
         val client = getVideoInfoService().nextClient
         val fork = FetchStages.fork()
+
+        getVideoInfoService().checkTranslationLanguages(videoId, fork)
 
         if (PoTokenGate.isPoTokenToMake(client, videoId)) {
             runAhead(mPoTokenAhead) { fork.run { PoTokenGate.getPoToken(client, videoId) } }
