@@ -12,6 +12,7 @@ import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService
 
 internal object FormatInfoWrapper {
@@ -43,14 +44,27 @@ internal object FormatInfoWrapper {
     private val mLegacyProvider: (String, String?) -> MediaItemFormatInfo? =
         { videoId, clickTrackingParams -> getFormatInfoLegacy(videoId, clickTrackingParams) }
     private val lock = Any()
+    /**
+     * The warm-up holds the lock: what a fetch waits for (see FetchStages)
+     */
+    @Volatile
+    private var mIsWarmingUp: Boolean = false
 
     @JvmStatic
     fun getFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
+        val fetch = FetchStages.open(videoId)
+
         try {
+            val lockWait = FetchStages.begin("lock wait")
+            val holder = if (mIsWarmingUp) "warm-up" else null
+
             synchronized(lock) {
+                lockWait.end(holder)
                 return selectPlaybackFormatInfo(videoId, clickTrackingParams)
             }
         } finally {
+            fetch.end(null)
+            FetchStages.close()
             ReloadPlaybackGate.reset(videoId)
         }
     }
@@ -65,18 +79,28 @@ internal object FormatInfoWrapper {
     @JvmStatic
     fun warmUp(videoId: String?) {
         synchronized(lock) {
-            val client = getVideoInfoService().nextClient
+            mIsWarmingUp = true
 
-            // Before the player data: its request makes its client the one of the player data got with none
-            // (see AppServiceCoreCached#firstValidExtractor)
-            runWarmUp("translation languages") { getVideoInfoService().warmUpTranslationLanguages(videoId) }
-
-            if (client.isTvPotRequired) {
-                runWarmUp("poToken") { PoTokenGate.getPoToken(client) }
+            try {
+                warmUpLocked(videoId)
+            } finally {
+                mIsWarmingUp = false
             }
-
-            runWarmUp("player data") { AppService.instance().warmUpPlayerData(client) }
         }
+    }
+
+    private fun warmUpLocked(videoId: String?) {
+        val client = getVideoInfoService().nextClient
+
+        // Before the player data: its request makes its client the one of the player data got with none
+        // (see AppServiceCoreCached#firstValidExtractor)
+        runWarmUp("translation languages") { getVideoInfoService().warmUpTranslationLanguages(videoId) }
+
+        if (client.isTvPotRequired) {
+            runWarmUp("poToken") { PoTokenGate.getPoToken(client) }
+        }
+
+        runWarmUp("player data") { AppService.instance().warmUpPlayerData(client) }
     }
 
     private fun runWarmUp(name: String, warmUp: () -> Unit) {
@@ -176,6 +200,7 @@ internal object FormatInfoWrapper {
         val cachedFormatInfo: MediaItemFormatInfo? = getCachedFormatInfo(videoId)
 
         if (cachedFormatInfo != null) {
+            FetchStages.mark("cached", null)
             return cachedFormatInfo
         }
 
@@ -183,7 +208,7 @@ internal object FormatInfoWrapper {
 
         AppService.instance().resetClientPlaybackNonce() // history fix: unique value per each video info
 
-        val formatInfo = InnertubeService.createFormatInfo(videoId)
+        val formatInfo = FetchStages.time("innertube", null) { InnertubeService.createFormatInfo(videoId) }
 
         setCachedFormatInfo(formatInfo, clickTrackingParams)
 
@@ -194,6 +219,7 @@ internal object FormatInfoWrapper {
         val cachedFormatInfo = getCachedFormatInfo(videoId)
 
         if (cachedFormatInfo != null) {
+            FetchStages.mark("cached", null)
             return cachedFormatInfo
         }
 
@@ -236,7 +262,7 @@ internal object FormatInfoWrapper {
     }
 
     private fun checkSigned() {
-        getSignInService().checkAuth()
+        FetchStages.time("sign-in", null) { getSignInService().checkAuth() }
     }
 
     private fun getSignInService(): YouTubeSignInService {

@@ -9,6 +9,7 @@ import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
 import com.liskovsoft.youtubeapi.formatbuilders.utils.MediaFormatUtils;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.liskovsoft.youtubeapi.videoinfo.V2.DashInfoApi;
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder;
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoContent;
@@ -40,11 +41,14 @@ public abstract class VideoInfoServiceBase {
             return;
         }
 
-        decipherFormats(videoInfo);
+        FetchStages.time("decipher", null, () -> {
+            decipherFormats(videoInfo);
+            return null;
+        });
 
         if (videoInfo.isLive()) {
             Log.d(TAG, "Enable seeking support on live streams...");
-            videoInfo.sync(getDashInfo(videoInfo));
+            videoInfo.sync(FetchStages.time("dash info", null, () -> getDashInfo(videoInfo)));
         }
 
         videoInfo.setVisitorCookie(getData().getVisitorCookie());

@@ -133,11 +133,22 @@ public class VideoInfoService extends VideoInfoServiceBase {
         do {
             final AppClient type = nextType;
             mLastResponseCode.set(0);
-            VideoInfo result = ClientAttempts.recordException(videoId, type.name(),
-                    () -> getVideoInfoWithRentFix(type, videoId, clickTrackingParams));
-            boolean accepted = result != null && infoTester.test(result);
+            FetchStages.Span span = FetchStages.begin(type.name() + " attempt");
+            VideoInfo result;
 
-            ClientAttempts.record(videoId, toAttempt(type, result, accepted));
+            try {
+                result = ClientAttempts.recordException(videoId, type.name(),
+                        () -> getVideoInfoWithRentFix(type, videoId, clickTrackingParams));
+            } catch (RuntimeException e) {
+                span.end(e.getClass().getSimpleName());
+                throw e;
+            }
+
+            boolean accepted = result != null && infoTester.test(result);
+            Attempt attempt = toAttempt(type, result, accepted);
+
+            ClientAttempts.record(videoId, attempt);
+            span.end(attempt.result);
 
             if (accepted) {
                 return result;
@@ -290,12 +301,12 @@ public class VideoInfoService extends VideoInfoServiceBase {
         if (client.isReelClient()) {
             Call<VideoInfoReel> wrapper = mVideoInfoApi.getVideoInfoReel(videoInfoQuery, mAppService.getVisitorData(),
                     client.getUserAgent(), client.getInnerTubeName(), client.getClientVersion());
-            return getVideoInfoReel(wrapper, auth);
+            return FetchStages.time("request", null, () -> getVideoInfoReel(wrapper, auth));
         }
 
         Call<VideoInfo> wrapper = mVideoInfoApi.getVideoInfo(videoInfoQuery, mAppService.getVisitorData(),
                 client.getUserAgent(), client.getInnerTubeName(), client.getClientVersion());
-        return getVideoInfo(wrapper, auth);
+        return FetchStages.time("request", null, () -> getVideoInfo(wrapper, auth));
     }
 
     private @Nullable VideoInfo getVideoInfo(Call<VideoInfo> wrapper, boolean auth) {
@@ -353,7 +364,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
         if (shouldObtainExtendedFormats(result) || result.isStoryboardBroken()) {
             Log.d(TAG, "Enable high bitrate formats...");
             mUseAuth = false;
-            VideoInfoHls videoInfoHls = getVideoInfoIOSHls(videoId, clickTrackingParams);
+            VideoInfoHls videoInfoHls = FetchStages.time("HLS fix", null, () -> getVideoInfoIOSHls(videoId, clickTrackingParams));
             if (videoInfoHls != null && shouldObtainExtendedFormats(result)) {
                 result.setHlsManifestUrl(videoInfoHls.getHlsManifestUrl());
             }
@@ -370,7 +381,8 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 mUseAuth = false;
                 VideoInfo webInfo = null;
                 try {
-                    webInfo = getVideoInfo(AppClient.WEB_DUMMY, videoId, clickTrackingParams);
+                    webInfo = FetchStages.time("subtitles", AppClient.WEB_DUMMY.name(),
+                            () -> getVideoInfo(AppClient.WEB_DUMMY, videoId, clickTrackingParams));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

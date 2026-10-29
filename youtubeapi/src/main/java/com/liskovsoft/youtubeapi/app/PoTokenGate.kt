@@ -7,6 +7,7 @@ import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.selectFactory
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 
 /**
  * PoTokenType
@@ -78,8 +79,10 @@ internal object PoTokenGate {
     fun getPoToken(client: AppClient, videoId: String? = null): String? {
         releaseOtherProviders(client)
         return when {
-            client.isWebPotRequired -> if (videoId != null) getWebContentPoToken(videoId) else getWebSessionPoToken()
-            client.isTvPotRequired -> if (mTvPotRejected) null else getTvPoToken()
+            client.isWebPotRequired -> FetchStages.time("poToken", client.name) {
+                if (videoId != null) getWebContentPoToken(videoId) else getWebSessionPoToken()
+            }
+            client.isTvPotRequired -> if (mTvPotRejected) null else FetchStages.time("poToken", client.name) { getTvPoToken() }
             else -> null
         }
     }

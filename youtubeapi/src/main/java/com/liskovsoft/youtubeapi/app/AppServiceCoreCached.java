@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.app.models.cached.ClientDataCached;
 import com.liskovsoft.youtubeapi.app.playerdata.PlayerDataExtractor;
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants;
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages;
 
 class AppServiceCoreCached extends AppServiceCore {
     private static final String TAG = AppServiceCoreCached.class.getSimpleName();
@@ -54,7 +55,7 @@ class AppServiceCoreCached extends AppServiceCore {
 
     @Override
     public PlayerDataExtractor getPlayerDataExtractor(@Nullable AppClient client) {
-        return getPlayerDataExtractorSync(client, getPlayerUrl());
+        return FetchStages.time("player JS", null, () -> getPlayerDataExtractorSync(client, getPlayerUrl()));
     }
 
     @Override
