@@ -3,6 +3,7 @@ package com.liskovsoft.youtubeapi.service.internal
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
+import com.liskovsoft.sharedutils.rx.RxHelper
 import com.liskovsoft.youtubeapi.app.AppService
 import com.liskovsoft.youtubeapi.app.PoTokenGate
 import com.liskovsoft.youtubeapi.app.ReloadPlaybackGate
@@ -14,6 +15,7 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal object FormatInfoWrapper {
     private val TAG = FormatInfoWrapper::class.java.simpleName
@@ -49,6 +51,11 @@ internal object FormatInfoWrapper {
      */
     @Volatile
     private var mIsWarmingUp: Boolean = false
+    /**
+     * Started ahead of a fetch's stages that wait for them, one of each at a time (see startAhead)
+     */
+    private val mPoTokenAhead = AtomicBoolean()
+    private val mPlayerDataAhead = AtomicBoolean()
 
     @JvmStatic
     fun getFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
@@ -101,6 +108,42 @@ internal object FormatInfoWrapper {
         }
 
         runWarmUp("player data") { AppService.instance().warmUpPlayerData(client) }
+    }
+
+    /**
+     * What the fetch needs later, and not from its requests, is started now on its own thread: the poToken of the client tried first
+     * (a session one) and its player's n-function. They're made while it signs in and requests, and the stages that need them wait only
+     * as long as they still run (see TvPoTokenProvider#getPoToken and TclChallengeProvider#solveN).
+     */
+    private fun startAhead(videoId: String?) {
+        val client = getVideoInfoService().nextClient
+        val fork = FetchStages.fork()
+
+        if (PoTokenGate.isPoTokenToMake(client, videoId)) {
+            runAhead(mPoTokenAhead) { fork.run { PoTokenGate.getPoToken(client, videoId) } }
+        }
+
+        if (!AppService.instance().isPlayerDataWarm(client)) {
+            runAhead(mPlayerDataAhead) {
+                fork.run { FetchStages.time("decipher", null) { AppService.instance().warmUpPlayerData(client) } }
+            }
+        }
+    }
+
+    private fun runAhead(isRunning: AtomicBoolean, work: () -> Unit) {
+        if (!isRunning.compareAndSet(false, true)) {
+            return
+        }
+
+        RxHelper.runAsync {
+            try {
+                work()
+            } catch (e: Exception) {
+                Log.e(TAG, "Can't get ready ahead of the fetch: %s", e.message)
+            } finally {
+                isRunning.set(false)
+            }
+        }
     }
 
     private fun runWarmUp(name: String, warmUp: () -> Unit) {
@@ -222,6 +265,8 @@ internal object FormatInfoWrapper {
             FetchStages.mark("cached", null)
             return cachedFormatInfo
         }
+
+        startAhead(videoId)
 
         checkSigned()
 

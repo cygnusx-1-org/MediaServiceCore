@@ -197,6 +197,104 @@ public class FetchStagesTest {
         assertEquals(2, FetchStages.take("video").size());
     }
 
+    /**
+     * Started ahead by the fetch on another thread: the fetch's stages, nested where it was forked, marked ahead
+     */
+    @Test
+    public void aForkRecordsForTheFetchOnAnotherThread() throws InterruptedException {
+        FetchStages.open("video");
+        FetchStages.Fork fork = FetchStages.fork();
+
+        Thread ahead = new Thread(() -> fork.run(() -> FetchStages.time("poToken", "TV", () -> {
+            FetchStages.time("request", null, () -> mNow.addAndGet(100));
+            return mNow.addAndGet(500);
+        })));
+        ahead.start();
+        ahead.join();
+
+        FetchStages.time("sign-in", null, () -> mNow.addAndGet(200));
+        FetchStages.close();
+
+        List<Stage> stages = FetchStages.take("video");
+
+        assertEquals(3, stages.size());
+        assertStage(stages.get(0), "poToken", 1, 1_000, 1_600);
+        assertEquals("TV, ahead", stages.get(0).detail);
+        assertStage(stages.get(1), "request", 2, 1_000, 1_100);
+        assertEquals("ahead", stages.get(1).detail);
+        assertStage(stages.get(2), "sign-in", 1, 1_600, 1_800);
+        assertNull(stages.get(2).detail);
+    }
+
+    @Test
+    public void aForkWithNoFetchJustRuns() {
+        FetchStages.Fork fork = FetchStages.fork();
+
+        assertEquals(Long.valueOf(1_600), fork.run(() -> FetchStages.time("poToken", "TV", () -> mNow.addAndGet(600))));
+
+        FetchStages.open("video").end(null);
+        FetchStages.close();
+
+        assertEquals(1, FetchStages.take("video").size());
+    }
+
+    /**
+     * A thread with a fetch of its own runs a fork of another one's: its own stages stay its own
+     */
+    @Test
+    public void aForkKeepsTheFetchOfTheThreadItRunsOn() {
+        FetchStages.open("video");
+        FetchStages.Fork fork = FetchStages.fork();
+        FetchStages.close();
+
+        FetchStages.open("other");
+        fork.run(() -> {
+            FetchStages.mark("poToken", null);
+            return null;
+        });
+        FetchStages.mark("sign-in", null);
+        FetchStages.close();
+
+        assertEquals("poToken", FetchStages.take("video").get(0).name);
+        List<Stage> other = FetchStages.take("other");
+        assertEquals(1, other.size());
+        assertEquals("sign-in", other.get(0).name);
+        assertNull(other.get(0).detail);
+    }
+
+    @Test
+    public void peekingShowsTheForkedStagesStillGoing() throws InterruptedException {
+        FetchStages.open("video");
+        FetchStages.Fork fork = FetchStages.fork();
+        java.util.concurrent.CountDownLatch started = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+
+        Thread ahead = new Thread(() -> fork.run(() -> FetchStages.time("poToken", "TV", () -> {
+            started.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return null;
+        })));
+        ahead.start();
+        started.await();
+
+        List<Stage> stages = FetchStages.peek("video");
+
+        assertEquals(2, stages.size());
+        assertEquals("poToken", stages.get(1).name);
+        assertEquals(1, stages.get(1).depth);
+        assertTrue(stages.get(1).isOpen());
+
+        release.countDown();
+        ahead.join();
+        FetchStages.close();
+
+        assertEquals(false, FetchStages.take("video").get(0).isOpen());
+    }
+
     private static void assertStage(Stage stage, String name, int depth, long startMs, long endMs) {
         assertEquals(name, stage.name);
         assertEquals(depth, stage.depth);

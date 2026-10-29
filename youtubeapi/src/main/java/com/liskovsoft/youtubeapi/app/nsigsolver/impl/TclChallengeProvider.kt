@@ -35,10 +35,12 @@ internal object TclChallengeProvider {
         "${libPrefix}tcl.solver.js"
     )
     private val solverOutputType = object : TypeToken<SolverOutput>() {}.type
+    @Volatile
     private var v8Runtime: V8? = null
     /**
      * Of the player whose n-function the runtime has, null when it has none
      */
+    @Volatile
     private var loadedPlayerUrl: String? = null
     /**
      * Of the loaded player, preprocessed from its source. It's cached once it solves.
@@ -98,6 +100,11 @@ internal object TclChallengeProvider {
 
         return nParams.associateWith { param -> results[challengeByParam[param]] }
     }
+
+    /**
+     * The player's n-function is loaded (see prepare): a solve runs only its challenges
+     */
+    fun isPrepared(playerUrl: String): Boolean = v8Runtime != null && loadedPlayerUrl == playerUrl
 
     /**
      * Loads the player's n-function ahead of the first solve (e.g. while the user browses)

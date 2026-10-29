@@ -99,6 +99,8 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
         }
     }
 
+    override fun isWarm(): Boolean = !nFuncCode || TclChallengeProvider.isPrepared(fixedPlayerUrl)
+
     override fun validate(): Boolean {
         // TODO: fix cpn code
         // return mNFuncCode && mSigFuncCode && mCPNCode != null && mSignatureTimestamp != null

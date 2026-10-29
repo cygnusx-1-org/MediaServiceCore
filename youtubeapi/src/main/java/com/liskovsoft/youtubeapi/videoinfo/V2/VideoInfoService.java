@@ -208,7 +208,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
         VideoInfo webInfo = getVideoInfo(AppClient.WEB_DUMMY, videoId, null);
 
         if (webInfo != null && webInfo.getTranslationLanguages() != null) {
-            mCachedTranslationLanguages = webInfo.getTranslationLanguages();
+            setTranslationLanguages(webInfo.getTranslationLanguages());
         }
     }
 
@@ -387,7 +387,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
                     e.printStackTrace();
                 }
                 if (webInfo != null) {
-                    mCachedTranslationLanguages = webInfo.getTranslationLanguages();
+                    setTranslationLanguages(webInfo.getTranslationLanguages());
                 }
             }
 
@@ -400,7 +400,24 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private boolean hasFullTranslationLanguages() {
-        return mCachedTranslationLanguages != null && mCachedTranslationLanguages.size() >= 100;
+        if (mCachedTranslationLanguages == null) {
+            // The ones kept by a run before
+            mCachedTranslationLanguages = TranslationLanguagesCache.load();
+        }
+
+        return isFullList(mCachedTranslationLanguages);
+    }
+
+    private void setTranslationLanguages(List<TranslationLanguage> translationLanguages) {
+        mCachedTranslationLanguages = translationLanguages;
+
+        if (isFullList(translationLanguages)) {
+            TranslationLanguagesCache.store(translationLanguages);
+        }
+    }
+
+    private static boolean isFullList(List<TranslationLanguage> translationLanguages) {
+        return translationLanguages != null && translationLanguages.size() >= 100;
     }
 
     private void resetInfoTypeToDefault() {

@@ -7,30 +7,33 @@ import com.liskovsoft.mediaserviceinterfaces.oauth.Account;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences;
+import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.auth.V2.AuthService;
 import com.liskovsoft.googlecommon.common.models.auth.AccessToken;
+import com.liskovsoft.googlecommon.common.models.auth.AuthHeader;
 import com.liskovsoft.googlecommon.common.models.auth.info.AccountInt;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper;
 import com.liskovsoft.googlecommon.service.oauth.YouTubeAccount;
+import com.liskovsoft.youtubeapi.service.internal.KeptTokens;
 import com.liskovsoft.youtubeapi.service.internal.YouTubeAccountManager;
 import io.reactivex.Observable;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 public class YouTubeSignInService implements SignInService {
     private static final String TAG = YouTubeSignInService.class.getSimpleName();
-    private static final long TOKEN_REFRESH_PERIOD_MS = 60 * 60 * 1_000; // NOTE: auth token max lifetime is 60 min
-    /**
-     * Shorter than the lifetime: the requests of a call can take a while (see callAs)
-     */
-    private static final long CALL_TOKEN_REFRESH_PERIOD_MS = 50 * 60 * 1_000;
+    private static final int MAX_REJECTED_HEADERS = 8;
     private static YouTubeSignInService sInstance;
     private final YouTubeAccountManager mAccountManager;
-    private String mCachedAuthorizationHeader;
-    private long mCacheUpdateTime;
+    /**
+     * Of the selected account, made again before it expires (see AuthHeader#isFresh)
+     */
+    @Nullable
+    private AuthHeader mAuthHeader;
     /**
      * One update of the authorization header at a time, the others wait for it. Not this object's lock, which selectAccount takes:
      * the update makes requests, which can take long (e.g. a slow network), and the account is changed on the main thread.
@@ -41,13 +44,35 @@ public class YouTubeSignInService implements SignInService {
      */
     private int mAuthHeadersVersion;
     /**
+     * Of the header the stored accounts are being synced with (see syncAccounts), -1 for none: one sync per header at a time
+     */
+    private int mAccountsSyncVersion = -1;
+    /**
+     * The header kept by a run before may be taken (see KeptTokens), till one this run had is invalidated: then a new one is made
+     */
+    private boolean mMayTakeKeptHeader = true;
+    /**
      * The account of the requests made on this thread, when it has one of its own (see callAs)
      */
     private final ThreadLocal<CallAccount> mCallAccount = new ThreadLocal<>();
     /**
-     * The authorization header of each refresh token the calls used, and when it was made (see callAs)
+     * The authorization header of each refresh token the calls used (see callAs)
      */
-    private final Map<String, CallAuthorization> mCallAuthorizations = new HashMap<>();
+    private final Map<String, AuthHeader> mCallAuthorizations = new HashMap<>();
+    /**
+     * Of the headers a request got 401 with, the refresh token each was made from, null for the selected account's: a request made with
+     * one later (e.g. by a call that had it already) is retried with the one made instead (see onUnauthorized)
+     */
+    private final Map<String, String> mRejectedHeaders = new LinkedHashMap<String, String>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+            return size() > MAX_REJECTED_HEADERS;
+        }
+    };
+    /**
+     * When a 401 last made a header be made again (see AuthHeader#MIN_UNAUTHORIZED_INTERVAL_MS). Guarded by mRejectedHeaders.
+     */
+    private long mUnauthorizedTimeMs;
     private final Object mCallAuthorizationsLock = new Object();
 
     private static final class CallAccount {
@@ -59,18 +84,9 @@ public class YouTubeSignInService implements SignInService {
         }
     }
 
-    private static final class CallAuthorization {
-        private final String mHeader;
-        private final long mCreatedTimeMs;
-
-        private CallAuthorization(String header, long createdTimeMs) {
-            mHeader = header;
-            mCreatedTimeMs = createdTimeMs;
-        }
-    }
-
     private YouTubeSignInService() {
         mAccountManager = YouTubeAccountManager.instance(this);
+        RetrofitOkHttpHelper.addUnauthorizedHandler(this::onUnauthorized);
 
         GlobalPreferences.setOnInit(() -> {
             mAccountManager.init();
@@ -115,42 +131,74 @@ public class YouTubeSignInService implements SignInService {
     private boolean updateAuthHeaders() {
         int version;
         Account account;
+        boolean mayTakeKeptHeader;
 
         synchronized (this) {
-            if (mCachedAuthorizationHeader != null && Helpers.equals(mCachedAuthorizationHeader, RetrofitOkHttpHelper.getAuthHeaders().get("Authorization"))
-                    && System.currentTimeMillis() - mCacheUpdateTime < TOKEN_REFRESH_PERIOD_MS) {
+            if (mAuthHeader != null && Helpers.equals(mAuthHeader.header, RetrofitOkHttpHelper.getAuthHeaders().get("Authorization"))
+                    && mAuthHeader.isFresh()) {
                 return true;
             }
 
             version = mAuthHeadersVersion;
             account = mAccountManager.getSelectedAccount();
+            mayTakeKeptHeader = mMayTakeKeptHeader;
         }
 
         String refreshToken = account != null ? ((YouTubeAccount) account).getRefreshToken() : null;
-        // get or create authorization on fly
-        String authorizationHeader = createAuthorizationHeader(refreshToken);
+        // The one a run before made for the account, while it's fresh: the first requests don't wait for a new one
+        AuthHeader authHeader = mayTakeKeptHeader ? KeptTokens.loadAuthHeader(refreshToken) : null;
+
+        if (authHeader == null) {
+            // get or create authorization on fly
+            authHeader = createAuthHeader(refreshToken);
+            KeptTokens.storeAuthHeader(refreshToken, authHeader);
+        }
 
         synchronized (this) {
             if (version != mAuthHeadersVersion) {
                 return false;
             }
 
-            mCachedAuthorizationHeader = authorizationHeader;
+            mAuthHeader = authHeader;
             syncWithRetrofit();
-            mCacheUpdateTime = System.currentTimeMillis();
         }
 
-        // Fetched with the header above: no other update sets one meanwhile
-        List<AccountInt> accounts = mAccountManager.getAccountsToSync();
-
-        synchronized (this) {
-            // Else synced on the next update
-            if (version == mAuthHeadersVersion) {
-                mAccountManager.syncStorage(accounts);
-            }
-        }
+        syncAccounts(version);
 
         return true;
+    }
+
+    /**
+     * The avatars, names and emails of the stored accounts, once, fetched with the header just set. On their own thread: what waits for
+     * the header (e.g. a video's formats) doesn't need them.
+     * Another update sets a header meanwhile only for another account, which changes the version: then they're synced on the next update.
+     */
+    private void syncAccounts(int version) {
+        synchronized (this) {
+            if (mAccountsSyncVersion == version || mAccountManager.isStorageSynced()) {
+                return;
+            }
+
+            mAccountsSyncVersion = version;
+        }
+
+        RxHelper.runAsync(() -> {
+            try {
+                List<AccountInt> accounts = mAccountManager.getAccountsToSync();
+
+                synchronized (this) {
+                    if (version == mAuthHeadersVersion) {
+                        mAccountManager.syncStorage(accounts);
+                    }
+                }
+            } finally {
+                synchronized (this) {
+                    if (mAccountsSyncVersion == version) {
+                        mAccountsSyncVersion = -1;
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -171,8 +219,11 @@ public class YouTubeSignInService implements SignInService {
     }
 
     public synchronized void invalidateCache() {
-        mCachedAuthorizationHeader = null;
-        mCacheUpdateTime = 0;
+        if (mAuthHeader != null) {
+            mMayTakeKeptHeader = false;
+        }
+
+        mAuthHeader = null;
         mAuthHeadersVersion++;
     }
 
@@ -194,7 +245,7 @@ public class YouTubeSignInService implements SignInService {
         String header = "none";
         String token = "none";
 
-        if (mCachedAuthorizationHeader != null) {
+        if (mAuthHeader != null) {
             header = "ok";
         }
 
@@ -215,20 +266,18 @@ public class YouTubeSignInService implements SignInService {
     /**
      * Authorization should be updated periodically (see expire_in field in response)
      */
-    private String createAuthorizationHeader(String refreshToken) {
+    @Nullable
+    private AuthHeader createAuthHeader(String refreshToken) {
         Log.d(TAG, "Updating authorization header...");
 
-        String authorizationHeader = null;
+        long createdMs = System.currentTimeMillis();
+        AuthHeader authHeader = AuthHeader.from(obtainAccessToken(refreshToken), createdMs);
 
-        AccessToken token = obtainAccessToken(refreshToken);
-
-        if (token != null) {
-            authorizationHeader = String.format("%s %s", token.getTokenType(), token.getAccessToken());
-        } else {
+        if (authHeader == null) {
             Log.e(TAG, "Access token is null!");
         }
 
-        return authorizationHeader;
+        return authHeader;
     }
 
     private AccessToken obtainAccessToken(String refreshToken) {
@@ -258,8 +307,8 @@ public class YouTubeSignInService implements SignInService {
 
         Account selectedAccount = getSelectedAccount();
 
-        if (mCachedAuthorizationHeader != null && selectedAccount != null) {
-            headers.put("Authorization", mCachedAuthorizationHeader);
+        if (mAuthHeader != null && selectedAccount != null) {
+            headers.put("Authorization", mAuthHeader.header);
             String pageIdToken = ((YouTubeAccount) selectedAccount).getPageIdToken();
             if (pageIdToken != null) {
                 // Apply branded account rights (restricted videos). Branded refresh token with current account page id.
@@ -338,20 +387,106 @@ public class YouTubeSignInService implements SignInService {
 
         // Not the lock of the selected account's: its header isn't held up by these
         synchronized (mCallAuthorizationsLock) {
-            CallAuthorization authorization = mCallAuthorizations.get(refreshToken);
+            AuthHeader authorization = mCallAuthorizations.get(refreshToken);
 
-            if (authorization != null && System.currentTimeMillis() - authorization.mCreatedTimeMs < CALL_TOKEN_REFRESH_PERIOD_MS) {
-                return authorization.mHeader;
+            if (authorization != null && authorization.isFresh()) {
+                return authorization.header;
             }
 
-            String header = createAuthorizationHeader(refreshToken);
+            AuthHeader authHeader = createAuthHeader(refreshToken);
 
-            if (header != null) {
-                mCallAuthorizations.put(refreshToken, new CallAuthorization(header, System.currentTimeMillis()));
+            if (authHeader != null) {
+                mCallAuthorizations.put(refreshToken, authHeader);
             }
 
-            return header;
+            return authHeader != null ? authHeader.header : null;
         }
+    }
+
+    /**
+     * A request with the header got 401: its token was revoked or expired early (e.g. the password was changed). The header is made
+     * again, once for all the requests that had it, and not taken from the kept ones (see KeptTokens).
+     * Locks: this object's is never held while waiting for the calls', which waits for their token requests (see
+     * getCallAuthorizationHeader); mRejectedHeaders' is taken last and holds nothing up.
+     * @return the header to retry with, null when it isn't one of this service's
+     */
+    @Nullable
+    private String onUnauthorized(String header) {
+        String refreshToken;
+        boolean isRejected;
+
+        synchronized (mCallAuthorizationsLock) {
+            synchronized (mRejectedHeaders) {
+                isRejected = mRejectedHeaders.containsKey(header);
+                refreshToken = isRejected ? mRejectedHeaders.get(header) : findCallRefreshToken(header);
+
+                if (!isRejected && refreshToken != null) {
+                    if (!mayRemakeOnUnauthorized()) {
+                        return null;
+                    }
+
+                    mCallAuthorizations.remove(refreshToken);
+                    mRejectedHeaders.put(header, refreshToken);
+                    isRejected = true;
+                }
+            }
+        }
+
+        if (!isRejected) {
+            synchronized (this) {
+                synchronized (mRejectedHeaders) {
+                    if (mRejectedHeaders.containsKey(header)) {
+                        // By another request meanwhile
+                        refreshToken = mRejectedHeaders.get(header);
+                    } else if (mAuthHeader != null && header.equals(mAuthHeader.header) && mayRemakeOnUnauthorized()) {
+                        mRejectedHeaders.put(header, null);
+                        invalidateCache();
+                    } else {
+                        return null;
+                    }
+                }
+            }
+
+            KeptTokens.clearAuthHeader(header);
+        }
+
+        if (refreshToken != null) {
+            return getCallAuthorizationHeader(refreshToken);
+        }
+
+        updateAuthHeadersIfNeeded();
+        AuthHeader authHeader = mAuthHeader;
+
+        return authHeader != null ? authHeader.header : null;
+    }
+
+    /**
+     * Under mRejectedHeaders' lock
+     */
+    private boolean mayRemakeOnUnauthorized() {
+        long nowMs = System.currentTimeMillis();
+
+        if (nowMs >= mUnauthorizedTimeMs && nowMs - mUnauthorizedTimeMs < AuthHeader.MIN_UNAUTHORIZED_INTERVAL_MS) {
+            return false;
+        }
+
+        mUnauthorizedTimeMs = nowMs;
+
+        return true;
+    }
+
+    /**
+     * Of a call's header (see callAs), null for another one
+     */
+    @Nullable
+    private String findCallRefreshToken(String header) {
+        for (Map.Entry<String, AuthHeader> entry : mCallAuthorizations.entrySet()) {
+            if (header.equals(entry.getValue().header)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
     }
 
     @Override

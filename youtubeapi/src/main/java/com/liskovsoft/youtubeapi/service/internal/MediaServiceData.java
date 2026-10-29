@@ -95,6 +95,8 @@ public class MediaServiceData {
     private boolean mIsShortsQuickToggleEnabled;
     private boolean mIsShortsQuickToggleHiding;
     private List<String> mClientOrder = new ArrayList<>();
+    private String mKeptAuthHeader;
+    private String mKeptTvPoToken;
 
     private static class MediaServiceCache extends SharedPreferencesBase {
         private static final String PREF_NAME = MediaServiceCache.class.getSimpleName();
@@ -382,6 +384,32 @@ public class MediaServiceData {
     }
 
     /**
+     * The authorization header a run made, for the next one (see KeptTokens)
+     */
+    public String getKeptAuthHeader() {
+        return mKeptAuthHeader;
+    }
+
+    public void setKeptAuthHeader(String keptAuthHeader) {
+        mKeptAuthHeader = keptAuthHeader;
+
+        persistData();
+    }
+
+    /**
+     * The TV client's poToken a run made, for the next one (see KeptTokens)
+     */
+    public String getKeptTvPoToken() {
+        return mKeptTvPoToken;
+    }
+
+    public void setKeptTvPoToken(String keptTvPoToken) {
+        mKeptTvPoToken = keptTvPoToken;
+
+        persistData();
+    }
+
+    /**
      * The names of the clients in the order they're tried to get the formats of a video: the order chosen in the settings, then the
      * ones not in it (e.g. new ones), in their default order
      */
@@ -460,6 +488,8 @@ public class MediaServiceData {
         mIsShortsQuickToggleHiding = Helpers.parseBoolean(split, 28);
         boolean isShortsSectionsMigrated = Helpers.parseBoolean(split, 29);
         mClientOrder = Helpers.parseStrList(split, 30);
+        mKeptAuthHeader = Helpers.parseStr(split, 31);
+        mKeptTvPoToken = Helpers.parseStr(split, 32);
 
         if (!isShortsSectionsMigrated) {
             mHiddenContent = migrateShortsSections(mHiddenContent);
@@ -502,7 +532,7 @@ public class MediaServiceData {
                         null, mClientData, mHiddenContent, mIsMoreSubtitlesUnlocked,
                         null, mVisitorCookie, null, null, mFailedAppInfo, mIsLegacyUIEnabled, mDataApiKey,
                         mIsShortsQuickToggleEnabled, mIsShortsQuickToggleHiding, true,
-                        mClientOrder.isEmpty() ? null : mClientOrder));
+                        mClientOrder.isEmpty() ? null : mClientOrder, mKeptAuthHeader, mKeptTvPoToken));
     }
 
     private void persistCachedDataInt() {

@@ -18,8 +18,8 @@ class AppServiceCoreCached extends AppServiceCore {
     private static final long CACHE_REFRESH_PERIOD_MS = 10 * 60 * 60 * 1_000; // check updated core files every 10 hours
     private AppInfoCached mAppInfo;
     private ClientDataCached mClientData;
-    private PlayerDataExtractor mWebPlayerDataExtractor;
-    private PlayerDataExtractor mTclPlayerDataExtractor;
+    private volatile PlayerDataExtractor mWebPlayerDataExtractor;
+    private volatile PlayerDataExtractor mTclPlayerDataExtractor;
     private long mAppInfoUpdateTimeMs;
     private final Object mAppInfoSync = new Object();
     private final Object mPlayerSync = new Object();
@@ -111,6 +111,14 @@ class AppServiceCoreCached extends AppServiceCore {
         mAppInfo = null;
         // Don't reset Player's cache. It's too heavy to recreate often.
         // Better do it inside MediaServiceData after the update
+    }
+
+    @Override
+    public boolean isPlayerDataWarm(@Nullable AppClient client) {
+        // Without the lock: a fetch doesn't wait for the one that makes the player data
+        PlayerDataExtractor extractor = restoreExtractor(client);
+
+        return extractor != null && extractor.isWarm();
     }
 
     @Override

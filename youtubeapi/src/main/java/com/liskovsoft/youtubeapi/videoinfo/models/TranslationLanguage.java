@@ -10,11 +10,24 @@ public class TranslationLanguage {
     @JsonPath("$.languageName")
     private TextItem mLanguageName;
 
+    /**
+     * Of one kept between the runs (see TranslationLanguagesCache)
+     */
+    private String mKeptLanguageName;
+
+    public TranslationLanguage() {
+    }
+
+    public TranslationLanguage(String languageCode, String languageName) {
+        mLanguageCode = languageCode;
+        mKeptLanguageName = languageName;
+    }
+
     public String getLanguageCode() {
         return mLanguageCode;
     }
 
     public String getLanguageName() {
-        return mLanguageName != null ? mLanguageName.toString() : null;
+        return mLanguageName != null ? mLanguageName.toString() : mKeptLanguageName;
     }
 }

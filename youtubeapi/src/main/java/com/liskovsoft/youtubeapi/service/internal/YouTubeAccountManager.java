@@ -33,7 +33,7 @@ public class YouTubeAccountManager {
     private static final String PROFILE_NUMBER_DELIM = "#";
     private final Object mRestoreLock = new Object();
     private volatile boolean mRestored;
-    private boolean mStorageSynced;
+    private volatile boolean mStorageSynced;
     private final YouTubeSignInService mSignInService;
     private final WeakHashSet<OnAccountChange> mListeners = new WeakHashSet<>();
     /**
@@ -335,6 +335,10 @@ public class YouTubeAccountManager {
         FormatInfoWrapper.resetFormat();
 
         notifyListeners();
+    }
+
+    public boolean isStorageSynced() {
+        return mStorageSynced;
     }
 
     /**

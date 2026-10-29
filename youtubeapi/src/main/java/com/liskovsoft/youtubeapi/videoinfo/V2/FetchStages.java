@@ -13,7 +13,8 @@ import java.util.Map;
 /**
  * Where the time of a fetch of the formats of a video goes: the lock it waited for, each client tried, their poTokens and requests,
  * the decipher… as nested spans, for the app to show how long the video took to start. Kept for the last {@link #MAX_VIDEOS} videos.
- * Only a fetch opened on its thread (see {@link #open}) records them: the same code run by the warm-up or elsewhere doesn't.
+ * Only a fetch opened on its thread (see {@link #open}) records them, and the work it starts on other threads (see {@link #fork}): the
+ * same code run by the warm-up or elsewhere doesn't.
  */
 public final class FetchStages {
     static final int MAX_VIDEOS = 20;
@@ -21,6 +22,10 @@ public final class FetchStages {
      * Of a video, over all its fetches (e.g. the history sync's run after the app's)
      */
     static final int MAX_STAGES = 64;
+    /**
+     * The detail of the stages run ahead of the fetch, on another thread (see {@link #fork})
+     */
+    static final String AHEAD = "ahead";
     private static final Map<String, List<Stage>> sStages = new LinkedHashMap<String, List<Stage>>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, List<Stage>> eldest) {
@@ -97,7 +102,48 @@ public final class FetchStages {
 
             mIsEnded = true;
             mTrace.depth = mDepth;
-            add(mTrace.videoId, new Stage(mName, detail, mDepth, mStartMs, sClock.now()), this);
+            add(mTrace.videoId, new Stage(mName, mTrace.withMark(detail), mDepth, mStartMs, sClock.now()), this);
+        }
+    }
+
+    /**
+     * Of the fetch open on a thread, for the work it starts on another one: e.g. ahead of the stage that waits for it
+     */
+    public static final class Fork {
+        @Nullable
+        private final String mVideoId;
+        private final int mDepth;
+
+        private Fork(@Nullable String videoId, int depth) {
+            mVideoId = videoId;
+            mDepth = depth;
+        }
+
+        /**
+         * Runs on this thread, its stages timed as the fetch's at the depth it was forked at, their detail marked "ahead". Just runs with
+         * no fetch to record for.
+         */
+        public <T> T run(Timed<T> timed) {
+            if (mVideoId == null) {
+                return timed.run();
+            }
+
+            Trace previous = sTrace.get();
+            Trace trace = new Trace(mVideoId, AHEAD);
+            trace.depth = mDepth;
+            sTrace.set(trace);
+
+            try {
+                return timed.run();
+            } finally {
+                removeOpenSpans(trace);
+
+                if (previous != null) {
+                    sTrace.set(previous);
+                } else {
+                    sTrace.remove();
+                }
+            }
         }
     }
 
@@ -111,10 +157,21 @@ public final class FetchStages {
 
     private static final class Trace {
         final String videoId;
+        /**
+         * Added to the detail of its stages, e.g. {@link #AHEAD}
+         */
+        @Nullable
+        final String mark;
         int depth;
 
-        Trace(String videoId) {
+        Trace(String videoId, @Nullable String mark) {
             this.videoId = videoId;
+            this.mark = mark;
+        }
+
+        @Nullable
+        String withMark(@Nullable String detail) {
+            return mark == null ? detail : detail == null ? mark : detail + ", " + mark;
         }
     }
 
@@ -129,10 +186,20 @@ public final class FetchStages {
             return NO_SPAN;
         }
 
-        Trace trace = new Trace(videoId);
+        Trace trace = new Trace(videoId, null);
         sTrace.set(trace);
 
         return begin("fetch");
+    }
+
+    /**
+     * For the work the fetch open on this thread starts on another one (see {@link Fork#run}): its stages are the fetch's, nested where
+     * it's forked
+     */
+    public static Fork fork() {
+        Trace trace = sTrace.get();
+
+        return trace != null ? new Fork(trace.videoId, trace.depth) : new Fork(null, 0);
     }
 
     public static void close() {

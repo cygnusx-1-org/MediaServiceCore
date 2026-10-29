@@ -107,6 +107,14 @@ class AppServiceCore {
         return false;
     }
 
+    /**
+     * The client's player data is ready for its first extraction (see PlayerDataExtractor#warmUp)
+     */
+    public boolean isPlayerDataWarm(@Nullable AppClient client) {
+        // NOP: the data is made again for each extraction
+        return true;
+    }
+
     // Moved from AppService
 
     public String getClientId() {

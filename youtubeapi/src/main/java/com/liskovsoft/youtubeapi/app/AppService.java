@@ -231,6 +231,13 @@ public class AppService {
         return mAppServiceCore.isPlayerCacheActual();
     }
 
+    /**
+     * The client's player data is ready for its first extraction (see warmUpPlayerData)
+     */
+    public boolean isPlayerDataWarm(@Nullable AppClient client) {
+        return mAppServiceCore.isPlayerDataWarm(client);
+    }
+
     @NonNull
     public Context getContext() {
         Context context = GlobalPreferences.isInitialized() ? GlobalPreferences.sInstance.getContext() : null;

@@ -2,6 +2,7 @@ package com.liskovsoft.googlecommon.common.helpers
 
 import com.google.net.cronet.okhttptransport.CronetInterceptor
 import com.liskovsoft.sharedutils.cronet.CronetManager
+import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.okhttp.OkHttpManager
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants
 import com.liskovsoft.youtubeapi.app.AppService
@@ -12,8 +13,10 @@ import okhttp3.Request
 import java.util.Collections
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 internal object RetrofitOkHttpHelper {
+    private val TAG = RetrofitOkHttpHelper::class.java.simpleName
     // Added and removed from many threads at once (e.g. the parallel category lookups). A plain list got corrupted,
     // and every request after that failed in the interceptor (ArrayIndexOutOfBoundsException in ArrayList.remove).
     private val authSkipList: MutableSet<Request> = Collections.newSetFromMap(ConcurrentHashMap<Request, Boolean>())
@@ -32,6 +35,29 @@ internal object RetrofitOkHttpHelper {
 
     @JvmStatic
     var disableCompression: Boolean = false
+
+    /**
+     * Makes the authorization header again when a request with it got 401: the token was revoked or expired early (e.g. the password
+     * was changed). Only the one that made the header does it.
+     */
+    fun interface UnauthorizedHandler {
+        /**
+         * @return the header to retry the request with, null when the header isn't its own or none can be made
+         */
+        fun onUnauthorized(header: String): String?
+    }
+
+    private val unauthorizedHandlers = CopyOnWriteArrayList<UnauthorizedHandler>()
+
+    @JvmStatic
+    fun addUnauthorizedHandler(handler: UnauthorizedHandler) {
+        unauthorizedHandlers.addIfAbsent(handler)
+    }
+
+    @JvmStatic
+    fun removeUnauthorizedHandler(handler: UnauthorizedHandler) {
+        unauthorizedHandlers.remove(handler)
+    }
 
     @JvmStatic
     fun addAuthSkip(request: Request) {
@@ -133,8 +159,31 @@ internal object RetrofitOkHttpHelper {
                 }
             }
 
-            chain.proceed(requestBuilder.build())
+            val authRequest = requestBuilder.build()
+            val response = chain.proceed(authRequest)
+            val header = authRequest.header("Authorization")
+
+            if (response.code != 401 || header == null || authRequest.body?.isOneShot() == true) {
+                return@addInterceptor response
+            }
+
+            // Retried once, with the header made again
+            val newHeader = getNewHeader(header) ?: return@addInterceptor response
+            response.close()
+            chain.proceed(authRequest.newBuilder().header("Authorization", newHeader).build())
         }
+    }
+
+    private fun getNewHeader(header: String): String? {
+        for (handler in unauthorizedHandlers) {
+            try {
+                handler.onUnauthorized(header)?.takeIf { it != header }?.let { return it }
+            } catch (e: Exception) {
+                Log.e(TAG, "Can't make the authorization header again: %s", e.message)
+            }
+        }
+
+        return null
     }
 
     private fun applyHeaders(newHeaders: Map<String, String?>, oldHeaders: Headers, builder: Request.Builder) {

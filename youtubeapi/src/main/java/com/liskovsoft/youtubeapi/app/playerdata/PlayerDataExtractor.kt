@@ -12,5 +12,9 @@ internal interface PlayerDataExtractor {
      * Gets ready ahead of the first extraction (e.g. while the user browses)
      */
     fun warmUp() {}
+    /**
+     * Ready for the first extraction: nothing is left for warmUp to do
+     */
+    fun isWarm(): Boolean = true
     val playerUrl: String
 }

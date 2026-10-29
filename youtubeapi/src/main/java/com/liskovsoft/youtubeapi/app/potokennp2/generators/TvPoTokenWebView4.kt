@@ -38,7 +38,10 @@ import java.util.regex.Pattern
  */
 internal class TvPoTokenWebView4 private constructor(
     context: Context,
-    private val requestKey: String,
+    /**
+     * Got when it's needed, by GenerateIT: e.g. fetched meanwhile. Throws when there's none.
+     */
+    private val requestKey: () -> String,
     private val presetChallenge: String?,
     private val attClient: AppClient?,
     private var onInitDone: () -> Unit
@@ -269,9 +272,16 @@ internal class TvPoTokenWebView4 private constructor(
         // The first on produces more reliable token (without 403 error) but may hang upon request.
         // "$BASE_URL/\$rpc/google.internal.waa.v1.Waa/GenerateIT"
         // "https://www.youtube.com/api/jnn/v1/GenerateIT"
+        val key = try {
+            requestKey()
+        } catch (e: Exception) {
+            onInitializationErrorCloseAndCancel(e)
+            return
+        }
+
         val responseBody = makeBotguardServiceRequest(
             "https://www.youtube.com/api/jnn/v1/GenerateIT",
-            "[ \"${requestKey}\", \"$botguardResponse\" ]",
+            "[ \"${key}\", \"$botguardResponse\" ]",
         ) ?: return
 
         Log.d(TAG, "GenerateIT response: $responseBody")
@@ -493,15 +503,15 @@ internal class TvPoTokenWebView4 private constructor(
         private const val JS_INTERFACE = "PoTokenWebView"
         private const val BASE_URL = "https://jnn-pa.googleapis.com"
 
-        override fun newPoTokenGenerator(context: Context): PoTokenGenerator = newPoTokenGenerator(context, REQUEST_KEY, null)
+        override fun newPoTokenGenerator(context: Context): PoTokenGenerator = newPoTokenGenerator(context, { REQUEST_KEY }, null)
 
         /**
-         * @param requestKey BotGuard request key (web and TV clients have different ones)
+         * @param requestKey BotGuard request key (web and TV clients have different ones), got when GenerateIT needs it
          * @param presetChallenge ready to use challenge JSON (with `bgChallenge`). Null - fetch the web one.
          * @param attClient used only when [presetChallenge] is null: fetch the challenge (program) from /att/get for this client
          */
         fun newPoTokenGenerator(
-            context: Context, requestKey: String, presetChallenge: String?, attClient: AppClient? = null
+            context: Context, requestKey: () -> String, presetChallenge: String?, attClient: AppClient? = null
         ): PoTokenGenerator {
             if (hasThermalServiceBug(context)) {
                 throw BadWebViewException("ThermalService isn't available")
