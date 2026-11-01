@@ -22,6 +22,10 @@ public final class ClientAttempts {
     public static final String RESULT_NULL_RESPONSE = "null_response";
     public static final String RESULT_UNPLAYABLE = "unplayable";
     public static final String RESULT_NO_REGULAR_FORMATS = "no_regular_formats";
+    /**
+     * A live stream, playable but with nothing to play it from (see VideoInfo#hasNoLiveMedia)
+     */
+    public static final String RESULT_NO_LIVE_MANIFEST = "no_live_manifest";
     public static final String RESULT_EXCEPTION = "exception";
     private static final String RESULT_HTTP_PREFIX = "http_";
     private static final Map<String, List<Attempt>> sAttempts = new LinkedHashMap<String, List<Attempt>>() {
@@ -37,7 +41,7 @@ public final class ClientAttempts {
     public static final class Attempt {
         public final String client;
         /**
-         * ok, null_response, http_&lt;code&gt;, unplayable, no_regular_formats or exception
+         * ok, null_response, http_&lt;code&gt;, unplayable, no_regular_formats, no_live_manifest or exception
          */
         public final String result;
         /**
@@ -64,6 +68,14 @@ public final class ClientAttempts {
             this.error = error;
         }
 
+        /**
+         * For the timing of the fetch (see FetchStages): the result, with the status of an unplayable one, e.g. "unplayable
+         * LOGIN_REQUIRED". Not its reason: that's the text the user is shown.
+         */
+        public String describe() {
+            return status != null && RESULT_UNPLAYABLE.equals(result) ? result + " " + status : result;
+        }
+
         public static Attempt ok(String client) {
             return new Attempt(client, RESULT_OK, null, null, null);
         }
@@ -78,6 +90,10 @@ public final class ClientAttempts {
 
         public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason) {
             return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null);
+        }
+
+        public static Attempt noLiveManifest(String client) {
+            return new Attempt(client, RESULT_NO_LIVE_MANIFEST, null, null, null);
         }
 
         public static Attempt noRegularFormats(String client) {

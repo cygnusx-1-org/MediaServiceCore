@@ -127,6 +127,14 @@ public class YouTubeServiceManager implements ServiceManager {
         FormatInfoWrapper.switchNextFormat(true);
     }
 
+    /**
+     * The first client of the order is tried next, undoing a switch (see #switchNextClientNow)
+     */
+    @Override
+    public void resetClient() {
+        FormatInfoWrapper.resetClient();
+    }
+
     @Override
     public void switchNextSubsFormat() {
         FormatInfoWrapper.invalidateCache();

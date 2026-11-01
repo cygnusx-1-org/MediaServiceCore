@@ -55,7 +55,11 @@ class AppServiceCoreCached extends AppServiceCore {
 
     @Override
     public PlayerDataExtractor getPlayerDataExtractor(@Nullable AppClient client) {
-        return FetchStages.time("player JS", null, () -> getPlayerDataExtractorSync(client, getPlayerUrl()));
+        return FetchStages.time("player JS", null, () -> {
+            String playerUrl = FetchStages.time("app info", null, this::getPlayerUrl);
+
+            return getPlayerDataExtractorSync(client, playerUrl);
+        });
     }
 
     @Override
@@ -64,7 +68,11 @@ class AppServiceCoreCached extends AppServiceCore {
     }
 
     private PlayerDataExtractor getPlayerDataExtractorSync(@Nullable AppClient client, String playerUrl) {
+        FetchStages.Span lockWait = FetchStages.begin("lock wait");
+
         synchronized (mPlayerSync) {
+            lockWait.end(null);
+
             return firstValidExtractor(
                     client,
                     playerUrl,
@@ -164,10 +172,16 @@ class AppServiceCoreCached extends AppServiceCore {
                 continue;
             }
 
-            playerDataExtractor = super.getPlayerDataExtractor(client, url);
-            persistExtractor(client, playerDataExtractor);
+            FetchStages.Span load = FetchStages.begin("player JS load");
 
-            if (playerDataExtractor.validate()) {
+            try {
+                playerDataExtractor = super.getPlayerDataExtractor(client, url);
+                persistExtractor(client, playerDataExtractor);
+            } finally {
+                load.end(null);
+            }
+
+            if (FetchStages.time("player JS check", null, playerDataExtractor::validate)) {
                 switch (idx) {
                     case MAIN:
                         getData().setAppInfo(mAppInfo);

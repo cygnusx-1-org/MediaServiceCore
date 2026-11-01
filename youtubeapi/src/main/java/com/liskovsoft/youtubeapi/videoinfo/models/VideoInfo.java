@@ -300,6 +300,14 @@ public class VideoInfo {
         return getVideoDetails() != null && getVideoDetails().isLiveContent();
     }
 
+    /**
+     * A live stream with nothing the player plays it from: no HLS or DASH manifest and no formats, whatever its playability says
+     */
+    public boolean hasNoLiveMedia() {
+        return isLive() && getHlsManifestUrl() == null && getDashManifestUrl() == null && Helpers.isNullOrEmpty(getRegularFormats())
+                && Helpers.isNullOrEmpty(getAdaptiveFormats());
+    }
+
     public boolean hasSubtitles() {
         return mCaptionTracks != null;
     }

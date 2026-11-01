@@ -19,6 +19,7 @@ public interface ServiceManager {
     void warmUpPlayback(String videoId);
     void switchNextClient();
     void switchNextClientNow();
+    void resetClient();
     void switchNextSubsFormat();
     void reloadPlayerResponse(String videoId, String reloadPlaybackToken);
     /**

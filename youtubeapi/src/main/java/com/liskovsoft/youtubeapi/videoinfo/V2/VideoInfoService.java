@@ -131,9 +131,12 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private VideoInfo firstPlayable(String videoId, String clickTrackingParams) {
-        VideoInfo result = firstInfoWith(videoId, clickTrackingParams, info -> !info.isUnplayable());
+        // A live stream with nothing to play it from is skipped for the next client's, which may have it
+        VideoInfo result = firstInfoWith(videoId, clickTrackingParams, info -> !info.isUnplayable() && !info.hasNoLiveMedia());
 
-        return result != null ? result : firstInfoWith(videoId, clickTrackingParams, info -> info.getRegularFormats() != null);
+        // No client has it: its answer still is one, the player tries again later (see VideoLoaderController#processFormatInfo)
+        return result != null ? result : firstInfoWith(videoId, clickTrackingParams,
+                info -> info.getRegularFormats() != null || (!info.isUnplayable() && info.hasNoLiveMedia()));
     }
 
     private interface InfoTester {
@@ -164,7 +167,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
             Attempt attempt = toAttempt(type, result, accepted);
 
             ClientAttempts.record(videoId, attempt);
-            span.end(attempt.result);
+            span.end(attempt.describe());
 
             if (accepted) {
                 return result;
@@ -189,6 +192,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         if (result.isUnplayable()) {
             return Attempt.unplayable(client.name(), result.getPlayabilityStatusName(), result.getPlayabilityStatus());
+        }
+
+        if (result.hasNoLiveMedia()) {
+            return Attempt.noLiveManifest(client.name());
         }
 
         return Attempt.noRegularFormats(client.name());

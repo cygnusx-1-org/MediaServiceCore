@@ -115,7 +115,32 @@ internal object PoTokenGate {
                 && (videoId == null || videoId != mTvPotFailedVideoId)
     }
 
-    private fun isTvPotMissing() = mTvPoToken == null || TvPoTokenProvider.isPotExpired()
+    /**
+     * Or made again in the background (see refreshPoToken): the new one is taken
+     */
+    internal fun isTvPotMissing() =
+        mTvPoToken == null || TvPoTokenProvider.isPotExpired() || mTvPoToken !== TvPoTokenProvider.currentResult()
+
+    /**
+     * The TV poToken in use expires soon: it's made again in the background while it's still used (see refreshPoToken)
+     */
+    @JvmStatic
+    fun isPoTokenToRefresh(client: AppClient): Boolean {
+        return client.isTvPotRequired && !mTvPotRejected && WebPoTokenProvider.isPotSupported() && mTvPoToken != null
+                && TvPoTokenProvider.isPotExpiring()
+    }
+
+    /**
+     * The TV poToken that expires soon is made again, while it's still used: the fetch that would wait for it after it expired then
+     * doesn't. Takes the time of making one: not on the main thread.
+     *
+     * @param whenIdle runs the swap to the new one when no fetch runs
+     */
+    fun refreshPoToken(client: AppClient, whenIdle: (() -> Unit) -> Unit) {
+        if (isPoTokenToRefresh(client)) {
+            TvPoTokenProvider.refreshPoToken(whenIdle)
+        }
+    }
 
     /**
      * The SABR server rejected the client's poToken (attestation required): e.g. the WebView's BotGuard makes tokens it won't take.

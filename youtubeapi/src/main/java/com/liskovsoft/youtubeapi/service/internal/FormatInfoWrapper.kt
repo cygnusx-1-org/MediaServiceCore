@@ -56,6 +56,12 @@ internal object FormatInfoWrapper {
      */
     private val mPoTokenAhead = AtomicBoolean()
     private val mPlayerDataAhead = AtomicBoolean()
+    private val mPoTokenRefresh = AtomicBoolean()
+    /**
+     * After a fetch, the poToken that expires soon is made again this much later: its WebView runs on the main thread, so it's made
+     * once the video plays, not while it starts (see refreshPoTokenLater)
+     */
+    private const val REFRESH_DELAY_MS = 15_000L
 
     @JvmStatic
     fun getFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
@@ -73,6 +79,7 @@ internal object FormatInfoWrapper {
             fetch.end(null)
             FetchStages.close()
             ReloadPlaybackGate.reset(videoId)
+            refreshPoTokenLater()
         }
     }
 
@@ -94,6 +101,9 @@ internal object FormatInfoWrapper {
                 mIsWarmingUp = false
             }
         }
+
+        // E.g. one kept by a run before, about to expire
+        refreshPoTokenLater()
     }
 
     private fun warmUpLocked(videoId: String?) {
@@ -149,6 +159,38 @@ internal object FormatInfoWrapper {
         }
     }
 
+    /**
+     * The poToken of the client tried first that expires soon is made again in the background, while it's still used: the next fetch
+     * doesn't wait for one being made (see PoTokenGate#refreshPoToken)
+     */
+    private fun refreshPoTokenLater() {
+        // Called in the fetch's finally: nothing thrown here may replace its result
+        try {
+            val client = getVideoInfoService().nextClient
+
+            if (!PoTokenGate.isPoTokenToRefresh(client) || !mPoTokenRefresh.compareAndSet(false, true)) {
+                return
+            }
+
+            // The delay ends on a computation thread, which isn't for work that waits
+            RxHelper.runAsync({
+                RxHelper.runAsync {
+                    try {
+                        // Swapped not while a fetch runs: its request and its streams would have different ones, the living room id
+                        // taken from the new one (see PoTokenGate#getLivingRoomPoTokenId). A fetch doesn't wait for it being made.
+                        PoTokenGate.refreshPoToken(client) { swap -> synchronized(lock) { swap() } }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Can't make the poToken again: %s", e.message)
+                    } finally {
+                        mPoTokenRefresh.set(false)
+                    }
+                }
+            }, REFRESH_DELAY_MS)
+        } catch (e: Exception) {
+            Log.e(TAG, "Can't check the poToken: %s", e.message)
+        }
+    }
+
     private fun runWarmUp(name: String, warmUp: () -> Unit) {
         try {
             warmUp()
@@ -182,6 +224,11 @@ internal object FormatInfoWrapper {
     @JvmStatic
     fun resetFormat() {
         getVideoInfoService().resetInfoType()
+    }
+
+    @JvmStatic
+    fun resetClient() {
+        getVideoInfoService().resetClient()
     }
 
     @JvmStatic

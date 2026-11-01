@@ -25,6 +25,18 @@ public class ClientAttemptsTest {
         ClientAttempts.resetForTesting();
     }
 
+    /**
+     * Why a client couldn't play it is said with its result, not how the user is told
+     */
+    @Test
+    public void anUnplayableOneIsDescribedWithItsStatus() {
+        assertEquals("unplayable LOGIN_REQUIRED", Attempt.unplayable("TV", "LOGIN_REQUIRED", "Sign in to confirm you're not a bot").describe());
+        assertEquals("unplayable", Attempt.unplayable("TV", null, null).describe());
+        assertEquals("ok", Attempt.ok("TV").describe());
+        assertEquals("http_403", Attempt.http("TV", 403).describe());
+        assertEquals("no_live_manifest", Attempt.noLiveManifest("TV").describe());
+    }
+
     @Test
     public void keepsTheAttemptsInOrder() {
         ClientAttempts.record("video", Attempt.http("TV", 403));

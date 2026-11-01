@@ -23,10 +23,35 @@ internal object TvPoTokenProvider {
     private val TAG = TvPoTokenProvider::class.simpleName
     private val lock = Any()
     private const val FORCE_ATT_CHALLENGE = true
+    /**
+     * A token this close to expiring is made again in the background while it's still used (see refreshPoToken): a start then doesn't
+     * wait for one being made. At most half its life, for one that lives short.
+     */
+    private const val REFRESH_BEFORE_MS = 60 * 60 * 1_000L
+    /**
+     * A refresh that failed isn't tried again sooner (e.g. GenerateIT is down): each try runs BotGuard, on the main thread mostly
+     */
+    private const val REFRESH_RETRY_MS = 10 * 60 * 1_000L
+    @Volatile
+    private var refreshFailedMs: Long = -1
+    /**
+     * Of reset: a token being made again when it's reset isn't used
+     */
+    @Volatile
+    private var resets = 0
     private var generator: PoTokenGenerator? = null
+    /**
+     * Read without the lock too: a valid one is taken while the next one is made (see getPoToken)
+     */
+    @Volatile
     private var result: PoTokenResult? = null
     @Volatile
     private var expirationMs: Long = -1
+    /**
+     * When the token was made, -1 when that isn't known (one kept by a run before)
+     */
+    @Volatile
+    private var issuedMs: Long = -1
     /**
      * Of the attempts to make the poToken, the ones that ended, made or not: a call that waited for one takes its result rather than
      * making another (e.g. the fetch's, while the one started ahead of it runs)
@@ -46,10 +71,39 @@ internal object TvPoTokenProvider {
 
     fun isPotExpired(): Boolean = System.currentTimeMillis() > expirationMs
 
+    /**
+     * Valid, but soon not: to be made again (see refreshPoToken)
+     */
+    fun isPotExpiring(): Boolean {
+        val nowMs = System.currentTimeMillis()
+
+        return !isPotExpired() && nowMs >= refreshAtMs(issuedMs, expirationMs)
+                && (refreshFailedMs < 0 || nowMs - refreshFailedMs >= REFRESH_RETRY_MS)
+    }
+
+    /**
+     * When a token is made again, in the time of System#currentTimeMillis
+     *
+     * @param issuedMs when it was made, -1 when that isn't known
+     */
+    internal fun refreshAtMs(issuedMs: Long, expirationMs: Long): Long {
+        val lifeMs = if (issuedMs >= 0) expirationMs - issuedMs else Long.MAX_VALUE
+
+        return expirationMs - minOf(REFRESH_BEFORE_MS, lifeMs / 2)
+    }
+
+    /**
+     * The one made, while it's valid. Doesn't wait for one being made.
+     */
+    fun currentResult(): PoTokenResult? = validResult()
+
     fun getPoToken(): PoTokenResult? {
         if (!WebPoTokenProvider.isPotSupported()) {
             return null
         }
+
+        // Not waiting for the next one made in the background (see refreshPoToken)
+        validResult()?.let { return it }
 
         val endedBefore = endedAttempts
 
@@ -65,13 +119,58 @@ internal object TvPoTokenProvider {
         }
     }
 
+    /**
+     * Made again while the one made is still used: if that fails, it's used till it expires. One that expired is made by the next
+     * fetch (see getPoToken). The lock isn't held while it's made: BotGuard needs the main thread, and that may wait for the lock
+     * (see reset, after a player error).
+     *
+     * @param whenIdle runs the swap to the new one when no fetch runs: a fetch has the same one in all it sends
+     */
+    fun refreshPoToken(whenIdle: (() -> Unit) -> Unit) {
+        if (!WebPoTokenProvider.isPotSupported() || !isPotExpiring()) {
+            return
+        }
+
+        val resetsBefore = resets
+
+        try {
+            val made = makeNext {}
+
+            if (made == null) {
+                refreshFailedMs = System.currentTimeMillis()
+                return
+            }
+
+            var unused: PoTokenGenerator = made.generator
+
+            whenIdle {
+                synchronized(lock) {
+                    if (resets == resetsBefore) {
+                        generator?.let { unused = it }
+                        use(made)
+                    }
+                }
+            }
+
+            // Not with the lock: it waits for the main thread
+            if (unused !== generator) {
+                runOnMainThreadSync(3) { unused.close() }
+            }
+        } catch (e: Exception) {
+            refreshFailedMs = System.currentTimeMillis()
+            Log.e(TAG, "Could not refresh TV poToken", e)
+        }
+    }
+
     /** Clears all state, including the generator and cached tokens. The next call regenerates everything. */
     fun reset() {
         synchronized(lock) {
             mayTakeKept = false
+            resets++
             result = null
             livingRoomPoTokenId = null
             expirationMs = -1
+            issuedMs = -1
             release()
         }
     }
@@ -120,6 +219,7 @@ internal object TvPoTokenProvider {
         }
 
         expirationMs = kept.expirationMs
+        issuedMs = -1
         livingRoomPoTokenId = kept.livingRoomId
         result = PoTokenResult("", kept.visitorData, kept.poToken, kept.poToken)
 
@@ -127,6 +227,15 @@ internal object TvPoTokenProvider {
     }
 
     private fun makePoTokenSync(): PoTokenResult? {
+        return makeNext { reset() }?.let { use(it) }
+    }
+
+    private class Made(val generator: PoTokenGenerator, val result: PoTokenResult, val livingRoomId: String)
+
+    /**
+     * @param beforeGenerator what's made before goes before the new generator starts, if it should
+     */
+    private fun makeNext(beforeGenerator: () -> Unit): Made? {
         // Fetched while BotGuard gets ready: the request key is used last, by GenerateIT, and the /tv page by the token itself
         val tvConfig = runAsync { AppService.instance().tvConfig }
         // The id and the visitor data should come from the same /tv page
@@ -141,7 +250,7 @@ internal object TvPoTokenProvider {
             Log.w(TAG, "tv_config doesn't contain the BotGuard challenge. Using /att/get")
         }
 
-        reset()
+        beforeGenerator()
 
         val newGenerator = TvPoTokenWebView4.newPoTokenGenerator(AppService.instance().context, requestKey, challenge, AppClient.TV)
         val tvAppInfo = try {
@@ -158,18 +267,28 @@ internal object TvPoTokenProvider {
             return null
         }
 
-        val sessionPot = newGenerator.generatePoToken(livingRoomId)
+        val sessionPot = try {
+            newGenerator.generatePoToken(livingRoomId)
+        } catch (e: Exception) {
+            runOnMainThreadSync(3) { newGenerator.close() }
+            throw e
+        }
 
         // Log.d(TAG, "TV poToken: livingRoomId=$livingRoomId, pot=$sessionPot, visitor_data=$visitorData")
 
-        generator = newGenerator
-        expirationMs = newGenerator.expirationMs
-        livingRoomPoTokenId = livingRoomId
         // Same session token is used both for the player request and the streaming
-        result = PoTokenResult("", visitorData, sessionPot, sessionPot)
-        KeptTokens.storeTvPoToken(KeptTokens.TvPoToken(sessionPot, visitorData, livingRoomId, expirationMs))
+        return Made(newGenerator, PoTokenResult("", visitorData, sessionPot, sessionPot), livingRoomId)
+    }
 
-        return result
+    private fun use(made: Made): PoTokenResult {
+        generator = made.generator
+        issuedMs = System.currentTimeMillis()
+        expirationMs = made.generator.expirationMs
+        livingRoomPoTokenId = made.livingRoomId
+        result = made.result
+        KeptTokens.storeTvPoToken(KeptTokens.TvPoToken(made.result.playerRequestPoToken, made.result.visitorData, made.livingRoomId, expirationMs))
+
+        return made.result
     }
 
     private fun <T> runAsync(fetch: () -> T): FutureTask<T> = FutureTask { fetch() }.also { RxHelper.runAsync(it) }
