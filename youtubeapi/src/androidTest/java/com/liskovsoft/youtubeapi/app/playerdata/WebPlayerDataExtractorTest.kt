@@ -55,12 +55,12 @@ class WebPlayerDataExtractorTest {
 
         mAppServiceInt.getPlayerDataExtractor(playerUrl).validate()
     }
-    
+
     @Test
     fun testNSigPlayerVersions() {
         getTestingUrls().forEach { testNSigPlayerUrl(it) }
     }
-    
+
     @Test
     fun testSigPlayerVersions() {
         getTestingUrls().forEach { testSigPlayerUrl(it) }

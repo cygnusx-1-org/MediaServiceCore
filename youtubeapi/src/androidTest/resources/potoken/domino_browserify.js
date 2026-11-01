@@ -2284,8 +2284,8 @@ function DocumentFragment(doc) {
 
 DocumentFragment.prototype = Object.create(ContainerNode.prototype, {
   nodeName: { value: '#document-fragment' },
-  nodeValue: { 
-    get: function() { 
+  nodeValue: {
+    get: function() {
       return null;
     },
     set: function() {}
@@ -18468,7 +18468,7 @@ function PropertyValuePart(text, line, col){
             case "vmin":
                 this.type = "length";
                 break;
-                
+
             case "fr":
                 this.type = "grid";
                 break;

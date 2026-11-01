@@ -83,7 +83,7 @@ class AppServiceCore {
 
         return clientData;
     }
-    
+
     private static String getLegacyClientUrl(String clientUrl) {
         if (clientUrl == null) {
             return null;
