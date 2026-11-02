@@ -31,6 +31,8 @@ public interface MediaGroup {
     int TYPE_BLOCKED_CHANNELS = 22;
     int TYPE_BLOCKED_AI_CHANNELS = 23;
     int TYPE_WATCH_LATER = 24;
+    // The videos hidden with the app's Hide, kept on the device (Electric Eel's Unhide section). Not YouTube's.
+    int TYPE_HIDDEN_VIDEOS = 25;
     int TOPIC_NONE = 0;
     int TOPIC_MUSIC = 1;
     int TOPIC_GAMING = 2;
