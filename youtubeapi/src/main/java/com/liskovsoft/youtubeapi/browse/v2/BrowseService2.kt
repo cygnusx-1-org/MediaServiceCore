@@ -26,6 +26,8 @@ import kotlinx.coroutines.runBlocking
 private const val PLAYLIST_MAX_PAGES = 500 // 15 videos a page on TV. A playlist holds 5000 at most.
 private const val CHANNEL_ID_PREFIX = "UC"
 private const val SHORTS_PLAYLIST_PREFIX = "UUSH" // the uploads playlist of a channel is "UU", its shorts "UUSH"
+private const val VIDEOS_PLAYLIST_PREFIX = "UULF" // its videos, without the shorts and the live streams
+private const val LIVE_PLAYLIST_PREFIX = "UULV" // its live streams: on air, upcoming and ended
 // The Subscriptions read for some channels (see getSubscriptions). About 15 videos a page on TV, 0.4 s each.
 private const val CHANNEL_ITEMS_MAX_AGE_S = 21 * 24 * 60 * 60L
 private const val CHANNEL_ITEMS_PARTS = 4 // of time, read at once
@@ -578,6 +580,49 @@ internal open class BrowseService2 {
         RetrofitHelper.get(live, auth)?.let { return LiveMediaGroup(it, options) }
 
         return null
+    }
+
+    /**
+     * A page of the channel's videos (15 on TV), newest first, without its shorts and live streams.
+     * Unlike its page (see [getChannelAsGrid]), which the TV client opens on its Home whatever tab is asked for.
+     * @return empty when the channel has none, null when they can't be read
+     */
+    fun getChannelVideos(channelId: String): List<ItemWrapper?>? {
+        return getChannelPlaylistTV(channelId, VIDEOS_PLAYLIST_PREFIX)
+    }
+
+    /**
+     * A page of the channel's live streams (15 on TV), newest first: on air, upcoming and ended
+     * @return empty when the channel has none, null when they can't be read
+     */
+    fun getChannelLiveStreams(channelId: String): List<ItemWrapper?>? {
+        return getChannelPlaylistTV(channelId, LIVE_PLAYLIST_PREFIX)
+    }
+
+    /**
+     * The first page of one of the channel's playlists: the prefix + the channel id without "UC"
+     * @return empty when the channel doesn't have it (YouTube doesn't know the playlist), null when it can't be read
+     */
+    private fun getChannelPlaylistTV(channelId: String, prefix: String): List<ItemWrapper?>? {
+        if (!channelId.startsWith(CHANNEL_ID_PREFIX)) {
+            return null
+        }
+
+        val options = MediaGroupOptions.create(MediaGroup.TYPE_CHANNEL_UPLOADS)
+        val playlistId = "VL" + prefix + channelId.removePrefix(CHANNEL_ID_PREFIX)
+        val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelQuery(options.clientTV, playlistId))
+
+        val response = try {
+            RetrofitHelper.getAuthResponse(browseResult, true)
+        } catch (e: IllegalStateException) { // network error
+            return null
+        }
+
+        if (response?.code() == 404) {
+            return emptyList()
+        }
+
+        return response?.body()?.let { it.getItems().orEmpty() }
     }
 
     fun getChannelAsGridOld(channelId: String?): MediaGroup? {

@@ -11,7 +11,10 @@ public interface ContentService {
     List<MediaGroup> getSearch(String searchText, int options);
     List<String> getSearchTags(String searchText);
     MediaGroup getSubscriptions();
-    MediaGroup getRssFeed(String... channelIds);
+    /**
+     * The newest videos and live streams of the channels, newest first (e.g. of a channel group)
+     */
+    MediaGroup getChannelFeed(String... channelIds);
     /**
      * NOTE: recommended is a part of Home
      */
@@ -55,7 +58,10 @@ public interface ContentService {
      */
     Observable<List<String>> getChannelNamesObserve(String query);
     Observable<MediaGroup> getSubscriptionsObserve();
-    Observable<MediaGroup> getRssFeedObserve(String... channelIds);
+    /**
+     * See {@link #getChannelFeed(String...)}
+     */
+    Observable<MediaGroup> getChannelFeedObserve(String... channelIds);
     /**
      * NOTE: recommended is a part of Home
      */

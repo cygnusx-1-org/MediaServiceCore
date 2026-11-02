@@ -12,12 +12,12 @@ import com.liskovsoft.youtubeapi.actions.ActionsService;
 import com.liskovsoft.youtubeapi.actions.ActionsServiceWrapper;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseService2;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseService2Wrapper;
+import com.liskovsoft.youtubeapi.channelfeed.ChannelFeedService;
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchContinuationMediaGroup;
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchSectionMediaGroup;
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SuggestionsGroup;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextService;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextServiceWrapper;
-import com.liskovsoft.youtubeapi.rss.RssService;
 import com.liskovsoft.youtubeapi.search.v1.SearchServiceWrapper;
 import com.liskovsoft.youtubeapi.search.v2.SearchService2;
 import com.liskovsoft.youtubeapi.search.v2.SearchService2Wrapper;
@@ -127,19 +127,19 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
-    public MediaGroup getRssFeed(String... channelIds) {
+    public MediaGroup getChannelFeed(String... channelIds) {
         if (channelIds == null) {
             return null;
         }
 
         checkSigned();
 
-        return RssService.getFeed(channelIds);
+        return ChannelFeedService.getFeed(Arrays.asList(channelIds));
     }
 
     @Override
-    public Observable<MediaGroup> getRssFeedObserve(String... channelIds) {
-        return RxHelper.fromCallable(() -> getRssFeed(channelIds));
+    public Observable<MediaGroup> getChannelFeedObserve(String... channelIds) {
+        return RxHelper.fromCallable(() -> getChannelFeed(channelIds));
     }
 
     @Override

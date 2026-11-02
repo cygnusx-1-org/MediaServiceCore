@@ -1,0 +1,2598 @@
+{
+ "responseContext": {
+  "responseId": "IhMIxcCo8KHolwMVXEhMCB04ghBv"
+ },
+ "contents": {
+  "tvBrowseRenderer": {
+   "content": {
+    "tvSurfaceContentRenderer": {
+     "content": {
+      "twoColumnRenderer": {
+       "leftColumn": {
+        "entityMetadataRenderer": {
+         "title": {
+          "simpleText": "Videos"
+         },
+         "buttons": [
+          {
+           "buttonRenderer": {
+            "isDisabled": false,
+            "text": {
+             "simpleText": "Repeat"
+            },
+            "icon": {
+             "iconType": "LOOP"
+            },
+            "navigationEndpoint": {
+             "watchEndpoint": {
+              "videoId": "2reQut8WNGc",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "params": "GAM%3D"
+             }
+            }
+           }
+          }
+         ],
+         "buttonLayout": "ENTITY_METADATA_BUTTON_LAYOUT_HORIZONTAL",
+         "bylines": [
+          {
+           "lineRenderer": {
+            "items": [
+             {
+              "lineItemRenderer": {
+               "badge": {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "PRIVACY_UNLISTED"
+                 },
+                 "style": "BADGE_STYLE_TYPE_VERIFIED"
+                }
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "Marques Brownlee"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "•"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "runs": [
+                 {
+                  "text": "1,729"
+                 },
+                 {
+                  "text": " videos"
+                 }
+                ]
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "•"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "758K views"
+               }
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "rightColumn": {
+        "playlistVideoListRenderer": {
+         "contents": [
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/2reQut8WNGc/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "10:54"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Macbook PROLED XDR Impressions: They Said They Wouldn't!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "10M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "3 days ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "2reQut8WNGc",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+             }
+            },
+            "contentId": "2reQut8WNGc",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "2reQut8WNGc",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/2reQut8WNGc/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Macbook PROLED XDR Impressions: They Said They Wouldn't!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "2reQut8WNGc",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/ESABTN4VtrA/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "29:05"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "iPhone Duo Review: First Generation Fun!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "13M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "11 days ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "ESABTN4VtrA",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "ESABTN4VtrA",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "ESABTN4VtrA",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/ESABTN4VtrA/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "iPhone Duo Review: First Generation Fun!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "ESABTN4VtrA",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/scwlR0QHGOk/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "22:45"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "The NEW Tesla Roadster: My Honest Reaction"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee and Auto Focus"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "12M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "2 weeks ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "scwlR0QHGOk",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "scwlR0QHGOk",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "scwlR0QHGOk",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/scwlR0QHGOk/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "The NEW Tesla Roadster: My Honest Reaction"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee and Auto Focus • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "scwlR0QHGOk",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/QVv3mQzlrN0/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "11:47"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Apple Homeview Impressions: Not Convinced!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "11M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "2 weeks ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "QVv3mQzlrN0",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "QVv3mQzlrN0",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "QVv3mQzlrN0",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/QVv3mQzlrN0/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Apple Homeview Impressions: Not Convinced!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "QVv3mQzlrN0",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/_0G4OG39XjI/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "14:13"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "WTF is a Googlebook?"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "9M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "3 weeks ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "_0G4OG39XjI",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "_0G4OG39XjI",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "_0G4OG39XjI",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/_0G4OG39XjI/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "WTF is a Googlebook?"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "_0G4OG39XjI",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/3iRUwVzRDZQ/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "10:47"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Xiaomi 18 Fold: How Does This Happen?"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "12M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "4 weeks ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "3iRUwVzRDZQ",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+             }
+            },
+            "contentId": "3iRUwVzRDZQ",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "3iRUwVzRDZQ",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/3iRUwVzRDZQ/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Xiaomi 18 Fold: How Does This Happen?"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "3iRUwVzRDZQ",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/e1q-TuHdc4Y/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "12:23"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Dear YouTube!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "5.8M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "e1q-TuHdc4Y",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+             }
+            },
+            "contentId": "e1q-TuHdc4Y",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "e1q-TuHdc4Y",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/e1q-TuHdc4Y/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Dear YouTube!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "e1q-TuHdc4Y",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/rayrrXot17M/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "14:20"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Nothing Headphone 1 Pro: They Copied the Wrong Thing!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "6.2M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "rayrrXot17M",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "rayrrXot17M",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "rayrrXot17M",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/rayrrXot17M/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Nothing Headphone 1 Pro: They Copied the Wrong Thing!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "rayrrXot17M",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/DkUuOr21v4s/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "11:56"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Xiaomi 18 Pro Max: They've Done It Again!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "14M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "DkUuOr21v4s",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "DkUuOr21v4s",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "DkUuOr21v4s",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/DkUuOr21v4s/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Xiaomi 18 Pro Max: They've Done It Again!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "DkUuOr21v4s",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/pOX1l1edBME/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "15:06"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "The Apple Watch Has a Problem"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "5.5M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "pOX1l1edBME",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "pOX1l1edBME",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "pOX1l1edBME",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/pOX1l1edBME/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "The Apple Watch Has a Problem"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "pOX1l1edBME",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/ohqxP8EEumo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "16:36"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "iPhone 18 Pro Review: All About that Chip"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "12M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "ohqxP8EEumo",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "ohqxP8EEumo",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "ohqxP8EEumo",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/ohqxP8EEumo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "iPhone 18 Pro Review: All About that Chip"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "ohqxP8EEumo",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/6D__H_DO2Xk/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "10:37"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "iPhone Duo: What We Missed!"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "12M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "6D__H_DO2Xk",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "6D__H_DO2Xk",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "6D__H_DO2Xk",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/6D__H_DO2Xk/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "iPhone Duo: What We Missed!"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "6D__H_DO2Xk",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/Od6M0AXpcxQ/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "17:14"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "iPhone 18 Pro/Duo Impressions: Mogged"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "28M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "Od6M0AXpcxQ",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "Od6M0AXpcxQ",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "Od6M0AXpcxQ",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/Od6M0AXpcxQ/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "iPhone 18 Pro/Duo Impressions: Mogged"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "Od6M0AXpcxQ",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/ANmTVYkEtLw/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "12:28"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Google Pixel 11/Pro Review: Poker Face"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "5.2M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "ANmTVYkEtLw",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "ANmTVYkEtLw",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "ANmTVYkEtLw",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/ANmTVYkEtLw/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Google Pixel 11/Pro Review: Poker Face"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "ANmTVYkEtLw",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/fo-uubnajWM/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "11:06"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "I Made a Bet with Tesla"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Marques Brownlee"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "badge": {
+                     "metadataBadgeRenderer": {
+                      "style": "BADGE_STYLE_TYPE_SIMPLE",
+                      "label": "4K"
+                     }
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "5.4M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1 month ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "fo-uubnajWM",
+              "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "fo-uubnajWM",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "fo-uubnajWM",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/fo-uubnajWM/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "I Made a Bet with Tesla"
+              },
+              "subtitle": {
+               "simpleText": "Marques Brownlee • @mkbhd"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "fo-uubnajWM",
+                     "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCBJycsmduvYEL83R_U4JriQ"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          }
+         ],
+         "playlistId": "UULFBJycsmduvYEL83R_U4JriQ",
+         "isEditable": false,
+         "continuations": [
+          {
+           "nextContinuationData": {
+            "continuation": "4qmFsgJUEhxWTFVVTEZCSnljc21kdXZZRUw4M1JfVTRKcmlRGjRDQUY2SGxCVU9rTkJPR2xGUkVGM1RucG9SbEpVWkVWUFZVcEVUWHBDUTA1VVRRJTNEJTNE"
+           }
+          }
+         ],
+         "targetId": "UULFBJycsmduvYEL83R_U4JriQ"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

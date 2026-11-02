@@ -1,0 +1,2448 @@
+{
+ "responseContext": {
+  "responseId": "IhMI95S08KHolwMVunlMCB11FRUK"
+ },
+ "contents": {
+  "tvBrowseRenderer": {
+   "content": {
+    "tvSurfaceContentRenderer": {
+     "content": {
+      "twoColumnRenderer": {
+       "leftColumn": {
+        "entityMetadataRenderer": {
+         "title": {
+          "simpleText": "Videos"
+         },
+         "buttons": [
+          {
+           "buttonRenderer": {
+            "isDisabled": false,
+            "text": {
+             "simpleText": "Repeat"
+            },
+            "icon": {
+             "iconType": "LOOP"
+            },
+            "navigationEndpoint": {
+             "watchEndpoint": {
+              "videoId": "gupSBX7S9_k",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "params": "GAM%3D"
+             }
+            }
+           }
+          }
+         ],
+         "buttonLayout": "ENTITY_METADATA_BUTTON_LAYOUT_HORIZONTAL",
+         "bylines": [
+          {
+           "lineRenderer": {
+            "items": [
+             {
+              "lineItemRenderer": {
+               "badge": {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "PRIVACY_UNLISTED"
+                 },
+                 "style": "BADGE_STYLE_TYPE_VERIFIED"
+                }
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "Saturday Night Live"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "•"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "runs": [
+                 {
+                  "text": "9,516"
+                 },
+                 {
+                  "text": " videos"
+                 }
+                ]
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "•"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "199K views"
+               }
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "rightColumn": {
+        "playlistVideoListRenderer": {
+         "contents": [
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/gupSBX7S9_k/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "5:18"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "The Inventor's Wife - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1.1M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "20 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "gupSBX7S9_k",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "gupSBX7S9_k",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "gupSBX7S9_k",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/gupSBX7S9_k/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "The Inventor's Wife - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "gupSBX7S9_k",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/AjI9ViInwPo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "3:26"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Gracie Abrams: Here You Come, There You Go (Live) - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "179K views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "20 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "AjI9ViInwPo",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "AjI9ViInwPo",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "AjI9ViInwPo",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/AjI9ViInwPo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Gracie Abrams: Here You Come, There You Go (Live) - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "AjI9ViInwPo",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/AKWh8D8bSR0/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "4:32"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Plates - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "661K views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "AKWh8D8bSR0",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "AKWh8D8bSR0",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "AKWh8D8bSR0",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/AKWh8D8bSR0/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Plates - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "AKWh8D8bSR0",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/Zl2IRCXSYyo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "3:36"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Paw Patrol: Special Victims Unit - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1.3M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "Zl2IRCXSYyo",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "Zl2IRCXSYyo",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "Zl2IRCXSYyo",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/Zl2IRCXSYyo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Paw Patrol: Special Victims Unit - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "Zl2IRCXSYyo",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/-FWFoEgSPs8/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "4:10"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Weekend Update: Drunk Uncle on the Milwaukee Brewers' World Series Win - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1.1M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "-FWFoEgSPs8",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "-FWFoEgSPs8",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "-FWFoEgSPs8",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/-FWFoEgSPs8/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Weekend Update: Drunk Uncle on the Milwaukee Brewers' World Series Win - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "-FWFoEgSPs8",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/-2wEs1EQaI4/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "2:51"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Weekend Update: Pennywise the Clown on Gen Z Wellness Parties - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "676K views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "-2wEs1EQaI4",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "-2wEs1EQaI4",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "-2wEs1EQaI4",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/-2wEs1EQaI4/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Weekend Update: Pennywise the Clown on Gen Z Wellness Parties - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "-2wEs1EQaI4",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/FjOMK0_nZ3o/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "3:26"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Weekend Update: Scotland Opens Epstein & Prince Andrew Investigation, NYC Bans Horse-Drawn Carriages"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "FjOMK0_nZ3o",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "FjOMK0_nZ3o",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "FjOMK0_nZ3o",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/FjOMK0_nZ3o/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Weekend Update: Scotland Opens Epstein & Prince Andrew Investigation, NYC Bans Horse-Drawn Carriages"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "FjOMK0_nZ3o",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/DkPdyivhrfo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "4:15"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Weekend Update: Trump Obsesses Over Men's Asses & Ramps Up Attacks on Abdul El-Sayed - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1.9M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "DkPdyivhrfo",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "DkPdyivhrfo",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "DkPdyivhrfo",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/DkPdyivhrfo/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Weekend Update: Trump Obsesses Over Men's Asses & Ramps Up Attacks on Abdul El-Sayed - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "DkPdyivhrfo",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/5gMdcdJ3odQ/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "4:06"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Gracie Abrams: Hit the Wall (Live) - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "201K views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "5gMdcdJ3odQ",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "5gMdcdJ3odQ",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "5gMdcdJ3odQ",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/5gMdcdJ3odQ/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Gracie Abrams: Hit the Wall (Live) - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "5gMdcdJ3odQ",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/mqqX9i-q3qs/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "5:39"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Telenovela: El Corazón Que No Siente - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "mqqX9i-q3qs",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+             }
+            },
+            "contentId": "mqqX9i-q3qs",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "mqqX9i-q3qs",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/mqqX9i-q3qs/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Telenovela: El Corazón Que No Siente - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "mqqX9i-q3qs",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/KksrucAkrIw/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "4:28"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Uninterested Woman Game Show - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "724K views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "21 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "KksrucAkrIw",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "KksrucAkrIw",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "KksrucAkrIw",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/KksrucAkrIw/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Uninterested Woman Game Show - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "KksrucAkrIw",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/QFR2QTNf2rA/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "2:37"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "New Airline Class - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1.3M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "22 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "QFR2QTNf2rA",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+             }
+            },
+            "contentId": "QFR2QTNf2rA",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "QFR2QTNf2rA",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/QFR2QTNf2rA/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "New Airline Class - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "QFR2QTNf2rA",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/v2zdpuLkW1Y/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "4:44"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Queen Mary Ghosts - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "598K views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "22 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "v2zdpuLkW1Y",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "v2zdpuLkW1Y",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "v2zdpuLkW1Y",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/v2zdpuLkW1Y/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Queen Mary Ghosts - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "v2zdpuLkW1Y",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/-kjW-tcky-E/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "3:56"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Inde Navarrette Monologue - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "1.5M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "22 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "-kjW-tcky-E",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "-kjW-tcky-E",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "-kjW-tcky-E",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/-kjW-tcky-E/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Inde Navarrette Monologue - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "-kjW-tcky-E",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/O6VZaBM2Zr4/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "6:41"
+                 },
+                 "style": "DEFAULT"
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Scary Halloween Cold Open (ft. David S. Pumpkins) - SNL"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Saturday Night Live"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "3M views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "22 hours ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "O6VZaBM2Zr4",
+              "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "O6VZaBM2Zr4",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "O6VZaBM2Zr4",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/O6VZaBM2Zr4/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Scary Halloween Cold Open (ft. David S. Pumpkins) - SNL"
+              },
+              "subtitle": {
+               "simpleText": "Saturday Night Live • @SaturdayNightLive"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "O6VZaBM2Zr4",
+                     "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCqFzWxSCi39LnW1JKFR3efg"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          }
+         ],
+         "playlistId": "UULFqFzWxSCi39LnW1JKFR3efg",
+         "isEditable": false,
+         "continuations": [
+          {
+           "nextContinuationData": {
+            "continuation": "4qmFsgJUEhxWTFVVTEZxRnpXeFNDaTM5TG5XMUpLRlIzZWZnGjRDQUY2SGxCVU9rTkJPR2xGUlU1Q1VsUlNRMDlGVlhkUmFrSkhUa1ZGTWs0d1JRJTNEJTNE"
+           }
+          }
+         ],
+         "targetId": "UULFqFzWxSCi39LnW1JKFR3efg"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,2558 @@
+{
+ "responseContext": {
+  "responseId": "IhMI0oGJ8aHolwMVTn1MCB3Oqw2H"
+ },
+ "contents": {
+  "tvBrowseRenderer": {
+   "content": {
+    "tvSurfaceContentRenderer": {
+     "content": {
+      "twoColumnRenderer": {
+       "leftColumn": {
+        "entityMetadataRenderer": {
+         "title": {
+          "simpleText": "Live streams"
+         },
+         "buttons": [
+          {
+           "buttonRenderer": {
+            "isDisabled": false,
+            "text": {
+             "simpleText": "Repeat"
+            },
+            "icon": {
+             "iconType": "LOOP"
+            },
+            "navigationEndpoint": {
+             "watchEndpoint": {
+              "videoId": "SzXRVyrazYs",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "params": "GAM%3D"
+             }
+            }
+           }
+          }
+         ],
+         "buttonLayout": "ENTITY_METADATA_BUTTON_LAYOUT_HORIZONTAL",
+         "bylines": [
+          {
+           "lineRenderer": {
+            "items": [
+             {
+              "lineItemRenderer": {
+               "badge": {
+                "metadataBadgeRenderer": {
+                 "icon": {
+                  "iconType": "PRIVACY_UNLISTED"
+                 },
+                 "style": "BADGE_STYLE_TYPE_VERIFIED"
+                }
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "Lofi Girl"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "•"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "runs": [
+                 {
+                  "text": "27"
+                 },
+                 {
+                  "text": " videos"
+                 }
+                ]
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "•"
+               }
+              }
+             },
+             {
+              "lineItemRenderer": {
+               "text": {
+                "simpleText": "33 views"
+               }
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       },
+       "rightColumn": {
+        "playlistVideoListRenderer": {
+         "contents": [
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/SzXRVyrazYs/sddefault.jpg?v=6ae372b4",
+                 "width": 640,
+                 "height": 480
+                }
+               ],
+               "sampledThumbnailColor": {
+                "red": 76,
+                "green": 76,
+                "blue": 76
+               },
+               "darkColorPalette": {
+                "section2Color": 3355443,
+                "iconInactiveColor": 9211020,
+                "iconDisabledColor": 5855577
+               },
+               "vibrantColorPalette": {
+                "iconInactiveColor": 10066329
+               }
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "STATION"
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               },
+               {
+                "thumbnailOverlayStackingEffectRenderer": {
+                 "upperStackColor": 4284045657,
+                 "lowerStackColor": 4287401100
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "24/7 deep sleep music 🌌 calm ambient to sleep & dream to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "532"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "SzXRVyrazYs",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "SzXRVyrazYs",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "SzXRVyrazYs",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/SzXRVyrazYs/sddefault.jpg?v=6ae372b4",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "24/7 deep sleep music 🌌 calm ambient to sleep & dream to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "SzXRVyrazYs",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/0sfDth4lMLc/sddefault.jpg?v=6ad771e2",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "24/7 halloween ambience 🎃 spooky lofi to get chills to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "1.8K"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "0sfDth4lMLc",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "0sfDth4lMLc",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "0sfDth4lMLc",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/0sfDth4lMLc/sddefault.jpg?v=6ad771e2",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "24/7 halloween ambience 🎃 spooky lofi to get chills to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "0sfDth4lMLc",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/3PFJ9SETS4M/sddefault.jpg?v=6ace2c85",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "lofi house radio 🌅  lounge music to vibe/chill to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "500"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "3PFJ9SETS4M",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "3PFJ9SETS4M",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "3PFJ9SETS4M",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/3PFJ9SETS4M/sddefault.jpg?v=6ace2c85",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "lofi house radio 🌅  lounge music to vibe/chill to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "3PFJ9SETS4M",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/x_g72BLelDU/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              }
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "lofi hip hop radio 📚 beats to relax/study to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "No views"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "•"
+                    }
+                   }
+                  },
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "simpleText": "2 months ago"
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "x_g72BLelDU",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "x_g72BLelDU",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "x_g72BLelDU",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/x_g72BLelDU/sddefault.jpg",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "lofi hip hop radio 📚 beats to relax/study to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "x_g72BLelDU",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/rFZHOHl-L8A/sddefault.jpg?v=6ad62bed",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "lofi hip hop radio 📚 beats to relax/study to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "9.4K"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "rFZHOHl-L8A",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "rFZHOHl-L8A",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "rFZHOHl-L8A",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/rFZHOHl-L8A/sddefault.jpg?v=6ad62bed",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "lofi hip hop radio 📚 beats to relax/study to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "rFZHOHl-L8A",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/0muHFBSiybw/sddefault.jpg?v=6ad62ea0",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "summer lofi radio ☀️ music to put you in a better mood"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "137"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "0muHFBSiybw",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "0muHFBSiybw",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "0muHFBSiybw",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/0muHFBSiybw/sddefault.jpg?v=6ad62ea0",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "summer lofi radio ☀️ music to put you in a better mood"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "0muHFBSiybw",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB0gcJCSsMAYcqIYzv"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/VAlMDl00mYY/sddefault.jpg?v=6ad62e47",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "sleep lofi radio 🌌 relaxing music to sleep/dream to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "781"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "VAlMDl00mYY",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "VAlMDl00mYY",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "VAlMDl00mYY",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/VAlMDl00mYY/sddefault.jpg?v=6ad62e47",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "sleep lofi radio 🌌 relaxing music to sleep/dream to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "VAlMDl00mYY",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/GSfT7H87zq4/sddefault.jpg?v=6a2d018f",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "synth ambient radio 🌌 deep space music to sleep to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "162"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "GSfT7H87zq4",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "GSfT7H87zq4",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "GSfT7H87zq4",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/GSfT7H87zq4/sddefault.jpg?v=6a2d018f",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "synth ambient radio 🌌 deep space music to sleep to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "GSfT7H87zq4",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/qGohtGC5Rtk/sddefault.jpg?v=6ad62ea4",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "Study With Me 📚 Pomodoro"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "245"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "qGohtGC5Rtk",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "qGohtGC5Rtk",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "qGohtGC5Rtk",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/qGohtGC5Rtk/sddefault.jpg?v=6ad62ea4",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "Study With Me 📚 Pomodoro"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "qGohtGC5Rtk",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/CwPCy1GLS38/sddefault.jpg?v=6ad62d0f",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "sad lofi radio ☔ beats for rainy days"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "126"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "CwPCy1GLS38",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "CwPCy1GLS38",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "CwPCy1GLS38",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/CwPCy1GLS38/sddefault.jpg?v=6ad62d0f",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "sad lofi radio ☔ beats for rainy days"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "CwPCy1GLS38",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/1Tl2FtV06qo/sddefault.jpg?v=6ad62b3e",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "asian lofi radio ⛩️ beats to relax/study to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "429"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "1Tl2FtV06qo",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "1Tl2FtV06qo",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "1Tl2FtV06qo",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/1Tl2FtV06qo/sddefault.jpg?v=6ad62b3e",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "asian lofi radio ⛩️ beats to relax/study to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "1Tl2FtV06qo",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/E2vONfzoyRI/sddefault.jpg?v=6ad62c7c",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "jazz lofi radio 🎷 beats to chill/study to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "879"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "E2vONfzoyRI",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "E2vONfzoyRI",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "E2vONfzoyRI",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/E2vONfzoyRI/sddefault.jpg?v=6ad62c7c",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "jazz lofi radio 🎷 beats to chill/study to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "E2vONfzoyRI",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/JD-kMIpDfnY/sddefault.jpg?v=6ad62daa",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "lofi hip hop radio 💤 beats to sleep/chill to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "1.9K"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "JD-kMIpDfnY",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "JD-kMIpDfnY",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "JD-kMIpDfnY",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/JD-kMIpDfnY/sddefault.jpg?v=6ad62daa",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "lofi hip hop radio 💤 beats to sleep/chill to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "JD-kMIpDfnY",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/56llPN9tS88/sddefault.jpg?v=69f45fe9",
+                 "width": 640,
+                 "height": 480
+                }
+               ],
+               "sampledThumbnailColor": {
+                "red": 76,
+                "green": 76,
+                "blue": 76
+               },
+               "darkColorPalette": {
+                "section2Color": 3355443,
+                "iconInactiveColor": 9211020,
+                "iconDisabledColor": 5855577
+               },
+               "vibrantColorPalette": {
+                "iconInactiveColor": 10066329
+               }
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "simpleText": "STATION"
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               },
+               {
+                "thumbnailOverlayStackingEffectRenderer": {
+                 "upperStackColor": 4284045657,
+                 "lowerStackColor": 4287401100
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "bossa lofi radio 🌴 chill music for relaxing days"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "53"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "56llPN9tS88",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "56llPN9tS88",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "56llPN9tS88",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/56llPN9tS88/sddefault.jpg?v=69f45fe9",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "bossa lofi radio 🌴 chill music for relaxing days"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "56llPN9tS88",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          },
+          {
+           "tileRenderer": {
+            "style": "TILE_STYLE_YTLR_VERTICAL_LIST",
+            "header": {
+             "tileHeaderRenderer": {
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/N0snMcR6aaA/sddefault.jpg?v=69e0cd17",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "thumbnailOverlays": [
+               {
+                "thumbnailOverlayTimeStatusRenderer": {
+                 "text": {
+                  "runs": [
+                   {
+                    "text": "LIVE"
+                   }
+                  ]
+                 },
+                 "style": "LIVE",
+                 "icon": {
+                  "iconType": "LIVE"
+                 }
+                }
+               }
+              ]
+             }
+            },
+            "metadata": {
+             "tileMetadataRenderer": {
+              "title": {
+               "simpleText": "relaxing piano radio 🎹 calm music to focus to"
+              },
+              "lines": [
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "Lofi Girl",
+                       "navigationEndpoint": {
+                        "browseEndpoint": {
+                         "browseId": "UCSJ4gkVC6NrvII8umztf0Ow",
+                         "canonicalBaseUrl": "/channel/UCSJ4gkVC6NrvII8umztf0Ow"
+                        }
+                       }
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               },
+               {
+                "lineRenderer": {
+                 "items": [
+                  {
+                   "lineItemRenderer": {
+                    "text": {
+                     "runs": [
+                      {
+                       "text": "123"
+                      },
+                      {
+                       "text": " watching"
+                      }
+                     ]
+                    }
+                   }
+                  }
+                 ]
+                }
+               }
+              ]
+             }
+            },
+            "onSelectCommand": {
+             "watchEndpoint": {
+              "videoId": "N0snMcR6aaA",
+              "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+              "playerParams": "iAQB"
+             }
+            },
+            "contentId": "N0snMcR6aaA",
+            "contentType": "TILE_CONTENT_TYPE_VIDEO",
+            "customData": {
+             "playlistPageTileData": {
+              "setThumbnailAsAppBackground": true
+             }
+            },
+            "onLongPressCommand": {
+             "showMenuCommand": {
+              "contentId": "N0snMcR6aaA",
+              "thumbnail": {
+               "thumbnails": [
+                {
+                 "url": "https://i.ytimg.com/vi/N0snMcR6aaA/sddefault.jpg?v=69e0cd17",
+                 "width": 640,
+                 "height": 480
+                }
+               ]
+              },
+              "title": {
+               "simpleText": "relaxing piano radio 🎹 calm music to focus to"
+              },
+              "subtitle": {
+               "simpleText": "Lofi Girl • @LofiGirl"
+              },
+              "menu": {
+               "menuRenderer": {
+                "items": [
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Play"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "watchEndpoint": {
+                     "videoId": "N0snMcR6aaA",
+                     "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+                     "playerParams": "iAQB"
+                    }
+                   }
+                  }
+                 },
+                 {
+                  "menuNavigationItemRenderer": {
+                   "text": {
+                    "runs": [
+                     {
+                      "text": "Go to channel"
+                     }
+                    ]
+                   },
+                   "navigationEndpoint": {
+                    "browseEndpoint": {
+                     "browseId": "UCSJ4gkVC6NrvII8umztf0Ow"
+                    }
+                   }
+                  }
+                 }
+                ]
+               }
+              }
+             }
+            }
+           }
+          }
+         ],
+         "playlistId": "UULVSJ4gkVC6NrvII8umztf0Ow",
+         "isEditable": false,
+         "continuations": [
+          {
+           "nextContinuationData": {
+            "continuation": "4qmFsgJUEhxWTFVVTFZTSjRna1ZDNk5ydklJOHVtenRmME93GjRDQUY2SGxCVU9rTkJPR2xGUkZVelVYcFdSazFFYXpCTmVrMTVVVlZhUmxKRVRRJTNEJTNE"
+           }
+          }
+         ],
+         "targetId": "UULVSJ4gkVC6NrvII8umztf0Ow"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

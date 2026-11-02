@@ -2,10 +2,10 @@ package com.liskovsoft.youtubeapi.browse.v2
 
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem
+import com.liskovsoft.youtubeapi.channelfeed.ChannelFeedService
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl
 import com.liskovsoft.youtubeapi.playlist.PlaylistOrder
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl
-import com.liskovsoft.youtubeapi.rss.RssService
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaGroup
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItem
@@ -18,7 +18,7 @@ internal object BrowseService2Wrapper: BrowseService2() {
         if ((subscriptions == null || subscriptions.isEmpty) && YouTubeSignInService.instance().isSelectedAccountCall) {
             val channelIds = ChannelGroupServiceImpl.getSubscribedChannelIds()
 
-            return channelIds?.let { RssService.getFeed(*it, type = MediaGroup.TYPE_SUBSCRIPTIONS) }
+            return channelIds?.let { ChannelFeedService.getFeed(it.toList(), MediaGroup.TYPE_SUBSCRIPTIONS) }
         }
 
         return subscriptions
