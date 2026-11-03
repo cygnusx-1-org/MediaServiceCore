@@ -17,6 +17,16 @@ public interface ServiceManager {
      * @param videoId of a video that likely has subtitles (e.g. the first one shown), null when there's none
      */
     void warmUpPlayback(String videoId);
+    /**
+     * The next video's formats would wait for a poToken being made (e.g. the one in use expired). That's slow, and mostly on the main
+     * thread.
+     */
+    boolean isPoTokenToMake();
+    /**
+     * The app's UI is hidden: what's only kept to be quick again is let go, so the process is a smaller target for the low memory
+     * killer (e.g. while a foreground service keeps it). Any thread.
+     */
+    void trimMemory();
     void switchNextClient();
     void switchNextClientNow();
     void resetClient();

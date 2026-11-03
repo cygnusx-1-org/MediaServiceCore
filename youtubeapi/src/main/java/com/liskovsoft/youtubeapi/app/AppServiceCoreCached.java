@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.app.models.cached.ClientDataCached;
 import com.liskovsoft.youtubeapi.app.playerdata.PlayerDataExtractor;
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants;
+import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages;
 
 class AppServiceCoreCached extends AppServiceCore {
@@ -69,9 +70,11 @@ class AppServiceCoreCached extends AppServiceCore {
 
     private PlayerDataExtractor getPlayerDataExtractorSync(@Nullable AppClient client, String playerUrl) {
         FetchStages.Span lockWait = FetchStages.begin("lock wait");
+        // The warm-up's player data being got
+        String holder = FormatInfoWrapper.warmUpDetail(FormatInfoWrapper.WARM_UP_PLAYER_DATA, null);
 
         synchronized (mPlayerSync) {
-            lockWait.end(null);
+            lockWait.end(holder);
 
             return firstValidExtractor(
                     client,

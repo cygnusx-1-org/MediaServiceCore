@@ -332,7 +332,7 @@ public class YouTubeAccountManager {
     private void onAccountChanged() {
         mSignInService.invalidateCache();
         AppService.instance().invalidateCache(); // regenerate visitor data
-        FormatInfoWrapper.resetFormat();
+        FormatInfoWrapper.resetFormatForAccount();
 
         notifyListeners();
     }

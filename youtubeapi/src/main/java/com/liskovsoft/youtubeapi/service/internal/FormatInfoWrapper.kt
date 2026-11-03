@@ -47,10 +47,20 @@ internal object FormatInfoWrapper {
         { videoId, clickTrackingParams -> getFormatInfoLegacy(videoId, clickTrackingParams) }
     private val lock = Any()
     /**
-     * The warm-up holds the lock: what a fetch waits for (see FetchStages)
+     * The steps of the warm-up (see warmUp), as a fetch's stages that wait for them say (see warmUpDetail)
+     */
+    const val WARM_UP_LANGUAGES = "translation languages"
+    const val WARM_UP_POTOKEN = "poToken"
+    const val WARM_UP_PLAYER_DATA = "player data"
+    /**
+     * One warm-up at a time
+     */
+    private val mIsWarmingUp = AtomicBoolean()
+    /**
+     * The warm-up's step running now, null for none
      */
     @Volatile
-    private var mIsWarmingUp: Boolean = false
+    private var mWarmUpStep: String? = null
     /**
      * Started ahead of a fetch's stages that wait for them, one of each at a time (see startAhead)
      */
@@ -69,10 +79,10 @@ internal object FormatInfoWrapper {
 
         try {
             val lockWait = FetchStages.begin("lock wait")
-            val holder = if (mIsWarmingUp) "warm-up" else null
 
+            // Another fetch: the warm-up doesn't hold the lock
             synchronized(lock) {
-                lockWait.end(holder)
+                lockWait.end(null)
                 return selectPlaybackFormatInfo(videoId, clickTrackingParams)
             }
         } finally {
@@ -86,38 +96,54 @@ internal object FormatInfoWrapper {
     /**
      * Gets ready what the first video of the run waits for, while the user browses: the poToken of the client tried first, its
      * player's n-function and the languages that subtitles translate to.
-     * A video loaded meanwhile waits for it, then has them.
+     * Without the fetches' lock: holding it, a video opened meanwhile waited for all the steps before its request even started
+     * (1.8 s on a Shield). Each step runs one at a time by itself (the poToken's attempt is shared, the player data and the languages'
+     * check have their own locks), so the video's stage of a step still running waits for that one only (see warmUpDetail).
      *
      * @param videoId of a video that likely has subtitles (e.g. the first one shown), for the languages
      */
     @JvmStatic
     fun warmUp(videoId: String?) {
-        synchronized(lock) {
-            mIsWarmingUp = true
+        if (!mIsWarmingUp.compareAndSet(false, true)) {
+            return
+        }
 
-            try {
-                warmUpLocked(videoId)
-            } finally {
-                mIsWarmingUp = false
-            }
+        try {
+            warmUpSteps(videoId)
+        } finally {
+            mIsWarmingUp.set(false)
         }
 
         // E.g. one kept by a run before, about to expire
         refreshPoTokenLater()
     }
 
-    private fun warmUpLocked(videoId: String?) {
+    /**
+     * Of a fetch's stage of the step (see WARM_UP_ constants), when it starts: "warm-up" added while the warm-up runs the step, which is
+     * then what the stage waits for
+     */
+    @JvmStatic
+    fun warmUpDetail(step: String, detail: String?): String? =
+        if (mWarmUpStep != step) detail else if (detail != null) "$detail, warm-up" else "warm-up"
+
+    /**
+     * The next fetch would wait for its client's poToken being made
+     */
+    @JvmStatic
+    fun isPoTokenToMake(): Boolean = PoTokenGate.isPoTokenToWaitFor(getVideoInfoService().nextClient)
+
+    private fun warmUpSteps(videoId: String?) {
         val client = getVideoInfoService().nextClient
 
         // Before the player data: its request makes its client the one of the player data got with none
         // (see AppServiceCoreCached#firstValidExtractor)
-        runWarmUp("translation languages") { getVideoInfoService().warmUpTranslationLanguages(videoId) }
+        runWarmUp(WARM_UP_LANGUAGES) { getVideoInfoService().warmUpTranslationLanguages(videoId) }
 
         if (client.isTvPotRequired) {
-            runWarmUp("poToken") { PoTokenGate.getPoToken(client) }
+            runWarmUp(WARM_UP_POTOKEN) { PoTokenGate.getPoToken(client) }
         }
 
-        runWarmUp("player data") { AppService.instance().warmUpPlayerData(client) }
+        runWarmUp(WARM_UP_PLAYER_DATA) { AppService.instance().warmUpPlayerData(client) }
     }
 
     /**
@@ -191,11 +217,15 @@ internal object FormatInfoWrapper {
         }
     }
 
-    private fun runWarmUp(name: String, warmUp: () -> Unit) {
+    private fun runWarmUp(step: String, warmUp: () -> Unit) {
+        mWarmUpStep = step
+
         try {
             warmUp()
         } catch (e: Exception) {
-            Log.e(TAG, "Can't warm up the %s: %s", name, e.message)
+            Log.e(TAG, "Can't warm up the %s: %s", step, e.message)
+        } finally {
+            mWarmUpStep = null
         }
     }
 
@@ -221,9 +251,17 @@ internal object FormatInfoWrapper {
         return if (mTryInnertubeFirst) INNERTUBE_CLIENT else getVideoInfoService().clientName
     }
 
+    /**
+     * The account changed: its poToken too (see PoTokenGate#getTvPotMakeReason)
+     */
+    @JvmStatic
+    fun resetFormatForAccount() {
+        getVideoInfoService().resetInfoType(PoTokenGate.MADE_ACCOUNT_SWITCH)
+    }
+
     @JvmStatic
     fun resetFormat() {
-        getVideoInfoService().resetInfoType()
+        getVideoInfoService().resetInfoType(PoTokenGate.MADE_RESET)
     }
 
     @JvmStatic

@@ -103,13 +103,19 @@ class DriveApiTest {
         cleanup(fileMetadata)
     }
 
+    /**
+     * Of a folder of its own: the Drive scope sees only the files the app made (e.g. a backup folder of another account isn't there)
+     */
     @Test
     fun testGetList() {
-        // mimeType='text/plain' and parents in '13vgchf9SwZ3Szudfl8df5lpbZ59wzluK'
-        val smartTubeBackupDirId = "13vgchf9SwZ3Szudfl8df5lpbZ59wzluK"
-        val listResult = RetrofitHelper.get(mService.getList("mimeType='application/vnd.google-apps.folder' and parents in '$smartTubeBackupDirId'"))
+        val rootFolderMetadata = createRootFolder(TEST_FOLDER_NAME)
+        val folderMetadata = createFolder(NESTED_FOLDER_NAME, rootFolderMetadata?.id!!)
 
-        assertTrue("Has files", (listResult?.files?.size ?: 0) > 0)
+        val listResult = RetrofitHelper.get(mService.getList("mimeType='application/vnd.google-apps.folder' and '${rootFolderMetadata.id}' in parents"))
+
+        assertTrue("Has files", listResult?.files?.any { it?.id == folderMetadata?.id } == true)
+
+        cleanup(rootFolderMetadata) // just need to deleted root
     }
 
     private fun createSampleFolder() =

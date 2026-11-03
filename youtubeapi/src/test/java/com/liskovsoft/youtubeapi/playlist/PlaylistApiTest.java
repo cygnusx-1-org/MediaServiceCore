@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class PlaylistApiTest {
+    private static final long EDIT_SHOWN_MS = 30_000;
+    private static final long EDIT_POLL_MS = 2_000;
     private PlaylistApi mService;
 
     @Before
@@ -55,12 +57,7 @@ public class PlaylistApiTest {
 
         assertNotNull("Action result success", actionResult);
 
-        Thread.sleep(15_000);
-
-        playlistsInfo = getPlaylistsInfo(TestHelpers.VIDEO_ID_AGE_RESTRICTED);
-        firstPlaylistItem = playlistsInfo.getPlaylists().get(0);
-
-        assertTrue("Action successful", firstPlaylistItem.isSelected());
+        assertTrue("Action successful", waitForSelected(firstPlaylistItem.getPlaylistId(), true));
     }
 
     @Test
@@ -75,12 +72,29 @@ public class PlaylistApiTest {
 
         assertNotNull("Action result success", actionResult);
 
-        Thread.sleep(10_000);
+        assertFalse("Action successful", waitForSelected(firstPlaylistItem.getPlaylistId(), false));
+    }
 
-        playlistsInfo = getPlaylistsInfo(TestHelpers.VIDEO_ID_AGE_RESTRICTED);
-        firstPlaylistItem = playlistsInfo.getPlaylists().get(0);
+    /**
+     * YouTube shows an edit some seconds later, and may list the playlists in another order then: the same playlist, read till it
+     * shows the edit or time is up
+     * @return whether the video is in the playlist, as last read
+     */
+    private boolean waitForSelected(String playlistId, boolean expected) throws InterruptedException {
+        boolean isSelected = !expected;
 
-        assertFalse("Action successful", firstPlaylistItem.isSelected());
+        for (long waitedMs = 0; waitedMs <= EDIT_SHOWN_MS && isSelected != expected; waitedMs += EDIT_POLL_MS) {
+            Thread.sleep(EDIT_POLL_MS);
+            PlaylistsResult playlistsInfo = getPlaylistsInfo(TestHelpers.VIDEO_ID_AGE_RESTRICTED);
+
+            for (PlaylistInfoItem playlist : playlistsInfo.getPlaylists()) {
+                if (playlistId.equals(playlist.getPlaylistId())) {
+                    isSelected = playlist.isSelected();
+                }
+            }
+        }
+
+        return isSelected;
     }
 
     private PlaylistsResult getPlaylistsInfo(String videoId) {

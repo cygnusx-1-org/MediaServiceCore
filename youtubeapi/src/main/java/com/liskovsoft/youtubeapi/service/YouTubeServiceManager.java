@@ -116,6 +116,17 @@ public class YouTubeServiceManager implements ServiceManager {
     }
 
     @Override
+    public boolean isPoTokenToMake() {
+        return FormatInfoWrapper.isPoTokenToMake();
+    }
+
+    @Override
+    public void trimMemory() {
+        // Not on the main thread: it waits for a poToken being made, which needs that thread
+        RxHelper.runAsync(PoTokenGate::releaseUnused);
+    }
+
+    @Override
     public void switchNextClient() {
         FormatInfoWrapper.invalidateCache();
         FormatInfoWrapper.switchNextFormat(false);

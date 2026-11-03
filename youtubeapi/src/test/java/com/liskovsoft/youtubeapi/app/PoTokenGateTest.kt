@@ -24,6 +24,8 @@ class PoTokenGateTest {
     fun tearDown() {
         setTvPotRejected(false)
         gateField("mTvPoToken").set(null, null)
+        gateField("mTvPotMissingReason").set(null, null)
+        gateField("mTvCacheResetTimeMs").setLong(null, -1)
         providerField("result").set(null, null)
         providerField("expirationMs").setLong(null, -1)
     }
@@ -56,6 +58,77 @@ class PoTokenGateTest {
         providerField("result").set(null, madeAgain)
 
         assertTrue(PoTokenGate.isTvPotMissing())
+    }
+
+    /**
+     * None valid and none kept by a run before: a fetch would wait
+     */
+    @Test
+    fun aFetchWaitsOnlyForATvPoTokenToBeMade() {
+        val mayTakeKept = providerField("mayTakeKept")
+        val mayTakeKeptBefore = mayTakeKept.get(null)
+
+        try {
+            mayTakeKept.set(null, false)
+            assertTrue(PoTokenGate.isPoTokenToWaitFor(AppClient.TV))
+
+            val token = PoTokenResult("", "visitor", "token", "token")
+            gateField("mTvPoToken").set(null, token)
+            providerField("result").set(null, token)
+            providerField("expirationMs").setLong(null, System.currentTimeMillis() + 60_000)
+            assertFalse(PoTokenGate.isPoTokenToWaitFor(AppClient.TV))
+
+            providerField("expirationMs").setLong(null, System.currentTimeMillis() - 1)
+            assertTrue(PoTokenGate.isPoTokenToWaitFor(AppClient.TV))
+
+            // Rejected by the server: goes on without one
+            assertTrue(PoTokenGate.rejectPoToken(AppClient.TV))
+            assertFalse(PoTokenGate.isPoTokenToWaitFor(AppClient.TV))
+        } finally {
+            mayTakeKept.set(null, mayTakeKeptBefore)
+        }
+    }
+
+    /**
+     * What a start that waits for one tells: why it's made
+     */
+    @Test
+    fun whyTheTvPoTokenIsMadeIsTold() {
+        assertEquals(PoTokenGate.MADE_NONE_YET, PoTokenGate.getTvPotMakeReason())
+
+        val token = PoTokenResult("", "visitor", "token", "token")
+        gateField("mTvPoToken").set(null, token)
+        providerField("result").set(null, token)
+        providerField("expirationMs").setLong(null, System.currentTimeMillis() + 60_000)
+        assertNull(PoTokenGate.getTvPotMakeReason())
+
+        providerField("expirationMs").setLong(null, System.currentTimeMillis() - 1)
+        assertEquals(PoTokenGate.MADE_EXPIRED, PoTokenGate.getTvPotMakeReason())
+
+        PoTokenGate.resetCache(PoTokenGate.MADE_ACCOUNT_SWITCH)
+        assertEquals(PoTokenGate.MADE_ACCOUNT_SWITCH, PoTokenGate.getTvPotMakeReason())
+
+        // A reset too soon after the last one keeps what's there, and the reason of that one
+        PoTokenGate.resetCache(PoTokenGate.MADE_RESET)
+        assertEquals(PoTokenGate.MADE_ACCOUNT_SWITCH, PoTokenGate.getTvPotMakeReason())
+    }
+
+    @Test
+    fun aVideoThatFailedIsWhyTheTvPoTokenIsMade() {
+        assertTrue(PoTokenGate.resetCache(AppClient.TV))
+        assertEquals(PoTokenGate.MADE_VIDEO_FAILED, PoTokenGate.getTvPotMakeReason())
+    }
+
+    /**
+     * A token made again in the background while the one in use is valid is taken at once: nothing to wait for
+     */
+    @Test
+    fun aTvPoTokenMadeAgainIsNoReasonToMakeOne() {
+        gateField("mTvPoToken").set(null, PoTokenResult("", "visitor", "old", "old"))
+        providerField("result").set(null, PoTokenResult("", "visitor", "new", "new"))
+        providerField("expirationMs").setLong(null, System.currentTimeMillis() + 60_000)
+
+        assertNull(PoTokenGate.getTvPotMakeReason())
     }
 
     /**

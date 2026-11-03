@@ -7,7 +7,7 @@ import com.liskovsoft.googlecommon.common.constants.ConstantsService;
 import com.liskovsoft.googlecommon.common.constants.data.ConstantsResult;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitOkHttpHelper;
-import com.liskovsoft.googlecommon.common.helpers.tests.ApiKeys;
+import com.liskovsoft.googlecommon.common.helpers.tests.TestHelpers;
 import com.liskovsoft.googlecommon.common.models.auth.AccessToken;
 import com.liskovsoft.googlecommon.common.models.auth.UserCode;
 import com.liskovsoft.sharedutils.helpers.Helpers;
@@ -43,7 +43,7 @@ public class OAuth2ApiTest {
     
     @Test
     public void testThatUserCanUpdateAccessToken() {
-        Call<AccessToken> wrapper = mService.updateAccessToken(getClientId(), getClientSecret(), OAuth2ApiHelper.GRANT_TYPE_REFRESH, ApiKeys.REFRESH_TOKEN);
+        Call<AccessToken> wrapper = mService.updateAccessToken(getClientId(), getClientSecret(), OAuth2ApiHelper.GRANT_TYPE_REFRESH, TestHelpers.getDriveRefreshToken());
 
         AccessToken token = RetrofitHelper.getWithErrors(wrapper);
 

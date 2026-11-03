@@ -21,6 +21,8 @@ import okhttp3.Response;
 public class TestHelpers extends TestHelpersBase {
     // Outside the repos, so it's never committed. Written by signIn().
     private static final File TEST_TOKEN_FILE = new File(System.getProperty("user.home"), ".config/MediaServiceCore/test_refresh_token");
+    // Google Drive's (OAuth2Service): another client and scope than YouTube's. Written by signInDrive().
+    private static final File TEST_DRIVE_TOKEN_FILE = new File(System.getProperty("user.home"), ".config/MediaServiceCore/test_drive_refresh_token");
     private static String mAuthorization; // type: Bearer
     private static String mOAuth2Authorization; // type: Bearer
 
@@ -114,38 +116,86 @@ public class TestHelpers extends TestHelpersBase {
     }
 
     private static String readRefreshToken() {
-        if (!TEST_TOKEN_FILE.isFile()) {
+        return readRefreshToken(TEST_TOKEN_FILE);
+    }
+
+    private static String readRefreshToken(File file) {
+        if (!file.isFile()) {
             return null;
         }
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(TEST_TOKEN_FILE))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String token = reader.readLine();
             return token != null && !token.trim().isEmpty() ? token.trim() : null;
         } catch (IOException e) {
-            throw new IllegalStateException("Can't read " + TEST_TOKEN_FILE, e);
+            throw new IllegalStateException("Can't read " + file, e);
         }
     }
 
     private static void writeRefreshToken(String refreshToken) throws IOException {
-        File dir = TEST_TOKEN_FILE.getParentFile();
+        writeRefreshToken(TEST_TOKEN_FILE, refreshToken);
+    }
+
+    private static void writeRefreshToken(File file, String refreshToken) throws IOException {
+        File dir = file.getParentFile();
 
         if (dir != null && !dir.isDirectory() && !dir.mkdirs()) {
             throw new IOException("Can't create " + dir);
         }
 
         // Owner only, before the token is in it
-        if (!TEST_TOKEN_FILE.exists() && !TEST_TOKEN_FILE.createNewFile()) {
-            throw new IOException("Can't create " + TEST_TOKEN_FILE);
+        if (!file.exists() && !file.createNewFile()) {
+            throw new IOException("Can't create " + file);
         }
 
-        TEST_TOKEN_FILE.setReadable(false, false);
-        TEST_TOKEN_FILE.setWritable(false, false);
-        TEST_TOKEN_FILE.setReadable(true, true);
-        TEST_TOKEN_FILE.setWritable(true, true);
+        file.setReadable(false, false);
+        file.setWritable(false, false);
+        file.setReadable(true, true);
+        file.setWritable(true, true);
 
-        try (Writer writer = new FileWriter(TEST_TOKEN_FILE)) {
+        try (Writer writer = new FileWriter(file)) {
             writer.write(refreshToken + "\n");
         }
+    }
+
+    /**
+     * The Google Drive account in ApiKeys or, when there's none, the one signed in with {@link #signInDrive()}
+     */
+    public static String getDriveRefreshToken() {
+        if (!ApiKeys.REFRESH_TOKEN.isEmpty()) {
+            return ApiKeys.REFRESH_TOKEN;
+        }
+
+        String refreshToken = readRefreshToken(TEST_DRIVE_TOKEN_FILE);
+
+        if (refreshToken == null) {
+            throw new IllegalStateException("No Google Drive test account is signed in. Sign one in once with TestAccountSignIn#signInDrive.");
+        }
+
+        return refreshToken;
+    }
+
+    /**
+     * Signs the Drive tests in, like the app's Google Drive backup does: prints an address and a code to enter there, in a browser
+     * signed in to the test account, then waits up to about 16 minutes for it. The refresh token is kept outside the repos for
+     * {@link #getDriveRefreshToken()}, and is never printed. Drive's scope (its own files only) doesn't tell the account: sign in
+     * to the right one.
+     */
+    public static void signInDrive() throws InterruptedException, IOException {
+        OAuth2Service service = OAuth2Service.instance();
+        UserCode userCode = service.getUserCode();
+
+        if (userCode == null || userCode.getUserCode() == null) {
+            throw new IllegalStateException("Can't get a sign-in code");
+        }
+
+        System.out.printf("Sign in to Google Drive: go to %s and enter %s%n", userCode.getVerificationUrl(), userCode.getUserCode());
+
+        AccessToken token = service.getAccessTokenWait(userCode.getDeviceCode());
+        writeRefreshToken(TEST_DRIVE_TOKEN_FILE, token.getRefreshToken());
+        mOAuth2Authorization = String.format("%s %s", token.getTokenType(), token.getAccessToken());
+
+        System.out.printf("Signed in to Google Drive. The token is in %s%n", TEST_DRIVE_TOKEN_FILE);
     }
 
     public static String getOAuth2Authorization() {
@@ -153,7 +203,7 @@ public class TestHelpers extends TestHelpersBase {
             return mOAuth2Authorization;
         }
 
-        AccessToken token = OAuth2Service.instance().updateAccessToken(ApiKeys.REFRESH_TOKEN);
+        AccessToken token = OAuth2Service.instance().updateAccessToken(getDriveRefreshToken());
 
         if (token == null) {
             throw new IllegalStateException("Token is null");

@@ -10,6 +10,7 @@ import com.liskovsoft.youtubeapi.app.AppService;
 import com.liskovsoft.youtubeapi.app.PoTokenGate;
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
+import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.liskovsoft.youtubeapi.innertube.initialresponse.InitialResponseService;
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt;
@@ -320,9 +321,12 @@ public class VideoInfoService extends VideoInfoServiceBase {
         CaptionTrack.sFormat = Helpers.getNextValue(CaptionTrack.CaptionFormat.values(), CaptionTrack.sFormat);
     }
 
-    public void resetInfoType() {
+    /**
+     * @param poTokenResetReason why the poToken is made after this (see PoTokenGate#getTvPotMakeReason)
+     */
+    public void resetInfoType(String poTokenResetReason) {
         resetInfoTypeToDefault();
-        PoTokenGate.resetCache();
+        PoTokenGate.resetCache(poTokenResetReason);
     }
 
     /**
@@ -475,7 +479,8 @@ public class VideoInfoService extends VideoInfoServiceBase {
             if (!hasTranslationLanguages()) {
                 // None kept (e.g. the first run): this run's check is waited for, started now when the fetch didn't start it ahead
                 FutureTask<Void> check = checkTranslationLanguages(videoId, null);
-                FetchStages.time("subtitles", AppClient.WEB_DUMMY.name(), () -> {
+                FetchStages.time("subtitles", FormatInfoWrapper.warmUpDetail(FormatInfoWrapper.WARM_UP_LANGUAGES,
+                        AppClient.WEB_DUMMY.name()), () -> {
                     awaitCheck(check);
                     return null;
                 });

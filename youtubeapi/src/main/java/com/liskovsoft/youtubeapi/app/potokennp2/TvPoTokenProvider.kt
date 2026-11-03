@@ -61,6 +61,7 @@ internal object TvPoTokenProvider {
     /**
      * The token kept by a run before may be taken (see KeptTokens), till this run resets the token
      */
+    @Volatile
     private var mayTakeKept = true
 
     /**
@@ -91,6 +92,11 @@ internal object TvPoTokenProvider {
 
         return expirationMs - minOf(REFRESH_BEFORE_MS, lifeMs / 2)
     }
+
+    /**
+     * The one a run before made would be taken (see takeKept), if it's of the same visitor
+     */
+    fun hasKeptToTake(): Boolean = mayTakeKept && KeptTokens.loadTvPoToken() != null
 
     /**
      * The one made, while it's valid. Doesn't wait for one being made.

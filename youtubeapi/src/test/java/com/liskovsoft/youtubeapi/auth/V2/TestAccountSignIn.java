@@ -10,9 +10,11 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowLog;
 
 /**
- * Signs the tests in to the test account, once. Skipped unless SIGN_IN_TEST_ACCOUNT is set, since it waits for a person.
- * Its output has to be shown while it waits, hence --info. From electriceel:<br/>
- * SIGN_IN_TEST_ACCOUNT=1 ./gradlew :youtubeapi:testStstableDebugUnitTest --tests com.liskovsoft.youtubeapi.auth.V2.TestAccountSignIn --info
+ * Signs the tests in to the test account, once. Skipped unless SIGN_IN_TEST_ACCOUNT (YouTube) or SIGN_IN_TEST_DRIVE (Google Drive,
+ * for DriveApiTest and OAuth2ApiTest) is set, since it waits for a person. Its output has to be shown while it waits, hence --info.
+ * From electriceel:<br/>
+ * SIGN_IN_TEST_ACCOUNT=1 ./gradlew :youtubeapi:testStstableDebugUnitTest --tests com.liskovsoft.youtubeapi.auth.V2.TestAccountSignIn --info<br/>
+ * SIGN_IN_TEST_DRIVE=1 ./gradlew :youtubeapi:testStstableDebugUnitTest --tests com.liskovsoft.youtubeapi.auth.V2.TestAccountSignIn --info
  */
 @RunWith(RobolectricTestRunner.class)
 public class TestAccountSignIn {
@@ -32,5 +34,15 @@ public class TestAccountSignIn {
         Assume.assumeTrue("Set SIGN_IN_TEST_ACCOUNT to sign in", System.getenv("SIGN_IN_TEST_ACCOUNT") != null);
 
         TestHelpers.signIn(ACCOUNT);
+    }
+
+    /**
+     * In a browser signed in to the test account
+     */
+    @Test
+    public void signInDrive() throws Exception {
+        Assume.assumeTrue("Set SIGN_IN_TEST_DRIVE to sign in to Google Drive", System.getenv("SIGN_IN_TEST_DRIVE") != null);
+
+        TestHelpers.signInDrive();
     }
 }

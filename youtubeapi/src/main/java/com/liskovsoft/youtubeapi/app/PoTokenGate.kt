@@ -7,6 +7,7 @@ import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.selectFactory
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
+import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper
 import com.liskovsoft.youtubeapi.service.internal.KeptTokens
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 
@@ -21,6 +22,15 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
  * Usage is unknown. Previously used in DASH/SABR requests (e.g. `pot` param).
  */
 internal object PoTokenGate {
+    /**
+     * Why the TV poToken is made, in the detail of its stage (see getTvPotMakeReason)
+     */
+    const val MADE_NONE_YET = "none yet"
+    const val MADE_EXPIRED = "expired"
+    const val MADE_FAILED_BEFORE = "failed before"
+    const val MADE_ACCOUNT_SWITCH = "account switch"
+    const val MADE_VIDEO_FAILED = "video failed"
+    const val MADE_RESET = "reset"
     private var mWebPoToken: PoTokenResult? = null
     /**
      * Set by the poToken made ahead of a fetch's request too, on its own thread (see isPoTokenToMake)
@@ -41,6 +51,11 @@ internal object PoTokenGate {
      */
     @Volatile
     private var mTvPotFailedVideoId: String? = null
+    /**
+     * Why there's no TV poToken, when it's for another reason than none being made yet
+     */
+    @Volatile
+    private var mTvPotMissingReason: String? = null
 
     init {
         WebPoTokenProvider.poTokenFactory = selectFactory()
@@ -80,6 +95,7 @@ internal object PoTokenGate {
             val poToken = TvPoTokenProvider.getPoToken()
             mTvPoToken = poToken
             mTvPotFailedVideoId = if (poToken == null) videoId else null
+            mTvPotMissingReason = if (poToken == null) MADE_FAILED_BEFORE else null
         }
 
         // The TV poToken is a session one (not bound to the video id)
@@ -101,9 +117,29 @@ internal object PoTokenGate {
             client.isWebPotRequired -> FetchStages.time("poToken", client.name) {
                 if (videoId != null) getWebContentPoToken(videoId) else getWebSessionPoToken()
             }
-            client.isTvPotRequired -> if (mTvPotRejected) null else FetchStages.time("poToken", client.name) { getTvPoToken(videoId) }
+            client.isTvPotRequired -> if (mTvPotRejected) null else
+                FetchStages.time("poToken", FormatInfoWrapper.warmUpDetail(FormatInfoWrapper.WARM_UP_POTOKEN, getTvPotDetail(client))) {
+                    getTvPoToken(videoId)
+                }
             else -> null
         }
+    }
+
+    private fun getTvPotDetail(client: AppClient): String {
+        val reason = if (WebPoTokenProvider.isPotSupported()) getTvPotMakeReason() else null
+
+        return if (reason != null) "${client.name}, $reason" else client.name
+    }
+
+    /**
+     * Why the TV poToken is to be made: a start waits for that. Null when there's one to take.
+     */
+    internal fun getTvPotMakeReason(): String? {
+        if (TvPoTokenProvider.currentResult() != null) {
+            return null
+        }
+
+        return if (mTvPoToken != null) MADE_EXPIRED else mTvPotMissingReason ?: MADE_NONE_YET
     }
 
     /**
@@ -114,6 +150,15 @@ internal object PoTokenGate {
         return client.isTvPotRequired && !mTvPotRejected && WebPoTokenProvider.isPotSupported() && isTvPotMissing()
                 && (videoId == null || videoId != mTvPotFailedVideoId)
     }
+
+    /**
+     * A fetch would wait for it being made: not when one kept by a run before is taken. Asked on the main thread: whether the WebView is
+     * supported is asked last, the first time loads it.
+     */
+    @JvmStatic
+    fun isPoTokenToWaitFor(client: AppClient): Boolean =
+        client.isTvPotRequired && !mTvPotRejected && isTvPotMissing() && TvPoTokenProvider.currentResult() == null
+                && !TvPoTokenProvider.hasKeptToTake() && WebPoTokenProvider.isPotSupported()
 
     /**
      * Or made again in the background (see refreshPoToken): the new one is taken
@@ -195,15 +240,18 @@ internal object PoTokenGate {
     fun resetCache(client: AppClient): Boolean {
         return when {
             client.isWebPotRequired -> resetWebCache()
-            client.isTvPotRequired -> !mTvPotRejected && resetTvCache().also { if (it) KeptTokens.clearTvPoToken() }
+            client.isTvPotRequired -> !mTvPotRejected && resetTvCache(MADE_VIDEO_FAILED).also { if (it) KeptTokens.clearTvPoToken() }
             else -> false
         }
     }
 
+    /**
+     * @param reason why the TV poToken is made after this, see getTvPotMakeReason
+     */
     @JvmStatic
-    fun resetCache() {
+    fun resetCache(reason: String) {
         resetWebCache()
-        resetTvCache()
+        resetTvCache(reason)
     }
 
     private fun resetWebCache(): Boolean {
@@ -221,18 +269,29 @@ internal object PoTokenGate {
         return true
     }
 
-    private fun resetTvCache(): Boolean {
+    private fun resetTvCache(reason: String): Boolean {
         val currentTimeMs = System.currentTimeMillis()
         if (currentTimeMs < mTvCacheResetTimeMs)
             return false
 
         mTvPoToken = null
         mTvPotFailedVideoId = null
+        mTvPotMissingReason = reason
         TvPoTokenProvider.reset()
 
         mTvCacheResetTimeMs = currentTimeMs + CACHE_RESET_TIME_MS
 
         return true
+    }
+
+    /**
+     * The TV poToken's generator, a WebView, isn't used once the token is made: the token is used till it expires, and the next one is
+     * made with a new generator (see TvPoTokenProvider#makeNext). The WEB one makes a token for each video. Not on the main thread:
+     * it waits for a token being made, which needs that thread.
+     */
+    @JvmStatic
+    fun releaseUnused() {
+        TvPoTokenProvider.release()
     }
 
     private fun releaseOtherProviders(client: AppClient) {

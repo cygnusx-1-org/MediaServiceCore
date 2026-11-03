@@ -7,6 +7,7 @@ import com.liskovsoft.googlecommon.common.api.FileApi;
 import com.liskovsoft.youtubeapi.app.PoTokenGate;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
 import com.liskovsoft.youtubeapi.formatbuilders.utils.MediaFormatUtils;
+import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.liskovsoft.youtubeapi.videoinfo.V2.DashInfoApi;
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages;
@@ -41,7 +42,8 @@ public abstract class VideoInfoServiceBase {
             return;
         }
 
-        FetchStages.time("decipher", null, () -> {
+        // The warm-up's n-function may still load (see TclChallengeProvider#prepare)
+        FetchStages.time("decipher", FormatInfoWrapper.warmUpDetail(FormatInfoWrapper.WARM_UP_PLAYER_DATA, null), () -> {
             decipherFormats(videoInfo);
             return null;
         });
