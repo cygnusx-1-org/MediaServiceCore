@@ -29,12 +29,45 @@ public class ClientAttemptsTest {
      * Why a client couldn't play it is said with its result, not how the user is told
      */
     @Test
-    public void anUnplayableOneIsDescribedWithItsStatus() {
-        assertEquals("unplayable LOGIN_REQUIRED", Attempt.unplayable("TV", "LOGIN_REQUIRED", "Sign in to confirm you're not a bot").describe());
+    public void anUnplayableOneIsDescribedWithItsStatusAndReason() {
+        assertEquals("unplayable LOGIN_REQUIRED: Sign in to confirm you're not a bot",
+                Attempt.unplayable("TV", "LOGIN_REQUIRED", "Sign in to confirm you're not a bot").describe());
+        assertEquals("unplayable LOGIN_REQUIRED", Attempt.unplayable("TV", "LOGIN_REQUIRED", null).describe());
         assertEquals("unplayable", Attempt.unplayable("TV", null, null).describe());
         assertEquals("ok", Attempt.ok("TV").describe());
         assertEquals("http_403", Attempt.http("TV", 403).describe());
         assertEquals("no_live_manifest", Attempt.noLiveManifest("TV").describe());
+    }
+
+    /**
+     * The status alone doesn't tell a bot check from an age check: the reason does, in the language YouTube was asked for. Its first
+     * part only, without the marks that keep its direction.
+     */
+    @Test
+    public void theReasonIsItsFirstPartWithoutDirectionMarks() {
+        String reason = "\u2068Melde dich an, um zu best\u00E4tigen, dass du kein Bot bist\u2069 \u2022 \u2068Das hilft, unsere Community zu sch\u00FCtzen.\u2069";
+
+        assertEquals("unplayable LOGIN_REQUIRED: Melde dich an, um zu best\u00E4tigen, dass du kein Bot bist",
+                Attempt.unplayable("TV", "LOGIN_REQUIRED", reason).describe());
+        assertNull(ClientAttempts.shortReason("\u2068 \u2069"));
+    }
+
+    @Test
+    public void aLongReasonIsCutShort() {
+        StringBuilder reason = new StringBuilder();
+
+        for (int i = 0; i < ClientAttempts.MAX_REASON_CHARS; i++) {
+            reason.append('a');
+        }
+
+        reason.append("bcd");
+        String cut = ClientAttempts.shortReason(reason.toString());
+
+        assertEquals(ClientAttempts.MAX_REASON_CHARS, cut.length());
+        assertTrue(cut, cut.endsWith("a\u2026"));
+        // Not between the halves of a character
+        String emoji = reason.substring(0, ClientAttempts.MAX_REASON_CHARS - 2) + "\uD83D\uDE00xyz";
+        assertTrue(ClientAttempts.shortReason(emoji).endsWith("a\u2026"));
     }
 
     @Test

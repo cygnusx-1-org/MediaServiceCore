@@ -146,6 +146,15 @@ internal object WebPoTokenProvider {
 
     fun isPotSupported() = webViewSupported && !webViewBadImpl
 
+    /**
+     * Why no poToken is made on this device (see isPotSupported), null when one is
+     */
+    fun getUnsupportedCause(): String? = when {
+        !webViewSupported -> "no WebView"
+        webViewBadImpl -> "bad WebView"
+        else -> null
+    }
+
     /** Clears all state, including the generator and cached tokens. The next call regenerates everything. */
     fun reset() {
         synchronized(WebPoTokenGenLock) {

@@ -1,8 +1,11 @@
 package com.liskovsoft.youtubeapi.app
 
 import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider
+import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider.Source
+import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider.Taken
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -22,12 +25,99 @@ class PoTokenGateTest {
 
     @After
     fun tearDown() {
+        FetchStages.close()
         setTvPotRejected(false)
         gateField("mTvPoToken").set(null, null)
         gateField("mTvPotMissingReason").set(null, null)
+        gateField("mTvPotFailedVideoId").set(null, null)
         gateField("mTvCacheResetTimeMs").setLong(null, -1)
         providerField("result").set(null, null)
+        providerField("refreshedResult").set(null, null)
         providerField("expirationMs").setLong(null, -1)
+    }
+
+    /**
+     * The one in use isn't timed: a TV attempt without a poToken stage sent it
+     */
+    @Test
+    fun theTvPoTokenInUseIsNotTimed() {
+        val token = PoTokenResult("", "visitor", "token", "token")
+        gateField("mTvPoToken").set(null, token)
+        providerField("result").set(null, token)
+        providerField("expirationMs").setLong(null, System.currentTimeMillis() + 60_000)
+
+        assertEquals("token", fetchPoToken())
+        assertTrue(FetchStages.take(VIDEO_ID).none { it.name == "poToken" })
+    }
+
+    /**
+     * Rejected by the server, every request goes without one: said where it would have been sent
+     */
+    @Test
+    fun aRejectedTvPoTokenIsMarkedWhereItWouldBeSent() {
+        assertTrue(PoTokenGate.rejectPoToken(AppClient.TV))
+
+        assertNull(fetchPoToken())
+        assertEquals("TV, ${PoTokenGate.TAKEN_REJECTED}", poTokenStage().detail)
+    }
+
+    @Test
+    fun aTvPoTokenMadeAgainInTheBackgroundIsTakenAsRefreshed() {
+        val madeAgain = PoTokenResult("", "visitor", "new", "new")
+        gateField("mTvPoToken").set(null, PoTokenResult("", "visitor", "old", "old"))
+        providerField("result").set(null, madeAgain)
+        providerField("refreshedResult").set(null, madeAgain)
+        providerField("expirationMs").setLong(null, System.currentTimeMillis() + 60_000)
+
+        assertEquals("new", fetchPoToken())
+        assertEquals("TV, ${PoTokenGate.TAKEN_REFRESHED}", poTokenStage().detail)
+    }
+
+    /**
+     * The video's fetch couldn't make one: its other calls (e.g. the decipher's) don't try again, and say so
+     */
+    @Test
+    fun aVideoWhoseTvPoTokenFailedIsNotTriedAgain() {
+        gateField("mTvPotFailedVideoId").set(null, VIDEO_ID)
+        gateField("mTvPotMissingReason").set(null, PoTokenGate.MADE_FAILED_BEFORE)
+
+        assertNull(fetchPoToken())
+        assertEquals("TV, ${PoTokenGate.MADE_FAILED_BEFORE}, none: ${PoTokenGate.CAUSE_FAILED_FOR_VIDEO}", poTokenStage().detail)
+    }
+
+    @Test
+    fun howTheTvPoTokenWasGotIsTold() {
+        val token = PoTokenResult("", "visitor", "token", "token")
+
+        assertEquals(PoTokenGate.TAKEN_MADE, PoTokenGate.describeTaken(Taken(token, Source.MADE)))
+        assertEquals(PoTokenGate.TAKEN_KEPT, PoTokenGate.describeTaken(Taken(token, Source.KEPT)))
+        // Valid when asked: made again in the background, or by another call
+        assertEquals(PoTokenGate.TAKEN_REFRESHED, PoTokenGate.describeTaken(Taken(token, Source.REFRESHED)))
+        assertEquals(PoTokenGate.TAKEN_FROM_ANOTHER, PoTokenGate.describeTaken(Taken(token, Source.VALID)))
+        assertEquals(PoTokenGate.TAKEN_FROM_ANOTHER, PoTokenGate.describeTaken(Taken(token, Source.WAITED)))
+        assertEquals("none: ${PoTokenGate.CAUSE_ANOTHER_FAILED}", PoTokenGate.describeTaken(Taken(null, Source.WAITED)))
+        assertEquals("none: http_429", PoTokenGate.describeTaken(Taken(null, Source.NONE, "http_429")))
+        assertEquals("none", PoTokenGate.describeTaken(Taken(null, Source.NONE)))
+    }
+
+    /**
+     * Asked for by a request of the video's fetch
+     */
+    private fun fetchPoToken(): String? {
+        FetchStages.open(VIDEO_ID)
+
+        try {
+            return PoTokenGate.getPoToken(AppClient.TV, VIDEO_ID)
+        } finally {
+            FetchStages.close()
+        }
+    }
+
+    private fun poTokenStage(): FetchStages.Stage {
+        val stages = FetchStages.take(VIDEO_ID).filter { it.name == "poToken" }
+        assertEquals(1, stages.size)
+
+        return stages[0]
     }
 
     /**
@@ -161,6 +251,10 @@ class PoTokenGateTest {
         assertFalse(PoTokenGate.rejectPoToken(AppClient.VISIONOS))
 
         assertEquals(false, isTvPotRejected())
+    }
+
+    private companion object {
+        const val VIDEO_ID = "dQw4w9WgXcQ"
     }
 
     private fun setTvPotRejected(rejected: Boolean) {

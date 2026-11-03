@@ -7,6 +7,7 @@ import com.liskovsoft.youtubeapi.app.AppService
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenException
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenGenerator
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
+import com.liskovsoft.youtubeapi.app.potokennp2.core.describePoTokenFailure
 import com.liskovsoft.youtubeapi.app.potokennp2.generators.TvPoTokenWebView4
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.runOnMainThreadSync
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
@@ -45,6 +46,11 @@ internal object TvPoTokenProvider {
      */
     @Volatile
     private var result: PoTokenResult? = null
+    /**
+     * The last one made again in the background (see refreshPoToken): the result is it till another one is made
+     */
+    @Volatile
+    private var refreshedResult: PoTokenResult? = null
     @Volatile
     private var expirationMs: Long = -1
     /**
@@ -69,6 +75,46 @@ internal object TvPoTokenProvider {
      */
     var livingRoomPoTokenId: String? = null
         private set
+
+    /**
+     * How a call got the poToken (see getPoToken)
+     */
+    enum class Source {
+        /**
+         * Made by the call: BotGuard ran
+         */
+        MADE,
+        /**
+         * Kept by a run before (see KeptTokens)
+         */
+        KEPT,
+        /**
+         * Valid when the call asked, made before it by another call
+         */
+        VALID,
+        /**
+         * Valid when the call asked, made again in the background (see refreshPoToken)
+         */
+        REFRESHED,
+        /**
+         * The call waited for another one's attempt (e.g. the one started ahead of a fetch) and took what that got, made or not
+         */
+        WAITED,
+        /**
+         * None made, see Taken#cause
+         */
+        NONE
+    }
+
+    /**
+     * @param cause why none was made (see describePoTokenFailure), with NONE
+     */
+    class Taken(val result: PoTokenResult?, val source: Source, val cause: String? = null)
+
+    /**
+     * The /tv page didn't have the living room token id or the visitor data: no token is made without them
+     */
+    const val CAUSE_NO_LIVING_ROOM_ID = "no living room id"
 
     fun isPotExpired(): Boolean = System.currentTimeMillis() > expirationMs
 
@@ -103,25 +149,28 @@ internal object TvPoTokenProvider {
      */
     fun currentResult(): PoTokenResult? = validResult()
 
-    fun getPoToken(): PoTokenResult? {
+    /**
+     * The token, and how it was got: for the timing of the fetch that asked (see PoTokenGate#getPoToken)
+     */
+    fun getPoToken(): Taken {
         if (!WebPoTokenProvider.isPotSupported()) {
-            return null
+            return Taken(null, Source.NONE, WebPoTokenProvider.getUnsupportedCause())
         }
 
         // Not waiting for the next one made in the background (see refreshPoToken)
-        validResult()?.let { return it }
+        validResult()?.let { return taken(it) }
 
         val endedBefore = endedAttempts
 
         return try {
             synchronized(lock) {
                 // One ended while this call waited for it: its result is this one's too, made or not
-                if (endedAttempts != endedBefore) validResult() else getPoTokenSync()
+                if (endedAttempts != endedBefore) Taken(validResult(), Source.WAITED) else getPoTokenSync()
             }
         } catch (e: Exception) {
             Log.e(TAG, "Could not obtain TV poToken", e)
             reset()
-            null
+            Taken(null, Source.NONE, describePoTokenFailure(e))
         }
     }
 
@@ -153,6 +202,8 @@ internal object TvPoTokenProvider {
                 synchronized(lock) {
                     if (resets == resetsBefore) {
                         generator?.let { unused = it }
+                        // Before it's the result: read without the lock, a result is never newer than this (see taken)
+                        refreshedResult = made.result
                         use(made)
                     }
                 }
@@ -195,12 +246,19 @@ internal object TvPoTokenProvider {
      */
     private fun validResult(): PoTokenResult? = result?.takeIf { !isPotExpired() }
 
-    private fun getPoTokenSync(): PoTokenResult? {
-        validResult()?.let { return it }
-        takeKept()?.let { return it }
+    /**
+     * A valid one, made before the call
+     */
+    private fun taken(valid: PoTokenResult): Taken = Taken(valid, if (valid === refreshedResult) Source.REFRESHED else Source.VALID)
+
+    private fun getPoTokenSync(): Taken {
+        validResult()?.let { return taken(it) }
+        takeKept()?.let { return Taken(it, Source.KEPT) }
 
         try {
-            return makePoTokenSync()
+            val made = makePoTokenSync()
+
+            return if (made != null) Taken(made, Source.MADE) else Taken(null, Source.NONE, CAUSE_NO_LIVING_ROOM_ID)
         } finally {
             endedAttempts++
         }

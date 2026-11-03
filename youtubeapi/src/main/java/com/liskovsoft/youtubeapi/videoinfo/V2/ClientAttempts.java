@@ -28,6 +28,18 @@ public final class ClientAttempts {
     public static final String RESULT_NO_LIVE_MANIFEST = "no_live_manifest";
     public static final String RESULT_EXCEPTION = "exception";
     private static final String RESULT_HTTP_PREFIX = "http_";
+    /**
+     * Of the reason in an attempt's description (see Attempt#describe)
+     */
+    static final int MAX_REASON_CHARS = 80;
+    /**
+     * Between the reason and the subreason (see ServiceHelper#createInfo)
+     */
+    private static final String REASON_DIVIDER = " \u2022 ";
+    /**
+     * The marks ServiceHelper#createInfo wraps each part in, to keep its direction (see BidiFormatter#unicodeWrap)
+     */
+    private static final String DIRECTION_MARKS = "[\\u200E\\u200F\\u202A-\\u202E\\u2066-\\u2069]";
     private static final Map<String, List<Attempt>> sAttempts = new LinkedHashMap<String, List<Attempt>>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, List<Attempt>> eldest) {
@@ -69,11 +81,19 @@ public final class ClientAttempts {
         }
 
         /**
-         * For the timing of the fetch (see FetchStages): the result, with the status of an unplayable one, e.g. "unplayable
-         * LOGIN_REQUIRED". Not its reason: that's the text the user is shown.
+         * For the timing of the fetch (see FetchStages): the result, with the status and the reason of an unplayable one, e.g.
+         * "unplayable LOGIN_REQUIRED: Sign in to confirm you're not a bot". The status alone doesn't tell a bot check from an age
+         * check or a private video. The reason is in the language YouTube is asked for, so it isn't matched: its first part, cut short.
          */
         public String describe() {
-            return status != null && RESULT_UNPLAYABLE.equals(result) ? result + " " + status : result;
+            if (!RESULT_UNPLAYABLE.equals(result)) {
+                return result;
+            }
+
+            String text = status != null ? result + " " + status : result;
+            String shortReason = shortReason(reason);
+
+            return shortReason != null ? text + ": " + shortReason : text;
         }
 
         public static Attempt ok(String client) {
@@ -156,6 +176,30 @@ public final class ClientAttempts {
             record(videoId, Attempt.exception(client, e));
             throw e;
         }
+    }
+
+    /**
+     * The reason's first part (the subreason follows it), without the marks that keep its direction, at most MAX_REASON_CHARS long.
+     * Null for none.
+     */
+    @Nullable
+    static String shortReason(@Nullable String reason) {
+        if (reason == null) {
+            return null;
+        }
+
+        String text = reason.replaceAll(DIRECTION_MARKS, "");
+        int divider = text.indexOf(REASON_DIVIDER);
+        text = (divider >= 0 ? text.substring(0, divider) : text).trim();
+
+        if (text.length() > MAX_REASON_CHARS) {
+            int end = MAX_REASON_CHARS - 1;
+            // Not between the two halves of a character
+            end = Character.isHighSurrogate(text.charAt(end - 1)) ? end - 1 : end;
+            text = text.substring(0, end).trim() + "\u2026";
+        }
+
+        return text.isEmpty() ? null : text;
     }
 
     static synchronized void resetForTesting() {
