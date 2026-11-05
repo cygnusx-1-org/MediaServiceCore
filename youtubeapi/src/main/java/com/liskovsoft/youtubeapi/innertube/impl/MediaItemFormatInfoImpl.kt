@@ -32,6 +32,7 @@ import com.liskovsoft.youtubeapi.innertube.utils.getUploadDate
 import com.liskovsoft.youtubeapi.innertube.utils.getVideoPlaybackUstreamerConfig
 import com.liskovsoft.youtubeapi.innertube.utils.getWatchTimeUrl
 import com.liskovsoft.youtubeapi.innertube.utils.isPlayableInEmbed
+import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemStoryboard
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfo
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder
@@ -58,6 +59,10 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
     private val durationPattern1 = Pattern.compile("dur=([^&]*)")
     private val durationPattern2 = Pattern.compile("/dur/([^/]*)")
     val sabrUrlHolder by lazy { VideoUrlHolder(playerResult.getServerAbrStreamingUrl()) }
+    /**
+     * On this device's clock: its streams' lifetime counts from here (see getStreamsExpireTimeMs)
+     */
+    private val createdTimeMs = System.currentTimeMillis()
     private val videoDetails by lazy { playerResult.videoDetails }
     private val _videoPlaybackUstreamerConfig by lazy { playerResult.getVideoPlaybackUstreamerConfig() }
     private val _clientInfo by lazy { AppClient.WEB } // TODO: replace with real innertube client
@@ -259,6 +264,15 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
 
     override fun getServerAbrStreamingUrl() = sabrUrlHolder.getUrl()
 
+    override fun getStreamsExpireTimeMs(): Long {
+        // Of a URL its streams are got by: SABR's, a format's or a manifest's
+        val url = getServerAbrStreamingUrl() ?: getAdaptiveFormats()?.firstNotNullOfOrNull { it.url }
+            ?: getUrlFormats()?.firstNotNullOfOrNull { it.url } ?: getDashManifestUrl() ?: getHlsManifestUrl()
+        val lifetimeMs = YouTubeMediaItemFormatInfo.getStreamsLifetimeMs(url)
+
+        return if (lifetimeMs > 0) createdTimeMs + lifetimeMs else 0
+    }
+
     override fun getPoToken() = _poToken
 
     fun setPoToken(poToken: String?) {
@@ -296,6 +310,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         // Future translations (no media) should be polled constantly.
 
         return containsMedia() && AppService.instance().isPlayerCacheActual && !PoTokenGate.isPotExpired(clientInfo)
+                && !YouTubeMediaItemFormatInfo.isStreamsExpiring(getStreamsExpireTimeMs())
     }
 
     /**

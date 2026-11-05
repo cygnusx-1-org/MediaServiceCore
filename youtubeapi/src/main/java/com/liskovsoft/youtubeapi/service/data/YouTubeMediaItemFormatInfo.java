@@ -23,7 +23,9 @@ import io.reactivex.Observable;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
@@ -71,6 +73,15 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     private AppClient mClient;
     private static final Pattern durationPattern1 = Pattern.compile("dur=([^&]*)");
     private static final Pattern durationPattern2 = Pattern.compile("/dur/([^/]*)");
+    /**
+     * Of a stream URL, as a parameter (a format's, SABR's) or in its path (a manifest's): when it stops working, and when it was made
+     */
+    private static final Pattern EXPIRE_PATTERN = Pattern.compile("[?&/]expire[=/](\\d+)");
+    private static final Pattern MADE_PATTERN = Pattern.compile("[?&/]met[=/](\\d+)");
+    /**
+     * On this device's clock: its streams' lifetime counts from here (see #getStreamsExpireTimeMs)
+     */
+    private final long mCreatedTimeMs = System.currentTimeMillis();
 
     private YouTubeMediaItemFormatInfo() {
         
@@ -427,6 +438,61 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     }
 
     @Override
+    public long getStreamsExpireTimeMs() {
+        long lifetimeMs = getStreamsLifetimeMs(getStreamsUrl());
+
+        return lifetimeMs > 0 ? mCreatedTimeMs + lifetimeMs : 0;
+    }
+
+    /**
+     * Of a URL its streams are got by: SABR's, a format's or a manifest's
+     */
+    private String getStreamsUrl() {
+        if (mServerAbrStreamingUrl != null) {
+            return mServerAbrStreamingUrl;
+        }
+
+        for (List<MediaFormat> formats : Arrays.asList(mAdaptiveFormats, mUrlFormats)) {
+            if (formats == null) {
+                continue;
+            }
+
+            for (MediaFormat format : formats) {
+                if (format.getUrl() != null) {
+                    return format.getUrl();
+                }
+            }
+        }
+
+        return mDashManifestUrl != null ? mDashManifestUrl : mHlsManifestUrl;
+    }
+
+    /**
+     * How long the server gave a stream URL: its expire time less the time it was made (met), both the server's. -1 when it doesn't
+     * say.
+     */
+    public static long getStreamsLifetimeMs(String url) {
+        if (url == null) {
+            return -1;
+        }
+
+        Matcher expire = EXPIRE_PATTERN.matcher(url);
+        Matcher made = MADE_PATTERN.matcher(url);
+
+        if (!expire.find() || !made.find()) {
+            return -1;
+        }
+
+        try {
+            long lifetimeS = Long.parseLong(expire.group(1)) - Long.parseLong(made.group(1));
+
+            return lifetimeS > 0 ? lifetimeS * 1_000 : -1;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    @Override
     public String getPoToken() {
         return mPoToken;
     }
@@ -476,7 +542,20 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
         // Check app cipher first. It's not robust check (cipher may be updated not by us).
         // So, also check internal cache state.
         // Future translations (no media) should be polled constantly.
-        return containsMedia() && AppService.instance().isPlayerCacheActual() && !PoTokenGate.isPotExpired(mClient);
+        return containsMedia() && AppService.instance().isPlayerCacheActual() && !PoTokenGate.isPotExpired(mClient)
+                && !isStreamsExpiring();
+    }
+
+    private boolean isStreamsExpiring() {
+        return isStreamsExpiring(getStreamsExpireTimeMs());
+    }
+
+    /**
+     * Played from now, streams that expire at this time (see #getStreamsExpireTimeMs) would expire before long (e.g. they were
+     * fetched hours ago): the server would refuse them
+     */
+    public static boolean isStreamsExpiring(long expireTimeMs) {
+        return expireTimeMs > 0 && System.currentTimeMillis() >= expireTimeMs - STREAMS_EXPIRE_MARGIN_MS;
     }
 
     /**

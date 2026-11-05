@@ -63,6 +63,16 @@ public interface MediaItemFormatInfo extends FormatInfoProvision {
     String getPaidContentText();
     String getVideoPlaybackUstreamerConfig();
     String getServerAbrStreamingUrl();
+    /**
+     * Its streams expire in less than this: it isn't reused, and a video played again after a long pause is fetched again first
+     */
+    long STREAMS_EXPIRE_MARGIN_MS = 5 * 60_000;
+    /**
+     * When its streams' URLs stop working (YouTube gives them about 6 h), on this device's clock (see System#currentTimeMillis): when
+     * it was made plus how long the server gave them, not the server's time, which the device's clock may be off from. 0 when
+     * unknown.
+     */
+    long getStreamsExpireTimeMs();
     String getPoToken();
     String getVisitorCookie();
     ClientInfo getClientInfo();

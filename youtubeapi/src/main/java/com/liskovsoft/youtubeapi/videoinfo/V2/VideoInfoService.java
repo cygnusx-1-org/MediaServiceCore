@@ -460,10 +460,15 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         boolean oldUseAuth = mUseAuth;
 
-        if (shouldObtainExtendedFormats(result) || result.isStoryboardBroken()) {
+        boolean isFormatsFix = shouldObtainExtendedFormats(result);
+        boolean isStoryboardFix = result.isStoryboardBroken();
+
+        if (isFormatsFix || isStoryboardFix) {
             Log.d(TAG, "Enable high bitrate formats...");
             mUseAuth = false;
-            VideoInfoHls videoInfoHls = FetchStages.time("HLS fix", null, () -> getVideoInfoIOSHls(videoId, clickTrackingParams));
+            // What it's for: the high bitrate formats, the seek previews the response lacks, or both
+            String reason = isFormatsFix && isStoryboardFix ? "formats, storyboard" : isFormatsFix ? "formats" : "storyboard";
+            VideoInfoHls videoInfoHls = FetchStages.time("HLS fix", reason, () -> getVideoInfoIOSHls(videoId, clickTrackingParams));
             if (videoInfoHls != null && shouldObtainExtendedFormats(result)) {
                 result.setHlsManifestUrl(videoInfoHls.getHlsManifestUrl());
             }
