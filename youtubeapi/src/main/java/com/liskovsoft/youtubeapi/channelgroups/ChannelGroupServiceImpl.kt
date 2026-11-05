@@ -61,13 +61,8 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
             return null
         }
 
-        for (group in mChannelGroups) {
-            if (group.id == channelGroupId) {
-                return group
-            }
-        }
-
-        return null
+        // Else by an id the group had before its id came from its title: a reference made before, here or on another device
+        return mChannelGroups.firstOrNull { it.id == channelGroupId } ?: mChannelGroups.firstOrNull { ItemGroupImpl.hasId(it, channelGroupId) }
     }
 
     override fun findChannelGroupByTitle(title: String): ItemGroup? {
@@ -111,16 +106,7 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
 
         val result: MutableList<String> = ArrayList()
 
-        var itemGroup: ItemGroup? = null
-
-        for (group in mChannelGroups) {
-            if (group.id == channelGroupId) {
-                itemGroup = group
-                break
-            }
-        }
-
-        itemGroup?.let {
+        findChannelGroupById(channelGroupId)?.let {
             for (channel in it.items) {
                 channel.channelId?.let { result.add(it) }
             }
@@ -142,12 +128,28 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
     }
 
     override fun createChannelGroup(title: String, iconUrl: String?, items: List<Item>): ItemGroup {
-        return ItemGroupImpl(title = title, iconUrl = iconUrl, items = items.toMutableList())
+        return ItemGroupImpl(id = ItemGroupImpl.subscriptionGroupId(title, ::findChannelGroupById), title = title, iconUrl = iconUrl,
+            items = items.toMutableList())
     }
 
+    /**
+     * The id stays: what refers to the group keeps finding it
+     */
     override fun renameChannelGroup(itemGroup: ItemGroup, title: String) {
-        addChannelGroup(ItemGroupImpl(itemGroup.id, title, itemGroup.iconUrl, itemGroup.items))
+        addChannelGroup(ItemGroupImpl(itemGroup.id, title, itemGroup.iconUrl, itemGroup.items, itemGroup.badge, aliasesOf(itemGroup)))
     }
+
+    private fun aliasesOf(group: ItemGroup): List<String> = ItemGroupImpl.aliasesOf(group)
+
+    /**
+     * See ItemGroupImpl.normalized. Subscriptions and Notifications keep their ids, and so does a group whose id already came
+     * from a title (renamed since, maybe).
+     */
+    private fun normalized(groups: List<ItemGroup>): Pair<MutableList<ItemGroup>, Boolean> =
+        ItemGroupImpl.normalized(groups, ::isKept) { title, groupOf -> ItemGroupImpl.subscriptionGroupId(title, groupOf) }
+
+    private fun isKept(group: ItemGroup): Boolean =
+        group.id == SUBSCRIPTIONS_GROUP_ID || group.id == NOTIFICATIONS_GROUP_ID || ItemGroupImpl.isTitleId(group.id)
 
     override fun createChannel(channelId: String, title: String?, iconUrl: String?): Item {
         return ItemImpl(channelId = channelId, title = title, iconUrl = iconUrl)
@@ -184,8 +186,12 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
                 return@forEach
             }
 
-            mChannelGroups.add(it)
-            result.add(it)
+            // The id from the title, as a group made here: the importers' are random, a file's may be another group's here
+            val group = if (ItemGroupImpl.isTitleId(it.id) && findChannelGroupById(it.id) == null) it
+                else ItemGroupImpl(ItemGroupImpl.subscriptionGroupId(it.title.orEmpty(), ::findChannelGroupById), it.title.orEmpty(),
+                    it.iconUrl, it.items.toMutableList(), it.badge)
+            mChannelGroups.add(group)
+            result.add(group)
         }
 
         if (result.isNotEmpty()) {
@@ -235,8 +241,13 @@ internal object ChannelGroupServiceImpl: MediaServicePrefs.ProfileChangeListener
 
     private fun restoreData(data: String?) {
         val split = Helpers.splitData(data)
+        val (groups, changed) = normalized(Helpers.parseList(split, 0, ItemGroupImpl::fromString))
 
-        mChannelGroups = Helpers.parseList(split, 0, ItemGroupImpl::fromString)
+        mChannelGroups = groups
+
+        if (changed) {
+            persistData()
+        }
     }
 
     fun persistData() {

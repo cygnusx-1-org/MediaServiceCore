@@ -118,12 +118,13 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
     }
 
     /**
-     * A playlist kept on this device only. Its id is a number or 12 random characters,
-     * while a YouTube playlist id (that a copy of one here is keyed by) is longer, e.g. PL and 11 characters.
+     * A playlist kept on this device only. Its id comes from its title (see ItemGroupImpl.playlistGroupId), or, made before
+     * that, is a number or 12 random characters (an alias of it then), while a YouTube playlist id (that a copy of one here is
+     * keyed by) is longer, e.g. PL and 16 or 32 characters.
      */
     public static boolean isCachedPlaylist(@Nullable String playlistId) {
         // Adding to Watch later keeps a copy of it here too (see addToCachedPlaylist)
-        return playlistId != null && playlistId.length() <= LOCAL_PLAYLIST_ID_MAX_LENGTH
+        return playlistId != null && (playlistId.length() <= LOCAL_PLAYLIST_ID_MAX_LENGTH || ItemGroupImpl.isPlaylistTitleId(playlistId))
                 && !Helpers.equalsAny(playlistId, BrowseApiHelper.LIKED_PLAYLIST, BrowseApiHelper.WATCH_LATER_PLAYLIST)
                 && PlaylistGroupServiceImpl.findPlaylistGroup(playlistId) != null;
     }

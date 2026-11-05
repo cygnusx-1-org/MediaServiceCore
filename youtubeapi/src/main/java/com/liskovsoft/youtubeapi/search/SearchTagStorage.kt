@@ -47,10 +47,20 @@ internal object SearchTagStorage: MediaServicePrefs.ProfileChangeListener {
         restoreData()
     }
 
-    private fun restoreData() {
-        _tags.clear()
+    /**
+     * The tags were changed by another device (see ServiceProfileData): taken, and saved again
+     */
+    fun onDataSynced(data: String?) {
+        restoreData(data)
+        persistData()
+    }
 
-        val data = MediaServicePrefs.getProfileData(SEARCH_TAG_DATA)
+    private fun restoreData() {
+        restoreData(MediaServicePrefs.getProfileData(SEARCH_TAG_DATA))
+    }
+
+    private fun restoreData(data: String?) {
+        _tags.clear()
 
         val split = Helpers.splitData(data)
 

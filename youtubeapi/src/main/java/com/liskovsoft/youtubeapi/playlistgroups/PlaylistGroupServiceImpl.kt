@@ -15,6 +15,12 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
     private var mPersistAction: Disposable? = null
     @JvmField
     var cachedItem: MediaItem? = null
+    /**
+     * A playlist kept on this device by an id from before its id came from its title: a number or 12 random characters
+     * (see ServiceHelper.generateRandomId). A YouTube playlist's (a copy of one is keyed by it) never is: it's longer, e.g. PL
+     * and 16 or 32 characters, or WL and LL.
+     */
+    private val RANDOM_ID = Regex("[A-Za-z0-9]{12}|[0-9]+")
 
     init {
         MediaServicePrefs.addListener(this)
@@ -48,20 +54,25 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
         if (id == null)
             return
 
-        val result = Helpers.removeIf(mPlaylists) { it.id == id }
+        val result = Helpers.removeIf(mPlaylists) { ItemGroupImpl.hasId(it, id) }
         if (!result.isNullOrEmpty()) {
             persistData()
         }
     }
 
+    /**
+     * The id stays: what refers to the playlist keeps finding it
+     */
     @JvmStatic
     fun renamePlaylistGroup(itemGroup: ItemGroup, title: String) {
-        addPlaylistGroup(ItemGroupImpl(itemGroup.id, title, itemGroup.iconUrl, itemGroup.items))
+        addPlaylistGroup(ItemGroupImpl(itemGroup.id, title, itemGroup.iconUrl, itemGroup.items, aliases = ItemGroupImpl.aliasesOf(itemGroup)))
     }
 
     @JvmStatic
     fun createPlaylistGroup(title: String, iconUrl: String?, items: List<Item>): ItemGroup {
-        return ItemGroupImpl(title = title, iconUrl = iconUrl, items = items.toMutableList())
+        // From the title, not random: the same group made on two devices of one account has one id
+        return ItemGroupImpl(id = ItemGroupImpl.playlistGroupId(title, ::findPlaylistGroup), title = title, iconUrl = iconUrl,
+            items = items.toMutableList())
     }
 
     @JvmStatic
@@ -88,7 +99,8 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
         if (id == null)
             return null
 
-        return mPlaylists.firstOrNull { it.id == id }
+        // Else by an id the playlist had before its id came from its title: a reference made before, here or on another device
+        return mPlaylists.firstOrNull { it.id == id } ?: mPlaylists.firstOrNull { ItemGroupImpl.hasId(it, id) }
     }
 
     @JvmStatic
@@ -104,14 +116,33 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
         restoreData(data)
     }
 
+    /**
+     * A playlist kept on this device by a random id gets its title's (see ItemGroupImpl.normalized): the same playlist on two
+     * devices of an account has one id, so what refers to it, synced from the other device, finds it. The copies of YouTube
+     * playlists keep the YouTube ids.
+     */
     private fun restoreData(data: String?) {
         val split = Helpers.splitData(data)
+        val (playlists, changed) = ItemGroupImpl.normalized(Helpers.parseList(split, 0, ItemGroupImpl::fromString),
+            { !RANDOM_ID.matches(it.id.orEmpty()) }) { title, groupOf -> ItemGroupImpl.playlistGroupId(title, groupOf) }
 
-        mPlaylists = Helpers.parseList(split, 0, ItemGroupImpl::fromString)
+        mPlaylists = playlists
         mPlaylists.forEach {
             it as ItemGroupImpl
             it.onChange = { persistData() }
         }
+
+        if (changed) {
+            persistData()
+        }
+    }
+
+    /**
+     * The groups were changed by another device (see ServiceProfileData): taken, and saved again
+     */
+    fun onDataSynced(data: String?) {
+        restoreData(data)
+        persistData()
     }
 
     private fun persistData() {

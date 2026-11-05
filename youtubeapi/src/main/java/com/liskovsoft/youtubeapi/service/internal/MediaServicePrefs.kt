@@ -13,7 +13,7 @@ import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl
 import com.liskovsoft.youtubeapi.search.SearchTagStorage
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 
-private const val PREF_NAME = "yt_service_prefs"
+internal const val PREF_NAME = "yt_service_prefs"
 
 @SuppressLint("StaticFieldLeak")
 internal object MediaServicePrefs: SharedPreferencesBase(AppService.instance().context, PREF_NAME), OnAccountChange {
