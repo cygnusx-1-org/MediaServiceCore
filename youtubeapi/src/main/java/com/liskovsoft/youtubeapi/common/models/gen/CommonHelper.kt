@@ -235,7 +235,8 @@ internal fun TileItem.getRichTextTileText() = header?.richTextTileHeaderRenderer
 internal fun TileItem.getContinuationToken() = onSelectCommand?.getContinuations()?.getContinuationToken()
 internal fun TileItem.isUpcoming() = BADGE_STYLE_UPCOMING == getBadgeStyle()
 internal fun TileItem.isMovie() = STATUS_STYLE_MOVIE == getStatusStyle() && getVideoId() == null // a movie has browseId instead of videoId
-internal fun TileItem.isShorts() = BADGE_STYLE_SHORTS == getBadgeStyle() || TILE_STYLE_SHORTS == getTileStyle()
+// A short opens in the shorts player, whatever its style and badge
+internal fun TileItem.isShorts() = BADGE_STYLE_SHORTS == getBadgeStyle() || TILE_STYLE_SHORTS == getTileStyle() || onSelectCommand?.reelWatchEndpoint != null
 // On Home a show is a video tile (its latest episode) that opens the show page
 internal fun TileItem.isShow() = onSelectCommand?.browseEndpoint?.isShowPage() == true || BADGE_ICON_SHOW == getBadgeIconType()
 /**
@@ -282,10 +283,11 @@ internal fun ShortsItem.getThumbnails() = onTap?.innertubeCommand?.getThumbnails
 internal const val LOCKUP_BADGE_STYLE_LIVE = "THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE"
 private const val LOCKUP_CONTENT_TYPE_CHANNEL = "LOCKUP_CONTENT_TYPE_CHANNEL"
 private const val LOCKUP_CONTENT_TYPE_PODCAST = "LOCKUP_CONTENT_TYPE_PODCAST"
+private const val LOCKUP_CONTENT_TYPE_SHORT = "LOCKUP_CONTENT_TYPE_SHORT"
 
 internal fun LockupItem.getTitle() = metadata?.lockupMetadataViewModel?.title?.getText()
 internal fun LockupItem.getSubTitle() = YouTubeHelper.createInfo(
-    *metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows?.mapNotNull {
+    *getMetadataRows()?.mapNotNull {
         it?.metadataParts?.mapNotNull { it?.text?.getText() } }?.flatten()?.toTypedArray() ?: emptyArray<String>()
 )
 internal fun LockupItem.getVideoId() = rendererContext?.getVideoId()
@@ -306,10 +308,16 @@ internal fun LockupItem.isChannel() = contentType == LOCKUP_CONTENT_TYPE_CHANNEL
  */
 internal fun LockupItem.getChannelHandle() = takeIf { it.isChannel() }?.rendererContext?.commandContext?.onLongPress?.innertubeCommand
     ?.showMenuCommand?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
+/**
+ * A short of a row of videos (e.g. on Home TV) has a landscape thumbnail and no duration, so only its type or the shorts player it opens tells.
+ */
+internal fun LockupItem.isShorts() = contentType == LOCKUP_CONTENT_TYPE_SHORT || rendererContext?.getOnTapCommand()?.reelWatchEndpoint != null
+internal fun LockupItem.isDateMissing() = getMetadataRows().isNullOrEmpty()
 internal fun LockupItem.isShow() = contentType == LOCKUP_CONTENT_TYPE_PODCAST || rendererContext?.getOnTapCommand()?.browseEndpoint?.isShowPage() == true
 private fun LockupItem.getBadge() = getOverlays()?.firstNotNullOfOrNull { it?.thumbnailOverlayBadgeViewModel?.thumbnailBadges
     ?: it?.thumbnailBottomOverlayViewModel?.badges }?.firstNotNullOfOrNull { it?.thumbnailBadgeViewModel }
 private fun LockupItem.getOverlays() = getThumbnailView()?.overlays
+private fun LockupItem.getMetadataRows() = metadata?.lockupMetadataViewModel?.metadata?.contentMetadataViewModel?.metadataRows
 private fun LockupItem.getThumbnailView() = contentImage?.thumbnailViewModel ?: contentImage?.collectionThumbnailViewModel?.primaryThumbnail?.thumbnailViewModel
 
 ////////////
@@ -395,13 +403,15 @@ internal fun ItemWrapper.isUpcoming() = getVideoItem()?.isUpcoming() ?: getMusic
 internal fun ItemWrapper.isMovie() = getVideoItem()?.isMovie() ?: getTileItem()?.isMovie() ?: false
 internal fun ItemWrapper.isShow() = getTileItem()?.isShow() ?: getLockupItem()?.isShow() ?: false
 internal fun ItemWrapper.getSourceId() = getTileItem()?.getSourceId()
-internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts() ?: false
+internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts()
+    ?: getLockupItem()?.isShorts() ?: false
 /**
- * No date comes with the item: a shelf of shorts gives the channel (TV tile without lines) or the views (web lockup) only.
- * A short of a playlist has the views and the date in its lines (TV) or its video info (web).
+ * No date comes with the item: a shelf of shorts gives the channel (TV tile without lines) or the views (web lockup) only,
+ * or nothing at all (TV lockup without rows).
+ * A short of a playlist or of a row of videos has the views and the date in its lines (TV) or its video info (web).
  */
 internal fun ItemWrapper.isDateMissing() = shortsLockupViewModel != null || getVideoItem()?.let { it.getPublishedTimeText() == null && it.videoInfo == null }
-    ?: getTileItem()?.let { it.metadata?.tileMetadataRenderer?.lines.isNullOrEmpty() } ?: false
+    ?: getTileItem()?.let { it.metadata?.tileMetadataRenderer?.lines.isNullOrEmpty() } ?: getLockupItem()?.isDateMissing() ?: false
 internal fun ItemWrapper.getDescriptionText() = getTileItem()?.getRichTextTileText()
 internal fun ItemWrapper.getContinuationToken() = getTileItem()?.getContinuationToken() ?: getContinuationItem()?.getContinuationToken()
 internal fun ItemWrapper.getFeedbackToken() = getFeedbackTokens()?.getOrNull(0)
