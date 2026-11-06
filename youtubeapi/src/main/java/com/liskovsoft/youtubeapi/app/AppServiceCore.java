@@ -115,6 +115,21 @@ class AppServiceCore {
         return true;
     }
 
+    /**
+     * The app info is due its refresh soon, or past it: the next fetch would get it again, and load the player of a new url
+     */
+    public boolean isPlayerDataToRefresh() {
+        // NOP: nothing is kept
+        return false;
+    }
+
+    /**
+     * Gets the app info again before it's due, and loads the player of its url (see isPlayerDataToRefresh)
+     */
+    public void refreshPlayerData(@Nullable AppClient client) {
+        // NOP: nothing is kept
+    }
+
     // Moved from AppService
 
     public String getClientId() {

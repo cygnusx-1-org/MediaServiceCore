@@ -22,7 +22,10 @@ import kotlin.Pair;
 public class AppService {
     private static AppService sInstance;
     private final AppServiceCore mAppServiceCore;
-    private String mClientPlaybackNonce;
+    /**
+     * Read without the lock: a call doesn't wait for another one's player load (see getClientPlaybackNonce)
+     */
+    private volatile String mClientPlaybackNonce;
 
     private AppService() {
         mAppServiceCore = new AppServiceCoreCached();
@@ -131,7 +134,7 @@ public class AppService {
      * NOTE: Unique per video info instance<br/>
      * A nonce is a unique value chosen by an entity in a protocol, and it is used to protect that entity against attacks which fall under the very large umbrella of "replay".
      */
-    public synchronized String getClientPlaybackNonce() {
+    public String getClientPlaybackNonce() {
         return getClientPlaybackNonce(null);
     }
 
@@ -139,20 +142,29 @@ public class AppService {
      * NOTE: Unique per video info instance<br/>
      * A nonce is a unique value chosen by an entity in a protocol, and it is used to protect that entity against attacks which fall under the very large umbrella of "replay".
      */
-    public synchronized String getClientPlaybackNonce(@Nullable AppClient client) {
-        if (mClientPlaybackNonce != null) {
-            return mClientPlaybackNonce;
+    public String getClientPlaybackNonce(@Nullable AppClient client) {
+        String nonce = mClientPlaybackNonce;
+
+        if (nonce != null) {
+            return nonce;
         }
 
+        // Not under the lock: the TV request held it for the subtitles' web player load (3.5 s on a cold start with a new player). The
+        // player's load waits on that player's lock only.
         PlayerDataExtractor playerDataExtractor = mAppServiceCore.getPlayerDataExtractor(client);
 
         if (playerDataExtractor == null) {
             return null;
         }
 
-        mClientPlaybackNonce = playerDataExtractor.createClientPlaybackNonce();
+        synchronized (this) {
+            // One per video: a call that got here first made it
+            if (mClientPlaybackNonce == null) {
+                mClientPlaybackNonce = playerDataExtractor.createClientPlaybackNonce();
+            }
 
-        return mClientPlaybackNonce;
+            return mClientPlaybackNonce;
+        }
     }
 
     public void resetClientPlaybackNonce() {
@@ -236,6 +248,22 @@ public class AppService {
      */
     public boolean isPlayerDataWarm(@Nullable AppClient client) {
         return mAppServiceCore.isPlayerDataWarm(client);
+    }
+
+    /**
+     * The app info is due its refresh within the hour, or past it (see refreshPlayerData)
+     */
+    public boolean isPlayerDataToRefresh() {
+        return mAppServiceCore.isPlayerDataToRefresh();
+    }
+
+    /**
+     * Gets the app info again before it's due, and loads the player of its url if YouTube changed it, in the background: otherwise the
+     * next fetch does, and a new player's load took 10 s of a start on a Shield. Not while a fetch runs: its request and its decipher
+     * would go by different players.
+     */
+    public void refreshPlayerData(@Nullable AppClient client) {
+        mAppServiceCore.refreshPlayerData(client);
     }
 
     @NonNull

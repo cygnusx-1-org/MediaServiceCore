@@ -122,7 +122,7 @@ internal class WebPlayerDataExtractor(override val playerUrl: String): PlayerDat
     }
 
     private fun loadPlayer(): String? {
-        return YouTubeInfoExtractor.loadPlayerSilent(fixedPlayerUrl)
+        return PlayerDownload.time { YouTubeInfoExtractor.loadPlayerSilent(fixedPlayerUrl) }
     }
 
     private fun fetchAllData() {

@@ -67,6 +67,16 @@ internal object FormatInfoWrapper {
     private val mPoTokenAhead = AtomicBoolean()
     private val mPlayerDataAhead = AtomicBoolean()
     private val mPoTokenRefresh = AtomicBoolean()
+    private val mPlayerDataRefresh = AtomicBoolean()
+    /**
+     * The detail of a fetch's lock wait while the player data's refresh holds the lock (see refreshPlayerDataLater)
+     */
+    const val LOCK_PLAYER_DATA_REFRESH = "player data refresh"
+    /**
+     * What holds the fetches' lock that isn't a fetch, null for none: what a fetch's lock wait waits for
+     */
+    @Volatile
+    private var mLockHolder: String? = null
     /**
      * After a fetch, the poToken that expires soon is made again this much later: its WebView runs on the main thread, so it's made
      * once the video plays, not while it starts (see refreshPoTokenLater)
@@ -79,10 +89,11 @@ internal object FormatInfoWrapper {
 
         try {
             val lockWait = FetchStages.begin("lock wait")
+            // Another fetch, or the player data's refresh (the warm-up doesn't hold the lock). Read before the wait: it's let go after.
+            val holder = mLockHolder
 
-            // Another fetch: the warm-up doesn't hold the lock
             synchronized(lock) {
-                lockWait.end(null)
+                lockWait.end(holder)
                 return selectPlaybackFormatInfo(videoId, clickTrackingParams)
             }
         } finally {
@@ -90,6 +101,7 @@ internal object FormatInfoWrapper {
             FetchStages.close()
             ReloadPlaybackGate.reset(videoId)
             refreshPoTokenLater()
+            refreshPlayerDataLater()
         }
     }
 
@@ -116,6 +128,7 @@ internal object FormatInfoWrapper {
 
         // E.g. one kept by a run before, about to expire
         refreshPoTokenLater()
+        refreshPlayerDataLater()
     }
 
     /**
@@ -214,6 +227,45 @@ internal object FormatInfoWrapper {
             }, REFRESH_DELAY_MS)
         } catch (e: Exception) {
             Log.e(TAG, "Can't check the poToken: %s", e.message)
+        }
+    }
+
+    /**
+     * The app info due its refresh soon is got again in the background, and the player of a new url loaded: the next fetch doesn't
+     * load it (see AppService#refreshPlayerData). Later, like the poToken's: the player's load is heavy, and the video starting needs
+     * the device.
+     */
+    private fun refreshPlayerDataLater() {
+        // Called in the fetch's finally: nothing thrown here may replace its result
+        try {
+            if (!AppService.instance().isPlayerDataToRefresh() || !mPlayerDataRefresh.compareAndSet(false, true)) {
+                return
+            }
+
+            // The delay ends on a computation thread, which isn't for work that waits
+            RxHelper.runAsync({
+                RxHelper.runAsync {
+                    try {
+                        // Not while a fetch runs: its request and its decipher would go by different players, and the solver keeps one
+                        // only (see TclChallengeProvider). A fetch started meanwhile waits for it.
+                        synchronized(lock) {
+                            mLockHolder = LOCK_PLAYER_DATA_REFRESH
+
+                            try {
+                                AppService.instance().refreshPlayerData(getVideoInfoService().nextClient)
+                            } finally {
+                                mLockHolder = null
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Can't refresh the player data: %s", e.message)
+                    } finally {
+                        mPlayerDataRefresh.set(false)
+                    }
+                }
+            }, REFRESH_DELAY_MS)
+        } catch (e: Exception) {
+            Log.e(TAG, "Can't check the player data: %s", e.message)
         }
     }
 

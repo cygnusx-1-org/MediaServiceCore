@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -252,6 +253,17 @@ public final class FetchStages {
      */
     public static void mark(String name, @Nullable String detail) {
         begin(name).end(detail);
+    }
+
+    /**
+     * Of a stage that got that much, e.g. 2.6 MB, 640 KB
+     */
+    public static String formatBytes(long bytes) {
+        if (bytes >= 1_000_000) {
+            return String.format(Locale.US, "%.1f MB", bytes / 1_000_000f);
+        }
+
+        return String.format(Locale.US, "%d KB", Math.round(bytes / 1_000f));
     }
 
     private static synchronized void addOpenSpan(Span span) {

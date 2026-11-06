@@ -9,6 +9,7 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.common.CacheService
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.CachedData
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.loadScript
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.withLock
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 import java.security.MessageDigest
 
 /**
@@ -48,6 +49,19 @@ internal object TclChallengeProvider {
     private var pendingPreprocessed: String? = null
     private val v8Lock = Any()
     private const val cacheSection = "tcl-challenge-solver"
+    /**
+     * A player's load, in the stages of the fetch that waits for it (see FetchStages): the runtime made with the solver's scripts, the
+     * player's source preprocessed by them (its download is a stage of its own, see PlayerDownload), and its n-function made from that
+     */
+    const val STAGE_V8_START = "V8 start"
+    const val STAGE_PREPROCESS = "player preprocess"
+    const val STAGE_N_FUNCTION_LOAD = "n-function load"
+    /**
+     * Where the n-function loaded was preprocessed: before (the cache), or just now
+     */
+    const val LOADED_FROM_CACHE = "cache"
+    const val LOADED_FROM_PREPROCESSED = "preprocessed"
+    private const val FAILED = "failed"
     /**
      * Of the solver scripts: a player that other ones preprocessed (e.g. before the app was updated) is preprocessed again
      */
@@ -156,7 +170,7 @@ internal object TclChallengeProvider {
         val cached = CacheService.load(cacheSection, getCacheKey(playerUrl))?.takeIf { it.version == solverVersion }?.code
 
         if (cached != null) {
-            if (loadNFunction(playerUrl, cached)) {
+            if (timeLoad(LOADED_FROM_CACHE) { loadNFunction(playerUrl, cached) }) {
                 return PlayerSource.CACHE
             }
 
@@ -166,7 +180,7 @@ internal object TclChallengeProvider {
 
         val preprocessed = preprocess(playerCode) ?: return null
 
-        if (!loadNFunction(playerUrl, preprocessed)) {
+        if (!timeLoad(LOADED_FROM_PREPROCESSED) { loadNFunction(playerUrl, preprocessed) }) {
             return null
         }
 
@@ -187,7 +201,32 @@ internal object TclChallengeProvider {
 
         initRuntime()
 
-        return runSolver("JSON.stringify(tclSolver(${Gson().toJson(request)}));")?.preprocessed_player
+        val span = FetchStages.begin(STAGE_PREPROCESS)
+        var preprocessed: String? = null
+
+        try {
+            preprocessed = runSolver("JSON.stringify(tclSolver(${Gson().toJson(request)}));")?.preprocessed_player
+        } finally {
+            span.end(if (preprocessed != null) null else FAILED)
+        }
+
+        return preprocessed
+    }
+
+    /**
+     * The n-function made from the preprocessed player, in a fetch's stages: from the cache, or just preprocessed
+     */
+    private fun timeLoad(source: String, load: () -> Boolean): Boolean {
+        val span = FetchStages.begin(STAGE_N_FUNCTION_LOAD)
+        var isLoaded = false
+
+        try {
+            isLoaded = load()
+        } finally {
+            span.end(if (isLoaded) source else "$source, $FAILED")
+        }
+
+        return isLoaded
     }
 
     private fun loadNFunction(playerUrl: String, preprocessed: String): Boolean {
@@ -263,10 +302,13 @@ internal object TclChallengeProvider {
         if (v8Runtime != null) {
             return
         }
-        // Read before the runtime is made: it's never left locked to this thread (see withLock)
-        val stdin = constructCommonStdin()
-        v8Runtime = V8.createV8Runtime()
-        runV8(stdin)
+
+        FetchStages.time(STAGE_V8_START, null) {
+            // Read before the runtime is made: it's never left locked to this thread (see withLock)
+            val stdin = constructCommonStdin()
+            v8Runtime = V8.createV8Runtime()
+            runV8(stdin)
+        }
     }
 
     private fun constructCommonStdin(): String {
