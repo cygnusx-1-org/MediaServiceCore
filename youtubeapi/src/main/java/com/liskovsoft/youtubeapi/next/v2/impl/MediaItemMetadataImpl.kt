@@ -59,7 +59,7 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
             ?: emptyMap()
     }
     private val channelOwner by lazy {
-        watchNextResult.getButtonStateItem()?.getChannelOwner()
+        buttonStateItem?.getChannelOwner()
     }
     private val notificationPreference by lazy {
         videoOwner?.getNotificationPreference()
@@ -81,7 +81,7 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     }
     var isSubscribedOverrideItem: Boolean? = null
     private val isSubscribedItem by lazy {
-        videoOwner?.isSubscribed() ?: channelOwner?.isSubscribed() ?: false
+        buttonStateItem?.isSubscribeToggled() ?: videoOwner?.isSubscribed() ?: channelOwner?.isSubscribed() ?: false
     }
     private val paramsItem by lazy {
         videoOwner?.getParams() ?: channelOwner?.getParams()
@@ -99,14 +99,14 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
         videoMetadata?.isUpcoming() ?: false
     }
     private val likeStatusItem by lazy {
-        when (videoMetadata?.getLikeStatus() ?: watchNextResult.getButtonStateItem()?.getLikeStatus()) {
+        when (videoMetadata?.getLikeStatus() ?: buttonStateItem?.getLikeStatus()) {
             LIKE_STATUS_LIKE -> MediaItemMetadata.LIKE_STATUS_LIKE
             LIKE_STATUS_DISLIKE -> MediaItemMetadata.LIKE_STATUS_DISLIKE
             LIKE_STATUS_INDIFFERENT -> MediaItemMetadata.LIKE_STATUS_INDIFFERENT
             else -> {
                 when {
-                    watchNextResult.getButtonStateItem()?.isLikeToggled() == true -> MediaItemMetadata.LIKE_STATUS_LIKE
-                    watchNextResult.getButtonStateItem()?.isDislikeToggled() == true -> MediaItemMetadata.LIKE_STATUS_DISLIKE
+                    buttonStateItem?.isLikeToggled() == true -> MediaItemMetadata.LIKE_STATUS_LIKE
+                    buttonStateItem?.isDislikeToggled() == true -> MediaItemMetadata.LIKE_STATUS_DISLIKE
                     else -> MediaItemMetadata.LIKE_STATUS_INDIFFERENT
                 }
             }

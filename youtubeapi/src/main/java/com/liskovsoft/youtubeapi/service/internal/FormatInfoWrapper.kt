@@ -84,7 +84,10 @@ internal object FormatInfoWrapper {
     private const val REFRESH_DELAY_MS = 15_000L
 
     @JvmStatic
-    fun getFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
+    fun getFormatInfo(videoId: String?, clickTrackingParams: String?): MediaItemFormatInfo? {
+        if (videoId == null)
+            return null
+
         val fetch = FetchStages.open(videoId)
 
         try {

@@ -140,7 +140,8 @@ internal data class ButtonContentWrapper(
     val toggleButtonRenderer: ToggleButtonRenderer?,
     val buttonRenderer: ButtonRenderer?,
     val musicPlayButtonRenderer: MusicPlayButtonRenderer?,
-    val likeButtonRenderer: LikeButtonRenderer?
+    val likeButtonRenderer: LikeButtonRenderer?,
+    val subscribeButtonRenderer: SubscribeButtonRenderer?
 )
 
 internal data class ButtonRenderer(
