@@ -34,6 +34,8 @@ private const val CHANNEL_ITEMS_PARTS = 4 // of time, read at once
 private const val CHANNEL_ITEMS_MAX_PAGES = 40 // a part, or all of them when read one after another: three weeks of 126 channels
 private const val KNOWN_MAX_PAGES = 10 // looking for the ones read before: past them, all of them are read again
 private const val NEWEST_VIDEO_COUNT = 5 // a few, as one can be deleted
+// The pages of History read at once while a row of it has no card (see getHistoryRows): about 150 videos, 4 s more at most
+private const val HISTORY_ROWS_MAX_PAGES = 10
 
 internal open class BrowseService2 {
     private var mBrowseApi = RetrofitHelper.create(BrowseApi::class.java)
@@ -416,6 +418,106 @@ internal open class BrowseService2 {
 
     fun getHistory(): MediaGroup? {
         return getBrowseGridTV(BrowseApiHelper::getMyHistoryQuery, MediaGroup.TYPE_HISTORY)
+    }
+
+    /**
+     * The videos of History without its shorts, as a grid: the row of videos of getHistoryRows on its own. Its next pages keep
+     * leaving the shorts out (see MediaGroupOptions.part).
+     */
+    fun getHistoryVideos(): MediaGroup? {
+        return getBrowseGridTV(BrowseApiHelper::getMyHistoryQuery, MediaGroup.TYPE_HISTORY, part = FeedPart.VIDEOS)
+    }
+
+    /**
+     * History as two rows, like My videos: its videos, then its shorts. Both are made of the same pages of the history, in its
+     * order, and each one keeps its kind on its next pages (see MediaGroupOptions.part).<br/>
+     * The next pages are read while a row has no card, HISTORY_ROWS_MAX_PAGES at most, so the rows are shown together rather than
+     * one popping in under the other: a row without one by then is left out.<br/>
+     * The shorts are the kept ones when they're still those of History (see HistoryShortsCache): only the row of videos reads pages then.
+     */
+    fun getHistoryRows(): List<MediaGroup>? {
+        val videosOptions = MediaGroupOptions.create(MediaGroup.TYPE_HISTORY, FeedPart.VIDEOS)
+        val shortsOptions = MediaGroupOptions.create(MediaGroup.TYPE_HISTORY, FeedPart.SHORTS)
+        val firstPage = RetrofitHelper.get(
+            mBrowseApi.getBrowseResultTV(BrowseApiHelper.getMyHistoryQuery(videosOptions.clientTV))) ?: return null
+
+        var items: List<ItemWrapper?>? = firstPage.getItems()
+        var key: String? = firstPage.getContinuationToken()
+        var pageCount = 1
+        val pageIds = items.orEmpty().mapNotNull { it?.getVideoId() }
+        val kept = HistoryShortsCache.get()
+        val keptShorts = kept?.let { getKeptHistoryShorts(it, firstPage, shortsOptions) }
+
+        // The row of the pages read, continued from the page after them
+        fun row(options: MediaGroupOptions) =
+            BrowseMediaGroupTV(firstPage, options, overrideItems = items, overrideKey = key, isLiveFirst = false)
+
+        // False when there's no next page, or it isn't read (e.g. the load is cancelled)
+        fun readNextPage(): Boolean {
+            val nextKey = key ?: return false
+            val page = RetrofitHelper.get(
+                mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(videosOptions.clientTV, nextKey))) ?: return false
+            // Read as the next pages of the rows are (see WatchNexContinuationMediaGroup of continueGroupTV)
+            val lastShelf = page.getShelves()?.lastOrNull()
+
+            items = (items ?: emptyList()) + (page.getItems() ?: lastShelf?.getItems() ?: emptyList())
+            key = page.getContinuationToken() ?: lastShelf?.getContinuationToken()
+            pageCount++
+
+            return true
+        }
+
+        // The kept shorts, continued from the page after them, or the ones of the pages read
+        fun shortsRow() = if (keptShorts != null)
+            BrowseMediaGroupTV(firstPage, shortsOptions, overrideItems = keptShorts, overrideKey = kept?.nextKey, isLiveFirst = false)
+        else row(shortsOptions)
+
+        var videos = row(videosOptions)
+        var shorts = shortsRow()
+
+        while ((videos.isEmpty || (shorts.isEmpty && keptShorts == null)) && pageCount < HISTORY_ROWS_MAX_PAGES && readNextPage()) {
+            videos = row(videosOptions)
+            shorts = shortsRow()
+        }
+
+        HistoryShortsCache.put(HistoryShortsCache.Entry(shorts.getKeptItemWrappers(), shorts.nextPageKey, pageIds))
+
+        return listOf(videos, shorts).filter { !it.isEmpty }
+    }
+
+    /**
+     * The kept shorts of History with the ones of its first page watched since on top, a short watched again moving up. Null when more
+     * than a page was watched since: the last video of the page wasn't on the page they were checked with, so shorts watched since can
+     * be on the next pages.<br/>
+     * The videos at the bottom of the page that keep the order they had on that page weren't watched since. The ones above them were.
+     */
+    private fun getKeptHistoryShorts(kept: HistoryShortsCache.Entry, firstPage: BrowseResultTV, shortsOptions: MediaGroupOptions): List<ItemWrapper?>? {
+        val page = firstPage.getItems().orEmpty().filter { it?.getVideoId() != null }
+        val keptIndexById = kept.pageIds.withIndex().associate { it.value to it.index }
+        var watchedCount = page.size
+        var keptIndex = Int.MAX_VALUE
+
+        while (watchedCount > 0) {
+            val index = page[watchedCount - 1]?.getVideoId()?.let { keptIndexById[it] } ?: break
+
+            if (index >= keptIndex) {
+                break
+            }
+
+            keptIndex = index
+            watchedCount--
+        }
+
+        if (watchedCount == page.size) {
+            return null
+        }
+
+        val watchedShorts = BrowseMediaGroupTV(firstPage, shortsOptions, overrideItems = page.subList(0, watchedCount), isLiveFirst = false)
+            .getKeptItemWrappers()
+        val watchedIds = watchedShorts.mapNotNull { it.getVideoId() }.toSet()
+        val shorts = watchedShorts + kept.shorts.filter { short -> short?.getVideoId().let { it == null || it !in watchedIds } }
+
+        return shorts.takeIf { it.size <= HistoryShortsCache.MAX_SHORTS }
     }
 
     /**
@@ -833,16 +935,32 @@ internal open class BrowseService2 {
             return null
         }
 
-        val options = MediaGroupOptions.create(group.type)
+        // A row of a feed split by kind keeps its kind (e.g. the row of shorts of History, see getHistoryRows)
+        val options = MediaGroupOptions.create(group.type, (group as? BaseMediaGroup)?.part ?: FeedPart.ALL)
         val continuationResult =
             mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(options.clientTV, group.nextPageKey))
 
-        return RetrofitHelper.get(continuationResult)?.let {
+        val result = RetrofitHelper.get(continuationResult)?.let {
             // Prepare to move LIVE items to the top. Multiple results should be combined first.
             val (overrideItems, overrideKey) = if (continueIfNeeded) continueIfNeededTV(it.getItems(), it.getContinuationToken(), options) else Pair(null, null)
 
             WatchNexContinuationMediaGroup(it, options, overrideItems = overrideItems, overrideKey = overrideKey).apply { title = group.title }
         }
+
+        // The kept shorts of History get the shorts of their next pages, so they're there the next time it's shown (see HistoryShortsCache)
+        if (group.type == MediaGroup.TYPE_HISTORY && options.part == FeedPart.SHORTS) {
+            if (result == null) {
+                HistoryShortsCache.onNextPageFailed(group.nextPageKey)
+            } else {
+                // Not the shorts the row has already (see HistoryShortsCache.getKeptIds)
+                HistoryShortsCache.getKeptIds(group.nextPageKey)?.let { keptIds ->
+                    result.setMediaItems(result.mediaItems?.filter { it?.videoId == null || it.videoId !in keptIds })
+                }
+                HistoryShortsCache.append(group.nextPageKey, result.getKeptItemWrappers(), result.nextPageKey)
+            }
+        }
+
+        return result
     }
 
     private fun getBrowseRowsTV(query: (AppClient) -> String, sectionType: Int, gridType: Int = MediaGroup.TYPE_UNDEFINED): Pair<List<MediaGroup?>?, String?>? {
@@ -861,8 +979,12 @@ internal open class BrowseService2 {
         }
     }
 
-    private fun getBrowseGridTV(query: (AppClient) -> String, sectionType: Int, shouldContinue: Boolean = false): MediaGroup? {
-        val options = MediaGroupOptions.create(sectionType)
+    /**
+     * @param part the items of the grid when the feed is split into rows by kind (see MediaGroupOptions.part), kept by its next pages
+     */
+    private fun getBrowseGridTV(query: (AppClient) -> String, sectionType: Int, shouldContinue: Boolean = false,
+                                part: FeedPart = FeedPart.ALL): MediaGroup? {
+        val options = MediaGroupOptions.create(sectionType, part)
         val browseResult = mBrowseApi.getBrowseResultTV(query(options.clientTV))
 
         return RetrofitHelper.get(browseResult)?.let {

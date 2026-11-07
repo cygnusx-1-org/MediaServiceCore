@@ -27,6 +27,7 @@ import com.liskovsoft.youtubeapi.actions.ActionsServiceWrapper;
 import com.liskovsoft.youtubeapi.block.SponsorBlockService;
 import com.liskovsoft.youtubeapi.block.data.SegmentList;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseApiHelper;
+import com.liskovsoft.youtubeapi.browse.v2.HistoryShortsCache;
 import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.BaseMediaItem;
 import com.liskovsoft.youtubeapi.aislist.AiSListService;
 import com.liskovsoft.youtubeapi.videocategory.VideoCategoryService;
@@ -298,6 +299,8 @@ public class YouTubeMediaItemService implements MediaItemService {
         checkSigned();
 
         getFeedbackService().markAsNotInterested(feedbackToken);
+        // Removed from History: a short leaves the kept ones too
+        HistoryShortsCache.remove(feedbackToken);
     }
 
     @Override

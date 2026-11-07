@@ -36,14 +36,18 @@ internal data class BrowseMediaGroup(
     override fun getTitleInt(): String? = browseResult.getTitle()
 }
 
+/**
+ * @param isLiveFirst the live videos of the pages read at once (overrideItems) on top, or their order kept (e.g. of History)
+ */
 internal data class BrowseMediaGroupTV(
     private val browseResult: BrowseResultTV,
     private val options: MediaGroupOptions,
     private val overrideItems: List<ItemWrapper?>? = null,
-    private val overrideKey: String? = null
+    private val overrideKey: String? = null,
+    private val isLiveFirst: Boolean = true
 ): BaseMediaGroup(options) {
     override fun getItemWrappersInt(): List<ItemWrapper?>? =
-        overrideItems?.sortedByDescending { it?.isLive() ?: false } ?: browseResult.getItems()
+        overrideItems?.let { items -> if (isLiveFirst) items.sortedByDescending { it?.isLive() ?: false } else items } ?: browseResult.getItems()
     override fun getNextPageKeyInt(): String? = if (overrideItems != null) overrideKey else browseResult.getContinuationToken()
     override fun getTitleInt(): String? = null
 }

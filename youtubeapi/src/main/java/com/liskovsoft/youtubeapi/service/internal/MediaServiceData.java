@@ -39,6 +39,10 @@ public class MediaServiceData {
     public static final int CONTENT_SHORTS_SEARCH = 1 << 4;
     // 1 << 5 was Watched in Watch later, which the Remove watched videos of the Watch later section replaced. Not reused: settings saved before keep it.
     public static final int CONTENT_SHORTS_SUBSCRIPTIONS = 1 << 6;
+    /**
+     * Shorts hidden from History, which has them on a row of their own since. Not read anymore, and not part of
+     * {@link #CONTENT_SHORTS_ALL}; the bit isn't reused: settings saved before keep it.
+     */
     public static final int CONTENT_SHORTS_HISTORY = 1 << 7;
     public static final int CONTENT_UPCOMING_CHANNEL = 1 << 8;
     public static final int CONTENT_UPCOMING_HOME = 1 << 9;
@@ -62,12 +66,17 @@ public class MediaServiceData {
     public static final int CONTENT_SHORTS_MY_VIDEOS = 1 << 24;
     public static final int CONTENT_NON_GAMING_GAMING = 1 << 25;
     /**
+     * The row of Shorts History hidden: History is the grid of its videos (see ContentService.getHistoryVideos) rather than its rows.
+     * Read by the app. Off by default, and not part of {@link #CONTENT_SHORTS_ALL}, like History's shorts before it.
+     */
+    public static final int CONTENT_SHORTS_HISTORY_ROW = 1 << 26;
+    /**
      * Hide shorts everywhere, before Gaming, Music, Sports, Live and My videos had their own options
      */
     private static final int CONTENT_SHORTS_ALL_OLD = CONTENT_SHORTS_HOME | CONTENT_SHORTS_SEARCH
             | CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_TRENDING_OLD
             | CONTENT_SHORTS_CHANNEL | CONTENT_SHORTS_NEWS;
-    public static final int CONTENT_SHORTS_ALL = (CONTENT_SHORTS_ALL_OLD & ~CONTENT_SHORTS_TRENDING_OLD) | CONTENT_SHORTS_GAMING
+    public static final int CONTENT_SHORTS_ALL = (CONTENT_SHORTS_ALL_OLD & ~(CONTENT_SHORTS_TRENDING_OLD | CONTENT_SHORTS_HISTORY)) | CONTENT_SHORTS_GAMING
             | CONTENT_SHORTS_MUSIC | CONTENT_SHORTS_SPORTS | CONTENT_SHORTS_LIVE | CONTENT_SHORTS_MY_VIDEOS;
     public static final int CONTENT_HIDDEN_DEFAULT = CONTENT_SHORTS_SUBSCRIPTIONS | CONTENT_SHORTS_HISTORY | CONTENT_SHORTS_NEWS
             | CONTENT_UPCOMING_HOME;

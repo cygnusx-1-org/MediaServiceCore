@@ -9,15 +9,19 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                                       val removeUpcoming: Boolean = false,
                                       val removeWatched: Boolean = false,
                                       val groupType: Int,
-                                      val enableLegacyUI: Boolean = false) {
+                                      val enableLegacyUI: Boolean = false,
+                                      val part: FeedPart = FeedPart.ALL) {
     val clientTV by lazy { if (enableLegacyUI) AppClient.TV_LEGACY else AppClient.TV }
 
     companion object {
-        fun create(groupType: Int): MediaGroupOptions {
+        /**
+         * @param part the row of a feed split by kind the group is (see BrowseService2.getHistoryRows)
+         */
+        fun create(groupType: Int, part: FeedPart = FeedPart.ALL): MediaGroupOptions {
             val data = MediaServiceData.instance()
+            // Not History: its shorts are a row of their own (see BrowseService2.getHistoryRows)
             val removeShorts = (MediaGroup.TYPE_SUBSCRIPTIONS == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS))
                     || (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_HOME))
-                    || (MediaGroup.TYPE_HISTORY == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_HISTORY))
                     || (MediaGroup.TYPE_CHANNEL == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_CHANNEL))
                     || (MediaGroup.TYPE_CHANNEL_UPLOADS == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_CHANNEL))
                     || (MediaGroup.TYPE_SEARCH == groupType && data.isContentHidden(MediaServiceData.CONTENT_SHORTS_SEARCH))
@@ -45,8 +49,16 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                 removeUpcoming,
                 removeWatched,
                 groupType,
-                enableLegacyUI
+                enableLegacyUI,
+                part
             )
         }
     }
+}
+
+/**
+ * The items a row keeps of a feed that's split into rows by kind (e.g. History: its videos, then its shorts)
+ */
+internal enum class FeedPart {
+    ALL, VIDEOS, SHORTS
 }

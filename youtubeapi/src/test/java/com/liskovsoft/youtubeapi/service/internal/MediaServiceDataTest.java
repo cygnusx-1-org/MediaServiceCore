@@ -39,6 +39,14 @@ public class MediaServiceDataTest {
         assertEquals(0, MediaServiceData.CONTENT_SHORTS_ALL & MediaServiceData.CONTENT_SHORTS_TRENDING_OLD);
     }
 
+    /**
+     * History has its shorts on a row of their own: the shorts hidden everywhere are the ones of the options there are
+     */
+    @Test
+    public void testThatHidingShortsEverywhereLeavesOutHistory() {
+        assertEquals(0, MediaServiceData.CONTENT_SHORTS_ALL & MediaServiceData.CONTENT_SHORTS_HISTORY);
+    }
+
     @Test
     public void testThatTheDefaultStaysAsItIs() {
         int hidden = MediaServiceData.CONTENT_SHORTS_SUBSCRIPTIONS | MediaServiceData.CONTENT_SHORTS_HISTORY

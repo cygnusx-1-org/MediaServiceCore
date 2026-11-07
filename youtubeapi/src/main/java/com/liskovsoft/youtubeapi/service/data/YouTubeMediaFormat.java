@@ -42,6 +42,8 @@ public class YouTubeMediaFormat implements MediaFormat {
     private int mTargetDurationSec;
     private int mMaxDvrDurationSec;
     private int mApproxDurationMs;
+    private String mCaptionName;
+    private String mCaptionVssId;
 
     public static MediaFormat from(AdaptiveVideoFormat format) {
         YouTubeMediaFormat mediaFormat = createBaseFormat(format);
@@ -100,6 +102,8 @@ public class YouTubeMediaFormat implements MediaFormat {
         mediaFormat.mQualityLabel = format.getQualityLabel();
         mediaFormat.mMaxDvrDurationSec = format.getMaxDvrDurationSec();
         mediaFormat.mApproxDurationMs = Helpers.parseInt(format.getApproxDurationMs());
+        mediaFormat.mCaptionName = format.getCaptionName();
+        mediaFormat.mCaptionVssId = format.getCaptionVssId();
 
         return mediaFormat;
     }
@@ -313,6 +317,16 @@ public class YouTubeMediaFormat implements MediaFormat {
     @Override
     public int getApproxDurationMs() {
         return mApproxDurationMs;
+    }
+
+    @Override
+    public String getCaptionName() {
+        return mCaptionName;
+    }
+
+    @Override
+    public String getCaptionVssId() {
+        return mCaptionVssId;
     }
 
     public String getIndexRange() {

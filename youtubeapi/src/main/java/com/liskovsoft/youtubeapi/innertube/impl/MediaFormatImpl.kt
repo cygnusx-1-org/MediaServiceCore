@@ -13,6 +13,7 @@ import com.liskovsoft.youtubeapi.innertube.utils.getInitRange
 import com.liskovsoft.youtubeapi.innertube.utils.hasRange
 import com.liskovsoft.youtubeapi.innertube.utils.isBroken
 import com.liskovsoft.youtubeapi.innertube.utils.isOtf
+import com.liskovsoft.youtubeapi.videoinfo.models.CaptionTrack
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder
 
 internal data class MediaFormatImpl(private val streamingFormat: StreamingFormat): MediaFormat {
@@ -45,6 +46,7 @@ internal data class MediaFormatImpl(private val streamingFormat: StreamingFormat
     private val _targetDurationSec by lazy { streamingFormat.targetDurationSec ?: -1 }
     private val _maxDvrDurationSec by lazy { streamingFormat.maxDvrDurationSec ?: -1 }
     private val _approxDurationMs by lazy { streamingFormat.approxDurationMs?.toInt() ?: -1 }
+    private val _captionName by lazy { CaptionTrack.toName(streamingFormat.captionTrack?.displayName, streamingFormat.captionTrack?.kind) }
     private var _sourceUrl: String? = null
     private var _segmentUrlList: List<String>? = null
     private var _globalSegmentList: List<String>? = null
@@ -99,6 +101,10 @@ internal data class MediaFormatImpl(private val streamingFormat: StreamingFormat
     override fun getMaxDvrDurationSec() = _maxDvrDurationSec
 
     override fun getApproxDurationMs() = _approxDurationMs
+
+    override fun getCaptionName(): String? = _captionName
+
+    override fun getCaptionVssId(): String? = streamingFormat.captionTrack?.vssId
 
     override fun getQuality(): String? = null
 
