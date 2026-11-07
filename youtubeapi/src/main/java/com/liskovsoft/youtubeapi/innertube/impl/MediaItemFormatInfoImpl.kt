@@ -121,6 +121,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
     private var _segmentDurationUs: Int = 0
     private var _startTimeMs: Long = 0
     private var _startSegmentNum: Int = 0
+    private var _startSegmentTimeUs: Long = -1
     private var _isStreamSeekable: Boolean = false
 
     private var _isSynced: Boolean = false
@@ -256,6 +257,8 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
 
     override fun getStartSegmentNum() = _startSegmentNum
 
+    override fun getStartSegmentTimeUs() = _startSegmentTimeUs
+
     override fun getSegmentDurationUs() = _segmentDurationUs
 
     override fun getPaidContentText() = _paidContentText
@@ -342,6 +345,7 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         _segmentDurationUs = dashInfo.getSegmentDurationUs()
         _startTimeMs = dashInfo.getStartTimeMs()
         _startSegmentNum = dashInfo.getStartSegmentNum()
+        _startSegmentTimeUs = dashInfo.getStartSegmentTimeUs()
         _isStreamSeekable = dashInfo.isSeekable()
     }
 

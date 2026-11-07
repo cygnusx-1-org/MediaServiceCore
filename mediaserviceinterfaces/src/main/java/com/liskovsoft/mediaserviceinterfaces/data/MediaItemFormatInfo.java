@@ -56,6 +56,11 @@ public interface MediaItemFormatInfo extends FormatInfoProvision {
      */
     int getStartSegmentNum();
     /**
+     * Media time of the stream first segment (see getStartSegmentNum), -1 when unknown.<br/>
+     * Used inside live streams
+     */
+    long getStartSegmentTimeUs();
+    /**
      * Precise segment duration.<br/>
      * Used inside live streams
      */

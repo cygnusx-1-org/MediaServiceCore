@@ -86,6 +86,11 @@ public class DashInfoUrl implements DashInfo {
     }
 
     @Override
+    public long getStartSegmentTimeUs() {
+        return -1; // the start segment's number × the duration
+    }
+
+    @Override
     public boolean isSeekable() {
         return getEarliestMediaSequenceNum() == getSequenceStartNumber();
     }

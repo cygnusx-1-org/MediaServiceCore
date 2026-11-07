@@ -57,6 +57,7 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     private String mUploadDate;
     private long mStartTimeMs;
     private int mStartSegmentNum;
+    private long mStartSegmentTimeUs = -1;
     private int mSegmentDurationUs;
     private boolean mHasExtendedHlsFormats;
     private float mLoudnessDb;
@@ -145,6 +146,7 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
         formatInfo.mUploadDate = videoInfo.getUploadDate();
         formatInfo.mStartTimeMs = videoInfo.getStartTimeMs();
         formatInfo.mStartSegmentNum = videoInfo.getStartSegmentNum();
+        formatInfo.mStartSegmentTimeUs = videoInfo.getStartSegmentTimeUs();
         formatInfo.mSegmentDurationUs = videoInfo.getSegmentDurationUs();
         formatInfo.mHasExtendedHlsFormats = videoInfo.hasExtendedHlsFormats();
         formatInfo.mLoudnessDb = videoInfo.getLoudnessDb();
@@ -415,6 +417,11 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     @Override
     public int getStartSegmentNum() {
         return mStartSegmentNum;
+    }
+
+    @Override
+    public long getStartSegmentTimeUs() {
+        return mStartSegmentTimeUs;
     }
 
     @Override

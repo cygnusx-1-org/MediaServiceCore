@@ -105,6 +105,7 @@ public class VideoInfo {
 
     private long mStartTimeMs;
     private int mStartSegmentNum;
+    private long mStartSegmentTimeUs = -1;
     private int mSegmentDurationUs;
     private boolean mIsStreamSeekable;
     private List<CaptionTrack> mMergedCaptionTracks;
@@ -351,6 +352,13 @@ public class VideoInfo {
         return mSegmentDurationUs;
     }
 
+    /**
+     * See DashInfo#getStartSegmentTimeUs
+     */
+    public long getStartSegmentTimeUs() {
+        return mStartSegmentTimeUs;
+    }
+
     public float getLoudnessDb() {
         return mLoudnessDb;
     }
@@ -386,6 +394,7 @@ public class VideoInfo {
         mSegmentDurationUs = dashInfo.getSegmentDurationUs();
         mStartTimeMs = dashInfo.getStartTimeMs();
         mStartSegmentNum = dashInfo.getStartSegmentNum();
+        mStartSegmentTimeUs = dashInfo.getStartSegmentTimeUs();
         mIsStreamSeekable = dashInfo.isSeekable();
     }
 

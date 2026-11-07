@@ -541,7 +541,10 @@ public class YouTubeMPDBuilder implements MPDBuilder {
         // Increase offset a bit to compensate previous tweaks
         // Streams to check:
         // https://www.youtube.com/watch?v=drdemkJpgao
-        long offsetUnits = (long) segmentDurationUnits * mInfo.getStartSegmentNum();
+        // The start segment's media time: the samples' times less it are the timeline's (see MediaItemFormatInfo#getStartSegmentTimeUs)
+        long startSegmentTimeUs = mInfo.getStartSegmentTimeUs();
+        // The units are microseconds (unitsPerSecond): not scaled, the product overflows on a long stream (20 million s)
+        long offsetUnits = startSegmentTimeUs >= 0 ? startSegmentTimeUs : (long) segmentDurationUnits * mInfo.getStartSegmentNum();
 
         String segmentDurationUnitsStr = String.valueOf(segmentDurationUnits);
         // Use offset to sync player timeline with MPD timeline!!!

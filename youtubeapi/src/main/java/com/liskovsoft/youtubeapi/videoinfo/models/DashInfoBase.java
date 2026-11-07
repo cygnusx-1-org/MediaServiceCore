@@ -50,6 +50,17 @@ public abstract class DashInfoBase implements DashInfo {
         return mStartSegmentNum;
     }
 
+    /**
+     * From the head the server reported, not the start segment's number × the duration: the duration is an average rounded to the
+     * microsecond, so that product is seconds off on a stream with millions of segments (4.8 s at 20.7 million, which started the
+     * player 4.8 s past its buffer: upstream SmartTube #6009). From the head it's off by a day of segments at most (< 0.1 s).
+     */
+    @Override
+    public long getStartSegmentTimeUs() {
+        long startTimeUs = getStreamDurationMs() * 1_000L - (long) (getLastSegmentNum() - getStartSegmentNum()) * getSegmentDurationUs();
+        return Math.max(startTimeUs, 0);
+    }
+
     @Override
     public boolean isSeekable() {
         return true;
