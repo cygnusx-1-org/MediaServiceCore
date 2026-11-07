@@ -39,6 +39,15 @@ public interface MediaFormat extends Comparable<MediaFormat> {
     int getTargetDurationSec();
     int getMaxDvrDurationSec();
     int getApproxDurationMs();
+    /**
+     * A live stream's captions come as formats of their own, segmented like the audio and video. The name of the caption track
+     * such a format carries (as a video's subtitles name it, auto-generated ones ending with the translate marker), or null
+     */
+    String getCaptionName();
+    /**
+     * The id of the caption track a live caption format carries (see getCaptionName), or null
+     */
+    String getCaptionVssId();
 
     // Other/Regular
     String getQuality();

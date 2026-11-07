@@ -6,6 +6,7 @@ import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.googlecommon.common.converters.jsonpath.JsonPath;
 import com.liskovsoft.youtubeapi.formatbuilders.utils.ITagUtils;
+import com.liskovsoft.youtubeapi.videoinfo.models.CaptionTrack;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder;
 
 import java.util.List;
@@ -93,6 +94,13 @@ public class VideoFormat {
     private boolean mIsDrc;
     @JsonPath("$.isVb")
     private boolean mIsVb;
+    // A live stream's caption formats (text/mp4) name the caption track they carry
+    @JsonPath("$.captionTrack.displayName")
+    private String mCaptionName;
+    @JsonPath("$.captionTrack.vssId")
+    private String mCaptionVssId;
+    @JsonPath("$.captionTrack.kind")
+    private String mCaptionKind;
     private VideoUrlHolder mUrlHolder;
 
     public String getUrl() {
@@ -286,6 +294,17 @@ public class VideoFormat {
         String urlHolderLang = getUrlHolder().getLanguage();
 
         return urlHolderLang != null ? urlHolderLang : YouTubeHelper.getSabrLanguage(mAudioTrackId, mIsAutoDubbed, mIsDefaultAudio);
+    }
+
+    /**
+     * Named as a video's subtitles are (see CaptionTrack#getName): auto-generated ones end with the translate marker
+     */
+    public String getCaptionName() {
+        return CaptionTrack.toName(mCaptionName, mCaptionKind);
+    }
+
+    public String getCaptionVssId() {
+        return mCaptionVssId;
     }
 
     public String getApproxDurationMs() {

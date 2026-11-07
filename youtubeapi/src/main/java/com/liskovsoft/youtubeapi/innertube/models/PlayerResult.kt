@@ -143,13 +143,23 @@ internal data class StreamingFormat(
 
     // AdaptiveFormat
     val initRange: Range?,
-    val indexRange: Range?
+    val indexRange: Range?,
+
+    // A live stream's caption format (text/mp4): the caption track it carries
+    val captionTrack: FormatCaptionTrack?
 ) {
     data class Range(
         val start: String?,
         val end: String?
     )
 }
+
+internal data class FormatCaptionTrack(
+    val displayName: String?,
+    val vssId: String?,
+    val languageCode: String?,
+    val kind: String?
+)
 
 internal data class AudioTrack(
     val displayName: String?,
