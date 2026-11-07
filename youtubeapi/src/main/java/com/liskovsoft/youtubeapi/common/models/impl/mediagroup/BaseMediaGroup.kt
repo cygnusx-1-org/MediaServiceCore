@@ -18,7 +18,7 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
     // TODO: remove the filter when yt will able to mark shorts longer than one minute
     private val legacyFilter: ((WrapperMediaItem) -> Boolean) = {
         options.removeShorts
-                && (options.groupType == MediaGroup.TYPE_HISTORY || options.groupType == MediaGroup.TYPE_HOME)
+                && options.groupType == MediaGroup.TYPE_HOME
                 && YouTubeHelper.isShorts(it, options.enableLegacyUI)
     }
     private var _titleItem: String? = null
@@ -38,6 +38,7 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
             ?.let { if (filter.invoke(it)) { countFiltered(it.getVideoId()); null } else it }
             ?.let { WrapperMediaItem(it).apply { playlistIndex = index } }
             ?.let { if (legacyFilter.invoke(it)) { countFiltered(it.videoId); null } else it }
+            ?.let { if (isOnOtherPart(it)) null else it }
         }?.let {
             // Watch later and Liked videos on top, then by title
             if (options.groupType != MediaGroup.TYPE_USER_PLAYLISTS)
@@ -121,7 +122,39 @@ internal abstract class BaseMediaGroup(private val options: MediaGroupOptions): 
     }
 
     override fun getRowKind(): Int {
-        return getRowKindInt()
+        // The row of shorts of a feed split by kind (e.g. History's)
+        return if (options.part == FeedPart.SHORTS) MediaGroup.ROW_KIND_SHORTS else getRowKindInt()
+    }
+
+    /**
+     * The row of a feed split by kind the group is, kept by its next pages (see BrowseService2.continueGroupTV)
+     */
+    internal val part: FeedPart
+        get() = options.part
+
+    /**
+     * The items the filters kept, as they came (e.g. to be kept between the runs, see HistoryShortsCache)
+     */
+    internal fun getKeptItemWrappers(): List<ItemWrapper> =
+        getMediaItems()?.mapNotNull { (it as? WrapperMediaItem)?.itemWrapper } ?: emptyList()
+
+    /**
+     * The item is on the other row of a feed split by kind (see MediaGroupOptions.part). It's not filtered out, so it isn't counted.
+     * A short found by its length or title rather than by its tile (see YouTubeHelper.isShorts) is marked as one on the row of shorts,
+     * which has the cards of shorts.
+     */
+    private fun isOnOtherPart(item: WrapperMediaItem): Boolean {
+        if (options.part == FeedPart.ALL) {
+            return false
+        }
+
+        val isShorts = item.isShorts() || YouTubeHelper.isShorts(item, options.enableLegacyUI)
+
+        if (isShorts && options.part == FeedPart.SHORTS) {
+            item.setShorts(true)
+        }
+
+        return isShorts != (options.part == FeedPart.SHORTS)
     }
 
     override fun getFilteredVideoCount(): Int {

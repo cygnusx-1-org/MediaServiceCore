@@ -12,6 +12,7 @@ import com.liskovsoft.youtubeapi.actions.ActionsService;
 import com.liskovsoft.youtubeapi.actions.ActionsServiceWrapper;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseService2;
 import com.liskovsoft.youtubeapi.browse.v2.BrowseService2Wrapper;
+import com.liskovsoft.youtubeapi.browse.v2.HistoryShortsCache;
 import com.liskovsoft.youtubeapi.channelfeed.ChannelFeedService;
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchContinuationMediaGroup;
 import com.liskovsoft.youtubeapi.common.models.impl.mediagroup.SearchSectionMediaGroup;
@@ -223,6 +224,35 @@ class YouTubeContentService implements ContentService {
     @Override
     public Observable<MediaGroup> getHistoryObserve() {
         return RxHelper.fromCallable(this::getHistory);
+    }
+
+    @Override
+    public List<MediaGroup> getHistoryRows() {
+        Log.d(TAG, "Getting history rows...");
+
+        checkSigned();
+
+        return getBrowseService2().getHistoryRows();
+    }
+
+    @Override
+    public Observable<List<MediaGroup>> getHistoryRowsObserve() {
+        // One emission: the shorts row is there with the videos, not popped in under them
+        return RxHelper.create(emitter -> emitGroups(emitter, getHistoryRows()));
+    }
+
+    @Override
+    public MediaGroup getHistoryVideos() {
+        Log.d(TAG, "Getting history videos...");
+
+        checkSigned();
+
+        return getBrowseService2().getHistoryVideos();
+    }
+
+    @Override
+    public Observable<MediaGroup> getHistoryVideosObserve() {
+        return RxHelper.fromCallable(this::getHistoryVideos);
     }
 
     @Override
@@ -708,6 +738,7 @@ class YouTubeContentService implements ContentService {
     @Override
     public void clearHistory() {
         getActionsService().clearWatchHistory();
+        HistoryShortsCache.clear();
     }
 
     @Override

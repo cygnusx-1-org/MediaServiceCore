@@ -8,7 +8,10 @@ import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint
 import com.liskovsoft.youtubeapi.next.v2.gen.*
 import com.liskovsoft.youtubeapi.notifications.gen.*
 
-internal open class WrapperMediaItem(private val itemWrapper: ItemWrapper): BaseMediaItem() {
+/**
+ * @param itemWrapper as it came (e.g. to be kept between the runs, see BaseMediaGroup.getKeptItemWrappers)
+ */
+internal open class WrapperMediaItem(internal val itemWrapper: ItemWrapper): BaseMediaItem() {
     override val typeItem by lazy { itemWrapper.getType() }
     override val videoIdItem by lazy { itemWrapper.getVideoId() }
     override val titleItem by lazy { itemWrapper.getTitle() }

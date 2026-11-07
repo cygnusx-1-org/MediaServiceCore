@@ -21,6 +21,15 @@ public interface ContentService {
     MediaGroup getRecommended();
     MediaGroup getHistory();
     /**
+     * The rows of History on this thread, like My videos: its videos, then its shorts (row kind MediaGroup.ROW_KIND_SHORTS),
+     * each continued with its own kind. A row with no video is left out.
+     */
+    List<MediaGroup> getHistoryRows();
+    /**
+     * The videos of History without its shorts, as a grid: its row of videos (see getHistoryRows) on its own, each page without the shorts
+     */
+    MediaGroup getHistoryVideos();
+    /**
      * The signed-in account's Watch later as a grid (MediaGroup.TYPE_WATCH_LATER), unfiltered
      */
     MediaGroup getWatchLater();
@@ -67,6 +76,14 @@ public interface ContentService {
      */
     Observable<MediaGroup> getRecommendedObserve();
     Observable<MediaGroup> getHistoryObserve();
+    /**
+     * The rows of History (see getHistoryRows), emitted together once both are read
+     */
+    Observable<List<MediaGroup>> getHistoryRowsObserve();
+    /**
+     * See getHistoryVideos
+     */
+    Observable<MediaGroup> getHistoryVideosObserve();
     Observable<MediaGroup> getWatchLaterObserve();
     Observable<List<MediaGroup>> getHomeObserve();
     Observable<MediaGroup> getShortsObserve();
