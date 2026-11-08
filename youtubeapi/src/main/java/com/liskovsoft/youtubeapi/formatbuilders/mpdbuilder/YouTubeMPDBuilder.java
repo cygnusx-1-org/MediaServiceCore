@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -82,9 +83,22 @@ public class YouTubeMPDBuilder implements MPDBuilder {
         mXmlSerializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
     }
 
+    /**
+     * The media's length, to the ms (e.g. PT1971.792S, see MediaItemFormatInfo#getMediaDurationMs()). Its whole seconds
+     * (lengthSeconds, e.g. 1972) are past its end, where the player doesn't get ready
+     */
+    private String getDurationParam() {
+        long durationMs = mInfo.getMediaDurationMs();
+
+        if (durationMs <= 0) {
+            return String.format("PT%sS", mInfo.getLengthSeconds());
+        }
+
+        return String.format(Locale.US, "PT%d.%03dS", durationMs / 1_000, durationMs % 1_000);
+    }
+
     private void writePrologue() {
-        String duration = mInfo.getLengthSeconds();
-        String durationParam = String.format("PT%sS", duration);
+        String durationParam = getDurationParam();
 
         startTag("", "MPD");
         attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");

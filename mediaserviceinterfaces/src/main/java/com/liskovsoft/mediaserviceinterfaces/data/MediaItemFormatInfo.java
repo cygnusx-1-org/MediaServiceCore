@@ -13,6 +13,49 @@ public interface MediaItemFormatInfo extends FormatInfoProvision {
     String getDashManifestUrl();
     // video metadata
     String getLengthSeconds();
+
+    /**
+     * How long the media is: the longest of the adaptive formats (approxDurationMs, e.g. 1971792), so none of them is cut short.
+     * The whole seconds of {@link #getLengthSeconds()} are rounded: past the media's end (1972), or short of it. A format more
+     * than a second off them is bogus, left out. Without the formats' lengths, the whole seconds. -1 when neither is known
+     */
+    default long getMediaDurationMs() {
+        return getMediaDurationMs(getAdaptiveFormats(), getLengthSeconds());
+    }
+
+    /**
+     * See {@link #getMediaDurationMs()}
+     */
+    static long getMediaDurationMs(List<MediaFormat> formats, String lengthSeconds) {
+        long lengthMs;
+
+        try {
+            long seconds = Long.parseLong(lengthSeconds);
+            lengthMs = seconds > 0 ? seconds * 1_000 : -1;
+        } catch (NumberFormatException e) {
+            lengthMs = -1;
+        }
+
+        long durationMs = -1;
+
+        if (formats != null) {
+            for (MediaFormat format : formats) {
+                if (format == null) {
+                    continue;
+                }
+
+                long approxMs = format.getApproxDurationMs();
+
+                if (lengthMs > 0 && Math.abs(approxMs - lengthMs) > 1_000) {
+                    continue;
+                }
+
+                durationMs = Math.max(durationMs, approxMs);
+            }
+        }
+
+        return durationMs > 0 ? durationMs : lengthMs;
+    }
     String getTitle();
     String getAuthor();
     String getViewCount();
