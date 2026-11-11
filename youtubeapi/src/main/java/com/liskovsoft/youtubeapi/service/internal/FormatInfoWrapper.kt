@@ -124,7 +124,8 @@ internal object FormatInfoWrapper {
         }
 
         try {
-            warmUpSteps(videoId)
+            // Its stages are shown in a fetch that waits for one of its steps (see FetchStages#runWarmUp)
+            FetchStages.runWarmUp { warmUpSteps(videoId) }
         } finally {
             mIsWarmingUp.set(false)
         }
@@ -140,7 +141,7 @@ internal object FormatInfoWrapper {
      */
     @JvmStatic
     fun warmUpDetail(step: String, detail: String?): String? =
-        if (mWarmUpStep != step) detail else if (detail != null) "$detail, warm-up" else "warm-up"
+        if (mWarmUpStep != step) detail else if (detail != null) "$detail, ${FetchStages.WARM_UP}" else FetchStages.WARM_UP
 
     /**
      * The next fetch would wait for its client's poToken being made

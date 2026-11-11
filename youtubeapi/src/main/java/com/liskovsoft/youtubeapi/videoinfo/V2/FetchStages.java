@@ -6,16 +6,19 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Where the time of a fetch of the formats of a video goes: the lock it waited for, each client tried, their poTokens and requests,
  * the decipher… as nested spans, for the app to show how long the video took to start. Kept for the last {@link #MAX_VIDEOS} videos.
  * Only a fetch opened on its thread (see {@link #open}) records them, and the work it starts on other threads (see {@link #fork}): the
- * same code run by the warm-up or elsewhere doesn't.
+ * same code run elsewhere doesn't. The warm-up's are recorded apart (see {@link #runWarmUp}), and shown in a fetch where it waited for
+ * the warm-up.
  */
 public final class FetchStages {
     static final int MAX_VIDEOS = 20;
@@ -27,9 +30,26 @@ public final class FetchStages {
      * The detail of the stages run ahead of the fetch, on another thread (see {@link #fork})
      */
     static final String AHEAD = "ahead";
+    /**
+     * The detail of a stage that waits for the warm-up (see FormatInfoWrapper#warmUpDetail), and of the warm-up's stages shown under it
+     */
+    public static final String WARM_UP = "warm-up";
+    /**
+     * Of the warm-up's stages: no video's id
+     */
+    private static final String WARM_UP_KEY = "<warm-up>";
     private static final Map<String, List<Stage>> sStages = new LinkedHashMap<String, List<Stage>>() {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, List<Stage>> eldest) {
+            return size() > MAX_VIDEOS;
+        }
+    };
+    /**
+     * Of each video: the warm-up's stages shown in it already (see #addWarmUpStages), by their name, depth and start
+     */
+    private static final Map<String, Set<String>> sWarmUpShown = new LinkedHashMap<String, Set<String>>() {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Set<String>> eldest) {
             return size() > MAX_VIDEOS;
         }
     };
@@ -94,7 +114,8 @@ public final class FetchStages {
         }
 
         /**
-         * Once: a stage ended again is ignored
+         * Once: a stage ended again is ignored. Of one that waited for the warm-up (its detail says so, see {@link #WARM_UP}), what the
+         * warm-up did meanwhile is added under it.
          */
         public void end(@Nullable String detail) {
             if (mTrace == null || mIsEnded) {
@@ -103,7 +124,16 @@ public final class FetchStages {
 
             mIsEnded = true;
             mTrace.depth = mDepth;
-            add(mTrace.videoId, new Stage(mName, mTrace.withMark(detail), mDepth, mStartMs, sClock.now()), this);
+            long endMs = sClock.now();
+            boolean isWarmUpWait = isWarmUpWait(detail);
+            boolean isOfWarmUp = WARM_UP_KEY.equals(mTrace.videoId);
+            // The warm-up's own stage of the step it runs doesn't wait for it
+            String ownDetail = isWarmUpWait && isOfWarmUp ? withoutWarmUp(detail) : detail;
+            add(mTrace.videoId, new Stage(mName, mTrace.withMark(ownDetail), mDepth, mStartMs, endMs), this);
+
+            if (isWarmUpWait && !isOfWarmUp) {
+                addWarmUpStages(mTrace, mDepth + 1, mStartMs, endMs);
+            }
         }
     }
 
@@ -203,6 +233,31 @@ public final class FetchStages {
         return trace != null ? new Fork(trace.videoId, trace.depth) : new Fork(null, 0);
     }
 
+    /**
+     * Runs the warm-up on this thread, its stages recorded apart: a fetch's stage that waits for it shows the ones it waited through
+     * (see Span#end). Of its last run only. Just runs with a fetch open on this thread.
+     */
+    public static void runWarmUp(Runnable warmUp) {
+        if (sTrace.get() != null) {
+            warmUp.run();
+            return;
+        }
+
+        synchronized (FetchStages.class) {
+            sStages.remove(WARM_UP_KEY);
+        }
+
+        Trace trace = new Trace(WARM_UP_KEY, null);
+        sTrace.set(trace);
+
+        try {
+            warmUp.run();
+        } finally {
+            removeOpenSpans(trace);
+            sTrace.remove();
+        }
+    }
+
     public static void close() {
         Trace trace = sTrace.get();
         sTrace.remove();
@@ -266,6 +321,43 @@ public final class FetchStages {
         return String.format(Locale.US, "%d KB", Math.round(bytes / 1_000f));
     }
 
+    /**
+     * The detail given to a stage that waited for the warm-up, before its trace's mark (see FormatInfoWrapper#warmUpDetail)
+     */
+    private static boolean isWarmUpWait(@Nullable String detail) {
+        return detail != null && (detail.equals(WARM_UP) || detail.endsWith(", " + WARM_UP));
+    }
+
+    @Nullable
+    private static String withoutWarmUp(String detail) {
+        return detail.equals(WARM_UP) ? null : detail.substring(0, detail.length() - WARM_UP.length() - 2);
+    }
+
+    /**
+     * The warm-up's stages that ran while a stage of the fetch waited for it, cut to the wait, nested under it. Once each for the video:
+     * e.g. its decipher run ahead and its attempt waited for the same player.
+     */
+    private static synchronized void addWarmUpStages(Trace trace, int depth, long startMs, long endMs) {
+        Set<String> shown = sWarmUpShown.get(trace.videoId);
+
+        if (shown == null) {
+            shown = new HashSet<>();
+            sWarmUpShown.put(trace.videoId, shown);
+        }
+
+        for (Stage stage : peek(WARM_UP_KEY)) {
+            long stageEndMs = stage.isOpen() ? endMs : stage.endMs;
+
+            if (stage.startMs > endMs || stageEndMs < startMs || !shown.add(stage.name + "@" + stage.depth + "@" + stage.startMs)) {
+                continue;
+            }
+
+            String detail = stage.detail == null ? WARM_UP : stage.detail + ", " + WARM_UP;
+            add(trace.videoId, new Stage(stage.name, trace.withMark(detail), depth + stage.depth, Math.max(stage.startMs, startMs),
+                    Math.min(stageEndMs, endMs)));
+        }
+    }
+
     private static synchronized void addOpenSpan(Span span) {
         sOpenSpans.add(span);
     }
@@ -302,6 +394,7 @@ public final class FetchStages {
      */
     public static synchronized List<Stage> take(String videoId) {
         List<Stage> stages = videoId != null ? sStages.remove(videoId) : null;
+        sWarmUpShown.remove(videoId);
 
         if (stages == null) {
             return Collections.emptyList();
@@ -339,6 +432,7 @@ public final class FetchStages {
     static synchronized void resetForTesting(@Nullable Clock clock) {
         sOpenSpans.clear();
         sStages.clear();
+        sWarmUpShown.clear();
         sTrace.remove();
         sClock = clock != null ? clock : SystemClock::elapsedRealtime;
     }

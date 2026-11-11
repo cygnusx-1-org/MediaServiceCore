@@ -53,7 +53,7 @@ public class FetchStagesTest {
 
     @Test
     public void recordsNothingWithNoFetchOpen() {
-        // The warm-up's poToken and requests
+        // Run elsewhere (e.g. a poToken's refresh): none of a fetch's
         assertEquals(Long.valueOf(1_600), FetchStages.time("poToken", "TV", () -> mNow.addAndGet(600)));
         FetchStages.mark("cached", null);
 
@@ -293,6 +293,153 @@ public class FetchStagesTest {
         FetchStages.close();
 
         assertEquals(false, FetchStages.take("video").get(0).isOpen());
+    }
+
+    /**
+     * WFPW879H's first start: its attempt waited 11.4 s for the player the warm-up was getting. What the warm-up did meanwhile is shown
+     * under the wait, cut to it.
+     */
+    @Test
+    public void aWaitForTheWarmUpShowsWhatTheWarmUpDidMeanwhile() {
+        runWarmUp();
+
+        // Opened while the warm-up ran: its clock went on meanwhile
+        mNow.set(1_100);
+        FetchStages.open("4-jgd_sKlFo");
+        FetchStages.Span attempt = FetchStages.begin("TV attempt");
+        FetchStages.Span lockWait = FetchStages.begin("lock wait");
+        mNow.set(10_250);
+        lockWait.end(FetchStages.WARM_UP);
+        attempt.end("ok");
+        FetchStages.close();
+
+        List<Stage> stages = FetchStages.take("4-jgd_sKlFo");
+
+        assertEquals(5, stages.size());
+        assertStage(stages.get(0), "TV attempt", 1, 1_100, 10_250);
+        assertStage(stages.get(1), "lock wait", 2, 1_100, 10_250);
+        assertStage(stages.get(2), "player JS load", 3, 1_100, 10_200);
+        assertEquals("first of run, warm-up", stages.get(2).detail);
+        assertStage(stages.get(3), "player download", 4, 1_100, 10_000);
+        assertEquals("warm-up", stages.get(3).detail);
+        assertStage(stages.get(4), "V8 start", 4, 10_000, 10_200);
+    }
+
+    /**
+     * Its decipher run ahead and its attempt waited for the same player: the warm-up's stages are shown under the first wait that ends
+     */
+    @Test
+    public void theWarmUpsStagesAreShownOnceForAVideo() {
+        runWarmUp();
+
+        mNow.set(1_100);
+        FetchStages.open("video");
+        FetchStages.Fork fork = FetchStages.fork();
+        FetchStages.Span lockWait = FetchStages.begin("lock wait");
+        fork.run(() -> {
+            FetchStages.Span aheadWait = FetchStages.begin("lock wait");
+            mNow.set(10_250);
+            aheadWait.end(FetchStages.WARM_UP);
+            return null;
+        });
+        lockWait.end(FetchStages.WARM_UP);
+        FetchStages.close();
+
+        List<Stage> stages = FetchStages.take("video");
+
+        assertEquals(5, stages.size());
+        assertEquals("warm-up, ahead", stages.get(0).detail);
+        assertEquals("warm-up", stages.get(1).detail);
+        assertEquals("first of run, warm-up, ahead", stages.get(2).detail);
+        assertEquals("V8 start", stages.get(4).name);
+    }
+
+    /**
+     * Another fetch held the lock (or nothing did): the warm-up's stages aren't its
+     */
+    @Test
+    public void aWaitForSomethingElseShowsNoneOfTheWarmUp() {
+        runWarmUp();
+
+        mNow.set(1_100);
+        FetchStages.open("video");
+        FetchStages.Span lockWait = FetchStages.begin("lock wait");
+        mNow.set(10_250);
+        lockWait.end(null);
+        FetchStages.close();
+
+        assertEquals(1, FetchStages.take("video").size());
+    }
+
+    /**
+     * Still running when the wait ended (e.g. the n-function's load past the player's lock): shown up to the wait's end
+     */
+    @Test
+    public void aWarmUpStageStillRunningIsShownUpToTheWaitsEnd() throws InterruptedException {
+        java.util.concurrent.CountDownLatch started = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        Thread warmUp = new Thread(() -> FetchStages.runWarmUp(() -> FetchStages.time("n-function load", "cache", () -> {
+            started.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return null;
+        })));
+        warmUp.start();
+        started.await();
+
+        mNow.set(1_500);
+        FetchStages.open("video");
+        FetchStages.time("decipher", FetchStages.WARM_UP, () -> mNow.addAndGet(1_300));
+        FetchStages.close();
+        release.countDown();
+        warmUp.join();
+
+        List<Stage> stages = FetchStages.take("video");
+
+        assertEquals(2, stages.size());
+        assertStage(stages.get(1), "n-function load", 2, 1_500, 2_800);
+        assertEquals("warm-up", stages.get(1).detail);
+    }
+
+    /**
+     * The warm-up's lock wait in its player JS, while it runs that step itself: it waited for another holder, not for itself
+     */
+    @Test
+    public void theWarmUpsOwnStagesDontWaitForIt() {
+        FetchStages.runWarmUp(() -> {
+            FetchStages.Span lockWait = FetchStages.begin("lock wait");
+            mNow.addAndGet(300);
+            lockWait.end(FetchStages.WARM_UP);
+            FetchStages.time("player JS check", "cache, " + FetchStages.WARM_UP, () -> mNow.addAndGet(100));
+        });
+
+        // Opened as the warm-up started
+        mNow.set(1_000);
+        FetchStages.open("video");
+        FetchStages.Span lockWait = FetchStages.begin("lock wait");
+        mNow.set(1_400);
+        lockWait.end(FetchStages.WARM_UP);
+        FetchStages.close();
+
+        List<Stage> stages = FetchStages.take("video");
+
+        assertEquals(3, stages.size());
+        assertStage(stages.get(1), "lock wait", 2, 1_000, 1_300);
+        assertEquals("warm-up", stages.get(1).detail);
+        assertEquals("cache, warm-up", stages.get(2).detail);
+    }
+
+    /**
+     * Its player JS load from 1 s to 10.2 s: 9 s downloading, 0.2 s starting V8
+     */
+    private void runWarmUp() {
+        FetchStages.runWarmUp(() -> FetchStages.time("player JS load", "first of run", () -> {
+            FetchStages.time("player download", null, () -> mNow.addAndGet(9_000));
+            return FetchStages.time("V8 start", null, () -> mNow.addAndGet(200));
+        }));
     }
 
     private static void assertStage(Stage stage, String name, int depth, long startMs, long endMs) {
