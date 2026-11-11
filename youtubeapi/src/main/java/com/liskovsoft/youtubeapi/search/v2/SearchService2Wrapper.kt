@@ -35,6 +35,8 @@ internal object SearchService2Wrapper: SearchService2() {
 
     override fun removeTag(tag: String?) {
         SearchTagStorage.removeTag(tag)
+        // The account's search history too
+        super.removeTag(tag)
     }
 
     private fun getTagsIfNeeded(): List<String>? {

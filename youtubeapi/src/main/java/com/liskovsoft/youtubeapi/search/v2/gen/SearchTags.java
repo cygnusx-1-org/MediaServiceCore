@@ -11,11 +11,21 @@ public class SearchTags {
     @JsonPath("$[1][*][0]")
     private List<String> mSearchTags;
 
+    /**
+     * The account's own searches (search history) come with a link that removes them from it: "/complete/deleteitems?...&delq=tag&deltok=..."
+     */
+    @JsonPath("$[1][*][3].du")
+    private List<String> mDeleteUrls;
+
     public String getSearchQuery() {
         return mSearchQuery;
     }
 
     public List<String> getSearchTags() {
         return mSearchTags;
+    }
+
+    public List<String> getDeleteUrls() {
+        return mDeleteUrls;
     }
 }

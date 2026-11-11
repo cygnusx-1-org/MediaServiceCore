@@ -1,5 +1,6 @@
 package com.liskovsoft.youtubeapi.search.v2
 
+import android.net.Uri
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.googlecommon.common.locale.LocaleManager
 import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
@@ -15,6 +16,7 @@ import com.liskovsoft.youtubeapi.search.v2.gen.SearchResult
 import com.liskovsoft.youtubeapi.search.v2.gen.SearchTags
 import com.liskovsoft.youtubeapi.search.v2.gen.getSections
 import retrofit2.Call
+import java.util.concurrent.ConcurrentHashMap
 
 private val TAG = SearchService2::class.simpleName
 
@@ -22,6 +24,8 @@ internal open class SearchService2 {
     private val mSearchApi: SearchApi = RetrofitHelper.create(SearchApi::class.java)
     private val mSearchApi2: SearchApi2 = RetrofitHelper.create(SearchApi2::class.java)
     private val mAppService = AppService.instance()
+    // The delete links of the account's own searches, by tag, from the suggestions loaded so far
+    private val mDeleteUrls = ConcurrentHashMap<String, String>()
 
     open fun getSearch(searchText: String?): List<MediaGroup>? {
         return getSearch(searchText, -1)
@@ -110,6 +114,8 @@ internal open class SearchService2 {
             )
         val searchTags = RetrofitHelper.get<SearchTags?>(wrapper)
 
+        searchTags?.deleteUrls?.forEach { addDeleteUrl(it) }
+
         if (searchTags != null && searchTags.searchTags != null) {
             return searchTags.searchTags
         }
@@ -117,11 +123,41 @@ internal open class SearchService2 {
         return null
     }
 
+    private fun addDeleteUrl(deleteUrl: String?) {
+        if (deleteUrl == null) {
+            return
+        }
+
+        val tag = Uri.parse(toAbsoluteUrl(deleteUrl)).getQueryParameter("delq")
+
+        if (tag != null) {
+            mDeleteUrls[tag] = deleteUrl
+        }
+    }
+
+    private fun toAbsoluteUrl(url: String): String {
+        return if (url.startsWith("http")) url else SearchApi2.DELETE_URL_BASE + url
+    }
+
     open fun clearSearchHistory() {
         // NOP
     }
 
+    /**
+     * Removes the tag from the account's search history: the suggestions bring it back otherwise
+     */
     open fun removeTag(tag: String?) {
-        // NOP
+        if (tag == null) {
+            return
+        }
+
+        val deleteUrl = mDeleteUrls.remove(tag) ?: mDeleteUrls.entries.firstOrNull { it.key.equals(tag, ignoreCase = true) }?.let { mDeleteUrls.remove(it.key) }
+
+        if (deleteUrl == null) {
+            Log.d(TAG, "No delete link for the tag: not in the account's search history")
+            return
+        }
+
+        RetrofitHelper.get(mSearchApi2.deleteSearchTag(toAbsoluteUrl(deleteUrl)))
     }
 }

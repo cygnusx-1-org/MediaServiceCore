@@ -199,10 +199,20 @@ internal data class ChannelListMediaGroup(
     override val mediaItemList by lazy {
         val result = mutableListOf<MediaItem>()
 
-        tabs.forEachIndexed { idx, it ->
-            // Skip All subscriptions tab
-            if (idx == 0 && it.getThumbnails() == null) {
-                return@forEachIndexed
+        val added = mutableSetOf<String>()
+
+        tabs.forEach {
+            // Not a channel: All subscriptions, the "A-Z" divider before the channels by name
+            if (it.getThumbnails() == null) {
+                return@forEach
+            }
+
+            // The recent channels are listed again among the ones by name. Every tab opens the Subscriptions (FEsubscriptions):
+            // the channel id in its params tells them apart, else the name.
+            val key = it.getSubscribedChannelId() ?: it.getTitle()
+
+            if (key != null && !added.add(key)) {
+                return@forEach
             }
 
             result.add(TabMediaItem(it, options.groupType, withChannelIds))
