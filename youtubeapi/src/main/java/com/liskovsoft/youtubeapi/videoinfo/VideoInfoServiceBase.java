@@ -1,5 +1,7 @@
 package com.liskovsoft.youtubeapi.videoinfo;
 
+import androidx.annotation.Nullable;
+
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
 import com.liskovsoft.youtubeapi.app.AppService;
@@ -27,6 +29,10 @@ import kotlin.Pair;
 
 public abstract class VideoInfoServiceBase {
     private static final String TAG = VideoInfoServiceBase.class.getSimpleName();
+    /**
+     * The detail of the stages of the dash info's second try (see getDashInfo)
+     */
+    private static final String DASH_INFO_RETRY = "retry";
     private final DashInfoApi mDashInfoApi;
     private final FileApi mFileApi;
     protected final AppService mAppService;
@@ -175,31 +181,39 @@ public abstract class VideoInfoServiceBase {
             return null;
         }
 
-        DashInfo info = getCumulativeDashInfo(videoInfo);
+        DashInfo info = getCumulativeDashInfo(videoInfo, null);
 
         // Do retry. Sometimes the previous try failed?
         if (info == null || info.getSegmentDurationUs() <= 0 || info.getStartTimeMs() <= 0 || info.getStartSegmentNum() < 0) {
-            info = getCumulativeDashInfo(videoInfo);
+            info = getCumulativeDashInfo(videoInfo, DASH_INFO_RETRY);
         }
 
         return info;
     }
 
-    private DashInfo getCumulativeDashInfo(VideoInfo videoInfo) {
+    /**
+     * Each request is a stage of the fetch's "dash info" (one took 1.2 s, against 0.2 s for the others): the headers, then the segment
+     * when they don't say, then its content
+     *
+     * @param detail of the stages: {@link #DASH_INFO_RETRY} for the second try
+     */
+    private DashInfo getCumulativeDashInfo(VideoInfo videoInfo, @Nullable String detail) {
         AdaptiveVideoFormat format = getSmallestAudio(videoInfo);
 
         if (format == null) {
             return null;
         }
 
+        String url = format.getUrl();
+
         try {
-            return getDashInfoHeaders(format.getUrl());
+            return FetchStages.time("headers", detail, () -> getDashInfoHeaders(url));
         } catch (ArithmeticException | NumberFormatException | IllegalStateException ex) {
             try {
-                return getDashInfoUrl(format.getUrl());
+                return FetchStages.time("segment", detail, () -> getDashInfoUrl(url));
             } catch (ArithmeticException | NumberFormatException exc) {
                 // Empty results received. Url isn't available or something like that
-                return getDashInfoContent(format.getUrl());
+                return FetchStages.time("segment content", detail, () -> getDashInfoContent(url));
             }
         }
     }
