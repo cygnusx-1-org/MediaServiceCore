@@ -60,6 +60,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private AppClient mNextInfoType = null;
     private boolean mUseAuth;
     /**
+     * Off (e.g. Child mode): the videos are fetched without the account, see ServiceManager#allowRestrictedVideos
+     */
+    private volatile boolean mIsRestrictedVideosAllowed = true;
+    /**
      * The languages that subtitles translate to: the ones kept by a run before, till this run's check gets them (see
      * checkTranslationLanguages)
      */
@@ -100,7 +104,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         AppService.instance().resetClientPlaybackNonce(); // history fix: unique value per each video info
 
-        mUseAuth = true;
+        mUseAuth = mIsRestrictedVideosAllowed;
 
         VideoInfo result = firstPlayable(videoId, clickTrackingParams);
 
@@ -125,10 +129,16 @@ public class VideoInfoService extends VideoInfoServiceBase {
             return null;
         }
 
-        mUseAuth = true;
+        // Only the TV client supports auth features. Not through mUseAuth: a fetch running meanwhile reads it (e.g. Child mode's, which
+        // goes without the account, see allowRestrictedVideos)
+        String videoInfoQuery = VideoInfoApiHelper.getVideoInfoQuery(TV_CLIENT, videoId, clickTrackingParams);
+        VideoInfo result = getVideoInfo(TV_CLIENT, videoInfoQuery, true);
 
-        // Only the TV client supports auth features
-        return getVideoInfo(TV_CLIENT, videoId, clickTrackingParams);
+        if (result != null) {
+            result.setClient(TV_CLIENT);
+        }
+
+        return result;
     }
 
     private VideoInfo firstPlayable(String videoId, String clickTrackingParams) {
@@ -336,6 +346,14 @@ public class VideoInfoService extends VideoInfoServiceBase {
         resetInfoTypeToDefault();
     }
 
+    public boolean isRestrictedVideosAllowed() {
+        return mIsRestrictedVideosAllowed;
+    }
+
+    public void setRestrictedVideosAllowed(boolean allow) {
+        mIsRestrictedVideosAllowed = allow;
+    }
+
     /**
      * The names of the clients in their default order
      */
@@ -395,8 +413,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private VideoInfo getVideoInfo(AppClient client, String videoInfoQuery) {
-        boolean auth = client.isAuthSupported() && mUseAuth;
+        return getVideoInfo(client, videoInfoQuery, client.isAuthSupported() && mUseAuth);
+    }
 
+    private VideoInfo getVideoInfo(AppClient client, String videoInfoQuery, boolean auth) {
         if (client.isReelClient()) {
             Call<VideoInfoReel> wrapper = mVideoInfoApi.getVideoInfoReel(videoInfoQuery, mAppService.getVisitorData(),
                     client.getUserAgent(), client.getInnerTubeName(), client.getClientVersion());

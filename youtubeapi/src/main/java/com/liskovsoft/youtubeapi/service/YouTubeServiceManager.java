@@ -163,6 +163,11 @@ public class YouTubeServiceManager implements ServiceManager {
     }
 
     @Override
+    public void allowRestrictedVideos(boolean allow) {
+        FormatInfoWrapper.allowRestrictedVideos(allow);
+    }
+
+    @Override
     public boolean rejectPoToken(String clientName) {
         AppClient client = null;
 

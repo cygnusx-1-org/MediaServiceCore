@@ -8,6 +8,7 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                                       val removeLive: Boolean = false,
                                       val removeUpcoming: Boolean = false,
                                       val removeWatched: Boolean = false,
+                                      val removeMixes: Boolean = false,
                                       val groupType: Int,
                                       val enableLegacyUI: Boolean = false,
                                       val part: FeedPart = FeedPart.ALL) {
@@ -38,6 +39,8 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                     (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_UPCOMING_HOME))
             val removeWatched = (MediaGroup.TYPE_SUBSCRIPTIONS == groupType && data.isContentHidden(MediaServiceData.CONTENT_WATCHED_SUBSCRIPTIONS)) ||
                     (MediaGroup.TYPE_HOME == groupType && data.isContentHidden(MediaServiceData.CONTENT_WATCHED_HOME))
+            // Every section: the legacy groups hide them the same (see YouTubeHelper#filterIfNeeded)
+            val removeMixes = data.isContentHidden(MediaServiceData.CONTENT_MIXES)
             // NOTE: The modern grid ui contains shorts on a separate row
             // NOTE: The legacy ui subscriptions is out of order and cannot be fixed
             val isBrowseSection = groupType != MediaGroup.TYPE_SUGGESTIONS // legacy suggestions ui doesn't have chapters
@@ -48,6 +51,7 @@ internal class MediaGroupOptions private constructor(val removeShorts: Boolean =
                 removeLive,
                 removeUpcoming,
                 removeWatched,
+                removeMixes,
                 groupType,
                 enableLegacyUI,
                 part

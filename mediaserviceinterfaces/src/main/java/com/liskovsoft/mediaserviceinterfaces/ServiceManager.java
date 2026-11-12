@@ -40,4 +40,9 @@ public interface ServiceManager {
      * @return false when the client can't go on without its poToken: another client is needed
      */
     boolean rejectPoToken(String clientName);
+    /**
+     * Off (e.g. Child mode): the videos are fetched without the account, so the ones only a signed in adult may watch (18+) aren't played.
+     * On by default. Called before each video's formats are fetched.
+     */
+    void allowRestrictedVideos(boolean allow);
 }

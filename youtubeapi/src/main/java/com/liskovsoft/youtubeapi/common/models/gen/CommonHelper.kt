@@ -55,6 +55,8 @@ internal fun ThumbnailItem.Thumbnail.getUrl(): String? {
 // A show (podcast). Unlike its "N episodes" badge, these aren't translated.
 private const val GHOST_STATE_SHOW_PAGE = "GHOST_STATE_EPISODIC_SHOW_PAGE" // the show page it opens
 private const val BADGE_ICON_SHOW = "BROADCAST" // the icon of the episode count of some (a playlist has PLAYLISTS, a live LIVE)
+// A mix (a playlist YouTube makes from a video or an artist), whose badge is the translated "Mix"
+private const val BADGE_ICON_MIX = "MIX"
 
 internal fun BrowseEndpoint.isShowPage() = pageAnimation?.preloadPageConfig?.ghostState == GHOST_STATE_SHOW_PAGE
 
@@ -239,6 +241,7 @@ internal fun TileItem.isMovie() = STATUS_STYLE_MOVIE == getStatusStyle() && getV
 internal fun TileItem.isShorts() = BADGE_STYLE_SHORTS == getBadgeStyle() || TILE_STYLE_SHORTS == getTileStyle() || onSelectCommand?.reelWatchEndpoint != null
 // On Home a show is a video tile (its latest episode) that opens the show page
 internal fun TileItem.isShow() = onSelectCommand?.browseEndpoint?.isShowPage() == true || BADGE_ICON_SHOW == getBadgeIconType()
+internal fun TileItem.isMix() = BADGE_ICON_MIX == getBadgeIconType()
 /**
  * Where YouTube took the tile from: the same for each tile of a row of Home TV that's on every load (e.g. 198 for "Recently uploaded"),
  * in every language. Field 19, then 3 of the protobuf of its click tracking params.
@@ -314,6 +317,8 @@ internal fun LockupItem.getChannelHandle() = takeIf { it.isChannel() }?.renderer
 internal fun LockupItem.isShorts() = contentType == LOCKUP_CONTENT_TYPE_SHORT || rendererContext?.getOnTapCommand()?.reelWatchEndpoint != null
 internal fun LockupItem.isDateMissing() = getMetadataRows().isNullOrEmpty()
 internal fun LockupItem.isShow() = contentType == LOCKUP_CONTENT_TYPE_PODCAST || rendererContext?.getOnTapCommand()?.browseEndpoint?.isShowPage() == true
+// TV search gives mixes as lockups, with the same icon as the tiles of Home
+internal fun LockupItem.isMix() = BADGE_ICON_MIX == getBadge()?.icon?.sources?.firstNotNullOfOrNull { it?.clientResource?.imageName }
 private fun LockupItem.getBadge() = getOverlays()?.firstNotNullOfOrNull { it?.thumbnailOverlayBadgeViewModel?.thumbnailBadges
     ?: it?.thumbnailBottomOverlayViewModel?.badges }?.firstNotNullOfOrNull { it?.thumbnailBadgeViewModel }
 private fun LockupItem.getOverlays() = getThumbnailView()?.overlays
@@ -402,6 +407,7 @@ internal fun ItemWrapper.isLive() = getVideoItem()?.isLive() ?: getMusicItem()?.
 internal fun ItemWrapper.isUpcoming() = getVideoItem()?.isUpcoming() ?: getMusicItem()?.isUpcoming() ?: getTileItem()?.isUpcoming() ?: false
 internal fun ItemWrapper.isMovie() = getVideoItem()?.isMovie() ?: getTileItem()?.isMovie() ?: false
 internal fun ItemWrapper.isShow() = getTileItem()?.isShow() ?: getLockupItem()?.isShow() ?: false
+internal fun ItemWrapper.isMix() = getTileItem()?.isMix() ?: getLockupItem()?.isMix() ?: false
 internal fun ItemWrapper.getSourceId() = getTileItem()?.getSourceId()
 internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts()
     ?: getLockupItem()?.isShorts() ?: false

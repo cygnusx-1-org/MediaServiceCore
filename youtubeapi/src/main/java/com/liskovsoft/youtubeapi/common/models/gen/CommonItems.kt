@@ -521,8 +521,21 @@ internal data class LockupItem(
                 ) {
                     data class ThumbnailBadgeViewModel(
                         val text: String?,
-                        val badgeStyle: String?
-                    )
+                        val badgeStyle: String?,
+                        val icon: Icon?
+                    ) {
+                        data class Icon(
+                            val sources: List<Source?>?
+                        ) {
+                            data class Source(
+                                val clientResource: ClientResource?
+                            ) {
+                                data class ClientResource(
+                                    val imageName: String? // e.g. MIX, PLAYLISTS, AUDIO, LIVE
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

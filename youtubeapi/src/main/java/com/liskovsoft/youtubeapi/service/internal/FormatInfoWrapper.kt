@@ -330,6 +330,19 @@ internal object FormatInfoWrapper {
         mCachedFormatInfo = null
     }
 
+    /**
+     * Changed: the format info kept (e.g. the next video's, fetched ahead) was fetched the other way, it isn't reused
+     */
+    @JvmStatic
+    fun allowRestrictedVideos(allow: Boolean) {
+        if (getVideoInfoService().isRestrictedVideosAllowed == allow) {
+            return
+        }
+
+        invalidateCache()
+        getVideoInfoService().isRestrictedVideosAllowed = allow
+    }
+
     @JvmStatic
     fun syncWithAuthInfoIfNeeded(formatInfo: MediaItemFormatInfo?) {
         if (formatInfo == null) {
