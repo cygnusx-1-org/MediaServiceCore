@@ -59,17 +59,44 @@ public class CaptionTrack {
     @JsonPath("$.kind")
     private String mType;
     private UrlQueryString mBaseUrlQuery;
+    /**
+     * The URL built last, with the format it was built for: a translated track (see TranslatedCaptionTrack) asks its origin track for
+     * it once per translation language (~156 per video), and rebuilding the query each time took most of the format fetch
+     */
+    private volatile BuiltUrl mBuiltUrl;
 
+    private static final class BuiltUrl {
+        final CaptionFormat format;
+        final String url;
+
+        BuiltUrl(CaptionFormat format, String url) {
+            this.format = format;
+            this.url = url;
+        }
+    }
+
+    /**
+     * Built once per format: the base URL doesn't change after the response is parsed, only the format may (see sFormat)
+     */
     public String getBaseUrl() {
+        CaptionFormat format = sFormat;
+        BuiltUrl built = mBuiltUrl;
+
+        if (built != null && built.format == format) {
+            return built.url;
+        }
+
         UrlQueryString baseUrlQuery = getBaseUrlQuery();
 
         if (baseUrlQuery == null) {
             return null;
         }
 
-        baseUrlQuery.set("fmt", sFormat.name);
-        
-        return baseUrlQuery.toString();
+        baseUrlQuery.set("fmt", format.name);
+        String url = baseUrlQuery.toString();
+        mBuiltUrl = new BuiltUrl(format, url);
+
+        return url;
     }
 
     public boolean isTranslatable() {
