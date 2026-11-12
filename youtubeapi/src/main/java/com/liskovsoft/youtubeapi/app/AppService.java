@@ -172,6 +172,22 @@ public class AppService {
     }
 
     /**
+     * The nonce of the last player request, null when none is made yet: not made here
+     */
+    @Nullable
+    public String peekClientPlaybackNonce() {
+        return mClientPlaybackNonce;
+    }
+
+    /**
+     * The nonce of the video playing again, after a player request for another one (see FormatInfoWrapper#prefetchFormatInfo): its
+     * history goes with the nonce of its own request (see TrackingService#updateWatchTime)
+     */
+    public void setClientPlaybackNonce(@Nullable String nonce) {
+        mClientPlaybackNonce = nonce;
+    }
+
+    /**
      * Constant used in {@link AuthApi}
      */
     public String getClientId() {

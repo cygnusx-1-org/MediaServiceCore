@@ -70,6 +70,12 @@ public interface MediaItemService {
     Observable<MediaItemFormatInfo> getFormatInfoObserve(MediaItem item);
     Observable<MediaItemFormatInfo> getFormatInfoObserve(String videoId);
     Observable<MediaItemFormatInfo> getFormatInfoObserve(String videoId, String clickTrackingParams);
+    /**
+     * The formats of the video that plays next (e.g. by autoplay), fetched while another one plays: getting them then needs no
+     * request. The ones of the video playing stay cached. Disposing it may cancel its request: a client that failed that way would be
+     * thought to fail.
+     */
+    Observable<Void> prefetchFormatInfoObserve(String videoId);
     Observable<MediaItemStoryboard> getStoryboardObserve(MediaItem item);
     Observable<MediaItemStoryboard> getStoryboardObserve(String videoId);
     Observable<MediaItemMetadata> getMetadataObserve(MediaItem item);
