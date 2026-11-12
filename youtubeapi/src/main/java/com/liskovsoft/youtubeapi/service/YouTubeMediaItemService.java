@@ -102,6 +102,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     @Override
+    public Observable<Void> prefetchFormatInfoObserve(String videoId) {
+        return RxHelper.fromRunnable(() -> FormatInfoWrapper.prefetchFormatInfo(videoId));
+    }
+
+    @Override
     public MediaItemStoryboard getStoryboard(MediaItem item) {
         return getStoryboard(item.getVideoId());
     }

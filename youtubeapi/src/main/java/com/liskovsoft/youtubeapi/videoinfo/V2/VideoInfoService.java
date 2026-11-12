@@ -80,6 +80,12 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private final Object mTranslationLanguagesLock = new Object();
     private boolean mIsUnplayable;
     /**
+     * Of the resets of the client (see resetInfoTypeToDefault): a state taken before one isn't put back (see setFetchState). A reset
+     * runs on any thread (e.g. the settings', an account switch), the state is put back on a fetch's: both under mFetchStateLock.
+     */
+    private int mInfoTypeResets;
+    private final Object mFetchStateLock = new Object();
+    /**
      * Of the last video info request on the thread, 0 when it got no response (see firstInfoWith). Per thread: the history's
      * auth info (see getAuthVideoInfo) is fetched while the next video's formats are.
      */
@@ -538,9 +544,58 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private void resetInfoTypeToDefault() {
-        mNextInfoType = null;
-        mActualInfoType = getVideoInfoTypes()[0];
+        synchronized (mFetchStateLock) {
+            mInfoTypeResets++;
+            mNextInfoType = null;
+            mActualInfoType = getVideoInfoTypes()[0];
+        }
+
         persistVideoInfoType();
+    }
+
+    /**
+     * What the last video info request left for the error fixer of its video: the client its formats came from, and whether it was
+     * unplayable (see switchNextFormat, getClientName)
+     */
+    public static final class FetchState {
+        @Nullable
+        private final AppClient mActualInfoType;
+        private final boolean mIsUnplayable;
+        private final int mResets;
+
+        private FetchState(@Nullable AppClient actualInfoType, boolean isUnplayable, int resets) {
+            mActualInfoType = actualInfoType;
+            mIsUnplayable = isUnplayable;
+            mResets = resets;
+        }
+    }
+
+    public FetchState getFetchState() {
+        synchronized (mFetchStateLock) {
+            return new FetchState(mActualInfoType, mIsUnplayable, mInfoTypeResets);
+        }
+    }
+
+    /**
+     * The state of another request again: the one of the video playing after a request for the next video, or that one's when that
+     * video takes its formats (see FormatInfoWrapper#prefetchFormatInfo). Not over a reset of the client made since.
+     */
+    public void setFetchState(FetchState state) {
+        boolean isClientChanged;
+
+        synchronized (mFetchStateLock) {
+            if (state.mResets != mInfoTypeResets) {
+                return;
+            }
+
+            mIsUnplayable = state.mIsUnplayable;
+            isClientChanged = mActualInfoType != state.mActualInfoType;
+            mActualInfoType = state.mActualInfoType;
+        }
+
+        if (isClientChanged) {
+            persistVideoInfoType();
+        }
     }
 
     private void persistVideoInfoType() {

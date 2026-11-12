@@ -23,7 +23,15 @@ internal object FormatInfoWrapper {
      * Its attempt, among the legacy clients' (see ClientAttempts)
      */
     private const val INNERTUBE_CLIENT = "INNERTUBE"
-    private var mCachedFormatInfo: MediaItemFormatInfo? = null
+    /**
+     * The detail of the cached mark of a fetch that took the formats fetched ahead (see prefetchFormatInfo)
+     */
+    const val PREFETCHED = "prefetched"
+    private val mCache = FormatInfoCache()
+    /**
+     * What the fetch of the formats fetched ahead left (see prefetchFormatInfo): the one in use when they are taken
+     */
+    private var mPrefetchedState: FetchState? = null
     private var mTryInnertubeFirst: Boolean = false
     private val mInnertubeResult = object { var isUnplayable: Boolean = false; var client: AppClient? = null }
     private val mInnertubeProvider: (String, String?) -> MediaItemFormatInfo? =
@@ -73,6 +81,10 @@ internal object FormatInfoWrapper {
      */
     const val LOCK_PLAYER_DATA_REFRESH = "player data refresh"
     /**
+     * The detail of a fetch's lock wait while the next video's formats are fetched ahead (see prefetchFormatInfo)
+     */
+    const val LOCK_PREFETCH = "next video's prefetch"
+    /**
      * What holds the fetches' lock that isn't a fetch, null for none: what a fetch's lock wait waits for
      */
     @Volatile
@@ -106,6 +118,62 @@ internal object FormatInfoWrapper {
             refreshPoTokenLater()
             refreshPlayerDataLater()
         }
+    }
+
+    /**
+     * The formats of the video that plays next (e.g. by autoplay), fetched while another one plays: the fetch of the video then takes
+     * them, without a request (see selectPlaybackFormatInfo). Kept apart, so the ones of the video playing stay cached. Skipped when the
+     * video's are cached already.
+     * Not timed (see FetchStages): a fetch that waits for it says so in its lock wait. The poToken and the player data due a refresh
+     * are refreshed after the fetch of the video, as usual, not 15 s after this one, which may be when it starts.
+     * What a fetch leaves for its video (see FetchState) is the one of the video playing again after it: this one's is put in use when
+     * the video takes them.
+     */
+    @JvmStatic
+    fun prefetchFormatInfo(videoId: String?) {
+        if (videoId == null)
+            return
+
+        synchronized(lock) {
+            if (mCache.contains(videoId))
+                return
+
+            mLockHolder = LOCK_PREFETCH
+            val playing = getFetchState()
+
+            try {
+                mCache.prefetch(videoId) { selectPlaybackFormatInfo(videoId, null) }
+                mPrefetchedState = getFetchState()
+            } finally {
+                setFetchState(playing)
+                mLockHolder = null
+            }
+        }
+    }
+
+    /**
+     * What a fetch leaves for its video while it plays: the client playback nonce its history goes with (see
+     * TrackingService#updateWatchTime), and what its error fixer reads of the client (see switchNextFormat, getClientName)
+     */
+    private class FetchState(
+        val nonce: String?,
+        val videoInfoState: VideoInfoService.FetchState,
+        val isInnertubeUnplayable: Boolean,
+        val innertubeClient: AppClient?
+    )
+
+    private fun getFetchState(): FetchState = FetchState(
+        AppService.instance().peekClientPlaybackNonce(),
+        getVideoInfoService().fetchState,
+        mInnertubeResult.isUnplayable,
+        mInnertubeResult.client
+    )
+
+    private fun setFetchState(state: FetchState) {
+        AppService.instance().setClientPlaybackNonce(state.nonce)
+        getVideoInfoService().setFetchState(state.videoInfoState)
+        mInnertubeResult.isUnplayable = state.isInnertubeUnplayable
+        mInnertubeResult.client = state.innertubeClient
     }
 
     /**
@@ -327,7 +395,7 @@ internal object FormatInfoWrapper {
 
     @JvmStatic
     fun invalidateCache() {
-        mCachedFormatInfo = null
+        mCache.clear()
     }
 
     /**
@@ -364,6 +432,13 @@ internal object FormatInfoWrapper {
     }
 
     private fun selectPlaybackFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
+        // Its attempts were recorded when it was fetched ahead, and what that fetch left is its now
+        mCache.takePrefetched(videoId)?.let {
+            mPrefetchedState?.let { state -> setFetchState(state) }
+            FetchStages.mark("cached", PREFETCHED)
+            return it
+        }
+
         // Fetched again: the attempts are this fetch's. A cached one keeps the attempts it was fetched with.
         if (getCachedFormatInfo(videoId) == null) {
             ClientAttempts.clear(videoId)
@@ -437,17 +512,15 @@ internal object FormatInfoWrapper {
     }
 
     private fun getCachedFormatInfo(videoId: String?): MediaItemFormatInfo? {
-        return mCachedFormatInfo?.takeIf { videoId != null && it.getVideoId() == videoId && it.isCacheActual() }
+        return mCache.get(videoId)
     }
 
     private fun setCachedFormatInfo(formatInfo: MediaItemFormatInfo?, clickTrackingParams: String?) {
-        if (formatInfo == null || formatInfo.isUnplayable()) {
-            mCachedFormatInfo = null
-            return
-        }
+        mCache.put(formatInfo)
 
-        mCachedFormatInfo = formatInfo
-        formatInfo.setClickTrackingParams(clickTrackingParams)
+        if (formatInfo != null && !formatInfo.isUnplayable()) {
+            formatInfo.setClickTrackingParams(clickTrackingParams)
+        }
     }
 
     private fun persistFormatInfoType(formatInfo: MediaItemFormatInfo?) {
