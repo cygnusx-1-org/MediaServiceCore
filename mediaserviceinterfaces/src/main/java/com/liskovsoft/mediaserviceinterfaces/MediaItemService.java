@@ -4,6 +4,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.AiSListData;
 import com.liskovsoft.mediaserviceinterfaces.data.AiSListReport;
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
+import com.liskovsoft.mediaserviceinterfaces.data.EndScreenItem;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackReasons;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
@@ -107,6 +108,11 @@ public interface MediaItemService {
     Observable<Void> removePlaylistObserve(String playlistId);
     Observable<Void> createPlaylistObserve(String playlistName, String videoId);
     Observable<Void> createPlaylistObserve(String playlistName, MediaItem item);
+    /**
+     * The end screen of a video whose format info doesn't tell it (see MediaItemFormatInfo#getEndScreen), asked of a client that sends
+     * it. Empty when the video has none.
+     */
+    Observable<List<EndScreenItem>> getEndScreenObserve(String videoId);
     Observable<List<SponsorSegment>> getSponsorSegmentsObserve(String videoId);
     Observable<List<SponsorSegment>> getSponsorSegmentsObserve(String videoId, Set<String> categories);
     Observable<DeArrowData> getDeArrowDataObserve(String videoId);

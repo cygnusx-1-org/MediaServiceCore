@@ -109,6 +109,14 @@ public interface MediaItemFormatInfo extends FormatInfoProvision {
      */
     int getSegmentDurationUs();
     String getPaidContentText();
+
+    /**
+     * The cards the creator put over the end of the video (see EndScreenItem). Empty when it has none.<br/>
+     * Null when the response doesn't tell: the client it came from may not send them (see MediaItemService#getEndScreenObserve).
+     */
+    default List<EndScreenItem> getEndScreen() {
+        return null;
+    }
     String getVideoPlaybackUstreamerConfig();
     String getServerAbrStreamingUrl();
     /**

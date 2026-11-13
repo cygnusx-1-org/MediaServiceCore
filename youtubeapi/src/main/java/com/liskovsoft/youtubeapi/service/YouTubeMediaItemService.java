@@ -8,6 +8,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.AiSListData;
 import com.liskovsoft.mediaserviceinterfaces.data.AiSListReport;
 import com.liskovsoft.mediaserviceinterfaces.data.DeArrowData;
 import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
+import com.liskovsoft.mediaserviceinterfaces.data.EndScreenItem;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackReasons;
 import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup;
@@ -49,6 +50,7 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService;
 import io.reactivex.Observable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -566,6 +568,11 @@ public class YouTubeMediaItemService implements MediaItemService {
 
             PlaylistServiceWrapper.instance().importPlaylists(playlists, toYouTube);
         });
+    }
+
+    @Override
+    public Observable<List<EndScreenItem>> getEndScreenObserve(String videoId) {
+        return RxHelper.fromCallable(() -> new ArrayList<>(getVideoInfoService().getEndScreen(videoId)));
     }
 
     @Override

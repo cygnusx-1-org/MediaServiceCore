@@ -16,6 +16,7 @@ import com.liskovsoft.youtubeapi.innertube.initialresponse.InitialResponseServic
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt;
 import com.liskovsoft.youtubeapi.videoinfo.VideoInfoServiceBase;
 import com.liskovsoft.youtubeapi.videoinfo.models.CaptionTrack;
+import com.liskovsoft.youtubeapi.videoinfo.models.EndScreenElement;
 import com.liskovsoft.youtubeapi.videoinfo.models.TranslationLanguage;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoHls;
@@ -280,6 +281,17 @@ public class VideoInfoService extends VideoInfoServiceBase {
         RxHelper.runAsync(check);
 
         return check;
+    }
+
+    /**
+     * The end screen of a video whose formats came from a client that doesn't send it (see VideoInfo#getEndScreen), asked of the web
+     * client without the account. Empty when the video has none or the response is unplayable.
+     */
+    public List<EndScreenElement> getEndScreen(String videoId) {
+        VideoInfo webInfo = getVideoInfo(AppClient.WEB_DUMMY, videoId, null);
+        List<EndScreenElement> endScreen = webInfo != null ? webInfo.getEndScreen() : null;
+
+        return endScreen != null ? endScreen : new ArrayList<>();
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.liskovsoft.youtubeapi.videoinfo.models;
 
+import androidx.annotation.Nullable;
+
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.querystringparser.UrlQueryString;
@@ -97,6 +99,13 @@ public class VideoInfo {
 
     @JsonPath("$.playerConfig.mediaCommonConfig.mediaUstreamerRequestConfig.videoPlaybackUstreamerConfig")
     private String mVideoPlaybackUstreamerConfig; // SABR config
+
+    @JsonPath("$.endscreen.endscreenRenderer.elements[*].endscreenElementRenderer")
+    private List<EndScreenElement> mEndScreenElements;
+
+    // Set when the response has an end screen, even one without cards
+    @JsonPath("$.endscreen.endscreenRenderer.startMs")
+    private String mEndScreenStartMs;
 
     // Values used in tracking actions
     private String mEventId;
@@ -381,6 +390,31 @@ public class VideoInfo {
 
     public String getVideoPlaybackUstreamerConfig() {
         return mVideoPlaybackUstreamerConfig;
+    }
+
+    /**
+     * The cards over the end of the video. A web client and the TV one send them whenever the video has them (TV without the links,
+     * which it can't open): their response without them means none (empty). Another client's (e.g. iOS) without them tells nothing
+     * (null): they're asked of the web client apart (see VideoInfoService#getEndScreen).
+     */
+    @Nullable
+    public List<EndScreenElement> getEndScreen() {
+        if (mEndScreenElements != null) {
+            return mEndScreenElements;
+        }
+
+        if (mEndScreenStartMs != null || isEndScreenClient(mClient)) {
+            return new ArrayList<>();
+        }
+
+        return null;
+    }
+
+    /**
+     * Sends the end screen whenever the video has one: seen of TV (7.x) on the emulator, 2026-11-13
+     */
+    private static boolean isEndScreenClient(@Nullable AppClient client) {
+        return client != null && (client.isWebClient() || client == AppClient.TV || client == AppClient.TV_LEGACY);
     }
 
     /**

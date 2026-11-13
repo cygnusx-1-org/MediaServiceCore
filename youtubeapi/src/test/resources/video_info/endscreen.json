@@ -1,0 +1,88 @@
+{
+  "playabilityStatus": {"status": "OK"},
+  "videoDetails": {"videoId": "eyZEqSPeMwg", "lengthSeconds": "2067"},
+  "endscreen": {
+    "endscreenRenderer": {
+      "elements": [
+        {
+          "endscreenElementRenderer": {
+            "style": "CHANNEL",
+            "image": {"thumbnails": [
+              {"url": "//yt3.ggpht.com/channel=s250-c-k-c0x00ffffff-no-rj", "width": 250, "height": 250},
+              {"url": "//yt3.ggpht.com/channel=s400-c-k-c0x00ffffff-no-rj", "width": 400, "height": 400}
+            ]},
+            "left": 0.022807017, "width": 0.15438597, "top": 0.13084112, "aspectRatio": 1,
+            "startMs": "2047398", "endMs": "2067398",
+            "title": {"simpleText": "Veritasium"},
+            "metadata": {"simpleText": "An element of truth - videos about science, education, and anything else we find interesting."},
+            "callToAction": {"simpleText": "VISIT CHANNEL"},
+            "endpoint": {"browseEndpoint": {"browseId": "UCHnyfMqiRRG1u-2MsSQLbXA"}},
+            "isSubscribe": true,
+            "id": "8086322376554019487"
+          }
+        },
+        {
+          "endscreenElementRenderer": {
+            "style": "VIDEO",
+            "image": {"thumbnails": [
+              {"url": "https://i.ytimg.com/vi/CTUqmUHvd2Y/hqdefault.jpg", "width": 336, "height": 188},
+              {"url": "https://i.ytimg.com/vi_webp/CTUqmUHvd2Y/maxresdefault.webp", "width": 1920, "height": 1080},
+              {"url": "https://i.ytimg.com/vi/CTUqmUHvd2Y/sddefault.jpg", "width": 640, "height": 480}
+            ]},
+            "left": 0.022807017, "width": 0.32280701, "top": 0.52454501, "aspectRatio": 1.7777778,
+            "startMs": "2047398", "endMs": "2067398",
+            "title": {"simpleText": "We analysed 3 years worth of Polymarket trades. Here's what we found."},
+            "metadata": {"simpleText": "466,346 views"},
+            "endpoint": {"watchEndpoint": {"videoId": "CTUqmUHvd2Y"}},
+            "id": "8086322376554019172",
+            "thumbnailOverlays": [{"thumbnailOverlayTimeStatusRenderer": {"text": {"simpleText": "36:54"}, "style": "DEFAULT"}}]
+          }
+        },
+        {
+          "endscreenElementRenderer": {
+            "style": "WEBSITE",
+            "image": {"thumbnails": [
+              {"url": "https://i.ytimg.com/an/eyZEqSPeMwg/8086322376554018857_hq.jpg", "width": 400, "height": 400}
+            ]},
+            "icon": {"thumbnails": [{"url": "https://www.gstatic.com/youtube/img/annotations/link.png"}]},
+            "left": 0.19122808, "width": 0.15438597, "top": 0.13084112, "aspectRatio": 1,
+            "startMs": "2047398", "endMs": "2067398",
+            "title": {"simpleText": "Elements of Truth - The Official Veritasium Tabletop Game"},
+            "metadata": {"simpleText": "elementsoftruth.game"},
+            "callToAction": {"simpleText": "Order"},
+            "endpoint": {"urlEndpoint": {"url": "https://www.youtube.com/redirect?event=endscreen&redir_token=TOKEN&q=https%3A%2F%2Felementsoftruth.game%2F", "target": "TARGET_NEW_WINDOW"}},
+            "id": "8086322376554018857"
+          }
+        },
+        {
+          "endscreenElementRenderer": {
+            "style": "PLAYLIST",
+            "image": {"thumbnails": [
+              {"url": "https://i.ytimg.com/vi/rlI0ucCfCMs/mqdefault.jpg", "width": 320, "height": 180},
+              {"url": "https://i.ytimg.com/vi/rlI0ucCfCMs/maxresdefault.jpg", "width": 1920, "height": 1080}
+            ]},
+            "playlistLength": {"simpleText": "104 videos"},
+            "left": 0.65, "width": 0.322807, "top": 0.15306334, "aspectRatio": 1.7777778,
+            "startMs": "2052398", "endMs": "2062398",
+            "title": {"runs": [{"text": "Best "}, {"text": "of"}, {"text": " the year"}]},
+            "metadata": {"simpleText": "By Veritasium"},
+            "endpoint": {"watchEndpoint": {"videoId": "rlI0ucCfCMs", "playlistId": "PLHI1ZlIXQzpFLRE-4WmqJjPykZ8-p968u"}},
+            "id": "9087859003876003016"
+          }
+        },
+        {
+          "endscreenElementRenderer": {
+            "style": "PLAYLIST",
+            "image": {"thumbnails": [{"url": "https://i.ytimg.com/vi/rlI0ucCfCMs/maxresdefault.jpg", "width": 1920, "height": 1080}]},
+            "left": 0.65, "width": 0.322807, "top": 0.55, "aspectRatio": 1.7777778,
+            "startMs": "2052398", "endMs": "2062398",
+            "title": {"simpleText": "A playlist page"},
+            "endpoint": {"browseEndpoint": {"browseId": "VLPLHI1ZlIXQzpFLRE-4WmqJjPykZ8-p968u"}},
+            "id": "9087859003876003017"
+          }
+        }
+      ],
+      "startMs": "2047398"
+    }
+  }
+}

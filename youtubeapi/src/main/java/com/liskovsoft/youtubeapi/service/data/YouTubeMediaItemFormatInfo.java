@@ -1,5 +1,6 @@
 package com.liskovsoft.youtubeapi.service.data;
 
+import com.liskovsoft.mediaserviceinterfaces.data.EndScreenItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemStoryboard;
@@ -15,6 +16,7 @@ import com.liskovsoft.youtubeapi.formatbuilders.mpdbuilder.YouTubeMPDBuilder;
 import com.liskovsoft.youtubeapi.formatbuilders.storyboard.YouTubeStoryParser;
 import com.liskovsoft.youtubeapi.formatbuilders.storyboard.YouTubeStoryParser.Storyboard;
 import com.liskovsoft.youtubeapi.videoinfo.models.CaptionTrack;
+import com.liskovsoft.youtubeapi.videoinfo.models.EndScreenElement;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoDetails;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.formats.AdaptiveVideoFormat;
@@ -66,6 +68,7 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     private boolean mIsSynced;
     private boolean mIsUnknownError;
     private String mPaidContentText;
+    private List<EndScreenItem> mEndScreen;
     private String mClickTrackingParams;
     private String mVideoPlaybackUstreamerConfig;
     private String mServerAbrStreamingUrl;
@@ -151,6 +154,8 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
         formatInfo.mHasExtendedHlsFormats = videoInfo.hasExtendedHlsFormats();
         formatInfo.mLoudnessDb = videoInfo.getLoudnessDb();
         formatInfo.mPaidContentText = videoInfo.getPaidContentText();
+        List<EndScreenElement> endScreen = videoInfo.getEndScreen();
+        formatInfo.mEndScreen = endScreen != null ? new ArrayList<>(endScreen) : null;
         formatInfo.mVideoPlaybackUstreamerConfig = videoInfo.getVideoPlaybackUstreamerConfig();
         formatInfo.mServerAbrStreamingUrl = videoInfo.getServerAbrStreamingUrl();
         formatInfo.mPoToken = videoInfo.getPoToken();
@@ -432,6 +437,11 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     @Override
     public String getPaidContentText() {
         return mPaidContentText;
+    }
+
+    @Override
+    public List<EndScreenItem> getEndScreen() {
+        return mEndScreen;
     }
 
     @Override
