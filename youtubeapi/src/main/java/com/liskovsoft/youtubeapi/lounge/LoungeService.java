@@ -79,7 +79,7 @@ public class LoungeService {
             return null;
         }
 
-        Call<PairingCodeV2> pairingCodeWrapper = mInfoManager.getPairingCodeV2(
+        Call<PairingCodeV2> pairingCodeWrapper = mBindManager.getPairingCodeV2(
                 mLoungeToken,
                 mScreenId,
                 mScreenName,
