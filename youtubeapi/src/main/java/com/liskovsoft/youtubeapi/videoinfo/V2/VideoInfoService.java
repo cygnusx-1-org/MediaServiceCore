@@ -23,6 +23,7 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoHls;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoReel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,12 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private AppClient mActualInfoType = null;
     @Nullable
     private AppClient mNextInfoType = null;
+    /**
+     * Of one video, the client its formats are asked of first (see pickClient), null for none. Picked on the main thread, read by the
+     * fetch.
+     */
+    @Nullable
+    private volatile PickedClient mPickedClient;
     private boolean mUseAuth;
     /**
      * Off (e.g. Child mode): the videos are fetched without the account, see ServiceManager#allowRestrictedVideos
@@ -174,7 +181,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private VideoInfo firstInfoWith(String videoId, String clickTrackingParams, InfoTester infoTester, Map<AppClient, VideoInfo> answers) {
         final AppClient[] types = getVideoInfoTypes();
         //final AppClient beginType = getDefaultClient();
-        final AppClient beginType = mNextInfoType != null ? mNextInfoType : types[0];
+        final AppClient beginType = getFirstClient(videoId, types);
         AppClient nextType = beginType;
 
         do {
@@ -249,7 +256,8 @@ public class VideoInfoService extends VideoInfoServiceBase {
             return false;
         }
 
-        // And last, try to switch the client
+        // And last, try to switch the client. Past the one picked for the video too: it failed, the ones after it are tried.
+        mPickedClient = null;
         nextVideoInfoType();
         return mNextInfoType == getVideoInfoTypes()[0];
     }
@@ -259,6 +267,71 @@ public class VideoInfoService extends VideoInfoServiceBase {
      */
     public AppClient getNextClient() {
         return mNextInfoType != null ? mNextInfoType : getVideoInfoTypes()[0];
+    }
+
+    /**
+     * The client tried first by the video's info request: the one picked for it (see pickClient), else the next one
+     */
+    public AppClient getNextClient(@Nullable String videoId) {
+        return getFirstClient(videoId, getVideoInfoTypes());
+    }
+
+    /**
+     * The video's formats are asked of the client first, then of the order's others after it, as usual (see firstInfoWith). For that
+     * video only, till another one is picked, it's cleared (see clearPickedClient), or the client is switched past it (see
+     * switchNextFormat). One that isn't of the order is left out (see getFirstClient).
+     */
+    public void pickClient(String videoId, AppClient client) {
+        mPickedClient = videoId != null && client != null ? new PickedClient(videoId, client) : null;
+    }
+
+    /**
+     * The videos are asked of the order's clients again, from the next one (see pickClient)
+     */
+    public void clearPickedClient() {
+        mPickedClient = null;
+    }
+
+    /**
+     * For a video, any (see pickClient)
+     */
+    public boolean hasPickedClient() {
+        return mPickedClient != null;
+    }
+
+    /**
+     * The client picked for the video (see pickClient), null for none
+     */
+    @Nullable
+    public AppClient getPickedClient(@Nullable String videoId) {
+        PickedClient picked = mPickedClient;
+
+        return picked != null && picked.videoId.equals(videoId) ? picked.client : null;
+    }
+
+    /**
+     * Of the video, the client its formats are asked of first: the one picked for it, else the one switched to, else the first of the
+     * order
+     */
+    private AppClient getFirstClient(@Nullable String videoId, AppClient[] types) {
+        AppClient picked = getPickedClient(videoId);
+
+        // Not one of the order's (e.g. the order changed since): the others would be asked round and round, never back to it
+        if (picked != null && Arrays.asList(types).contains(picked)) {
+            return picked;
+        }
+
+        return mNextInfoType != null ? mNextInfoType : types[0];
+    }
+
+    private static final class PickedClient {
+        private final String videoId;
+        private final AppClient client;
+
+        private PickedClient(String videoId, AppClient client) {
+            this.videoId = videoId;
+            this.client = client;
+        }
     }
 
     /**

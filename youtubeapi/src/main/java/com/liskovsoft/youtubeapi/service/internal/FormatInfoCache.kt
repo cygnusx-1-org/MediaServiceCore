@@ -24,14 +24,25 @@ internal class FormatInfoCache {
 
     /**
      * Fetched for the video: they're the cached ones. Unplayable ones aren't kept, the next fetch asks again.
+     *
+     * @param clears of the fetch when it began (see clears), null for any: after a clear since, what it got isn't kept. It may be what
+     * the clear was for (e.g. the formats of a client picked away from, see FormatInfoWrapper#pickClient), and the next fetch would take it.
      */
-    fun put(formatInfo: MediaItemFormatInfo?) {
+    fun put(formatInfo: MediaItemFormatInfo?, clears: Int? = null) {
         val kept = formatInfo?.takeUnless { it.isUnplayable() }
 
         synchronized(this) {
-            mCached = kept
+            if (clears == null || clears == mClears) {
+                mCached = kept
+            }
         }
     }
+
+    /**
+     * Of the clears so far (see put)
+     */
+    val clears: Int
+        get() = synchronized(this) { mClears }
 
     /**
      * Cached or fetched ahead

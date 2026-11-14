@@ -30,6 +30,10 @@ internal object FormatInfoWrapper {
     const val PREFETCHED = "prefetched"
     private val mCache = FormatInfoCache()
     /**
+     * Of the cache, when the fetch running began (see FormatInfoCache#put). The fetches run one at a time, under the lock.
+     */
+    private var mFetchClears = 0
+    /**
      * What the fetch of the formats fetched ahead left (see prefetchFormatInfo): the one in use when they are taken
      */
     private var mPrefetchedState: FetchState? = null
@@ -292,7 +296,7 @@ internal object FormatInfoWrapper {
      * TclChallengeProvider#solveN and VideoInfoService#applyFixesIfNeeded).
      */
     private fun startAhead(videoId: String?) {
-        val client = getVideoInfoService().nextClient
+        val client = getVideoInfoService().getNextClient(videoId)
         val fork = FetchStages.fork()
 
         getVideoInfoService().checkTranslationLanguages(videoId, fork)
@@ -414,9 +418,13 @@ internal object FormatInfoWrapper {
         }
     }
 
+    /**
+     * With a client picked for the video, its formats were the legacy clients' (see selectPlaybackFormatInfo): those are switched, past
+     * the picked one
+     */
     @JvmStatic
     fun switchNextFormat(force: Boolean) {
-        if (mTryInnertubeFirst && !mInnertubeResult.isUnplayable) {
+        if (mTryInnertubeFirst && !mInnertubeResult.isUnplayable && !getVideoInfoService().hasPickedClient()) {
             if (!force && mInnertubeResult.client?.let { PoTokenGate.resetCache(it) } ?: false)
                 return
 
@@ -452,6 +460,23 @@ internal object FormatInfoWrapper {
     @JvmStatic
     fun resetClient() {
         getVideoInfoService().resetClient()
+    }
+
+    /**
+     * The video's formats are fetched again, asked of the client first (see VideoInfoService#pickClient). Not a client of the order
+     * (see MediaServiceData#getClientOrder): nothing changes.
+     */
+    @JvmStatic
+    fun pickClient(videoId: String, clientName: String) {
+        val client = AppClient.values().firstOrNull { it.name == clientName } ?: return
+
+        getVideoInfoService().pickClient(videoId, client)
+        invalidateCache()
+    }
+
+    @JvmStatic
+    fun clearPickedClient() {
+        getVideoInfoService().clearPickedClient()
     }
 
     @JvmStatic
@@ -493,6 +518,9 @@ internal object FormatInfoWrapper {
     }
 
     private fun selectPlaybackFormatInfo(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
+        // A clear while it runs (from any thread) drops what it gets (see setCachedFormatInfo)
+        mFetchClears = mCache.clears
+
         // Its attempts were recorded when it was fetched ahead, and what that fetch left is its now
         mCache.takePrefetched(videoId)?.let {
             mPrefetchedState?.let { state -> setFetchState(state) }
@@ -505,14 +533,21 @@ internal object FormatInfoWrapper {
             ClientAttempts.clear(videoId)
         }
 
-        var formatInfo = getPrimaryProvider()(videoId, clickTrackingParams)
+        val isInnertubeFirst = isInnertubeFirst(videoId)
+        var formatInfo = getPrimaryProvider(isInnertubeFirst)(videoId, clickTrackingParams)
 
         if (formatInfo != null && formatInfo.isUnplayable()) {
-            formatInfo = getSecondaryProvider()(videoId, clickTrackingParams)
+            formatInfo = getSecondaryProvider(isInnertubeFirst)(videoId, clickTrackingParams)
         }
 
         return formatInfo
     }
+
+    /**
+     * Not for a video with a client picked: that one is a legacy client, asked first (see VideoInfoService#pickClient)
+     */
+    private fun isInnertubeFirst(videoId: String): Boolean =
+        mTryInnertubeFirst && getVideoInfoService().getPickedClient(videoId) == null
 
     private fun toAttempt(formatInfo: MediaItemFormatInfo?): Attempt {
         return when {
@@ -522,12 +557,12 @@ internal object FormatInfoWrapper {
         }
     }
 
-    private fun getPrimaryProvider(): (String, String?) -> MediaItemFormatInfo? {
-        return if (mTryInnertubeFirst) mInnertubeProvider else mLegacyProvider
+    private fun getPrimaryProvider(isInnertubeFirst: Boolean): (String, String?) -> MediaItemFormatInfo? {
+        return if (isInnertubeFirst) mInnertubeProvider else mLegacyProvider
     }
 
-    private fun getSecondaryProvider(): (String, String?) -> MediaItemFormatInfo? {
-        return if (mTryInnertubeFirst) mLegacyProvider else mInnertubeProvider
+    private fun getSecondaryProvider(isInnertubeFirst: Boolean): (String, String?) -> MediaItemFormatInfo? {
+        return if (isInnertubeFirst) mLegacyProvider else mInnertubeProvider
     }
 
     private fun getFormatInfoInnertube(videoId: String, clickTrackingParams: String?): MediaItemFormatInfo? {
@@ -577,7 +612,7 @@ internal object FormatInfoWrapper {
     }
 
     private fun setCachedFormatInfo(formatInfo: MediaItemFormatInfo?, clickTrackingParams: String?) {
-        mCache.put(formatInfo)
+        mCache.put(formatInfo, mFetchClears)
 
         if (formatInfo != null && !formatInfo.isUnplayable()) {
             formatInfo.setClickTrackingParams(clickTrackingParams)

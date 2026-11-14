@@ -36,6 +36,18 @@ public interface ServiceManager {
     void switchNextClient();
     void switchNextClientNow();
     void resetClient();
+    /**
+     * The video's formats are fetched again, asked of the client first and of the order's others after it (e.g. a client picked in the
+     * player). For that video only, till another one is picked, it's cleared (see #clearPickedClient), or the client is switched past it
+     * (see #switchNextClient).
+     *
+     * @param clientName one of the order's, e.g. WEB: another changes nothing
+     */
+    void pickClient(String videoId, String clientName);
+    /**
+     * The videos are asked of the order's clients again (see #pickClient)
+     */
+    void clearPickedClient();
     void switchNextSubsFormat();
     void reloadPlayerResponse(String videoId, String reloadPlaybackToken);
     /**

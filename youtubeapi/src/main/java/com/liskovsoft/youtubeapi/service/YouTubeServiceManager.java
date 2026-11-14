@@ -155,6 +155,20 @@ public class YouTubeServiceManager implements ServiceManager {
     }
 
     @Override
+    public void pickClient(String videoId, String clientName) {
+        if (videoId == null || clientName == null) {
+            return;
+        }
+
+        FormatInfoWrapper.pickClient(videoId, clientName);
+    }
+
+    @Override
+    public void clearPickedClient() {
+        FormatInfoWrapper.clearPickedClient();
+    }
+
+    @Override
     public void switchNextSubsFormat() {
         FormatInfoWrapper.invalidateCache();
         getVideoInfoService().switchNextSubtitle();
