@@ -1,6 +1,7 @@
 package com.liskovsoft.youtubeapi.app.nsigsolver.impl
 
 import com.eclipsesource.v8.V8
+import com.eclipsesource.v8.V8Value
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
@@ -62,6 +63,11 @@ internal object TclChallengeProvider {
     const val LOADED_FROM_CACHE = "cache"
     const val LOADED_FROM_PREPROCESSED = "preprocessed"
     private const val FAILED = "failed"
+    /**
+     * Of the runtime: where a player's source, and its preprocessed one, are put for a script, not in it (see runV8With)
+     */
+    private const val SOURCE_GLOBAL = "tclPlayerSource"
+    private const val PREPROCESSED_GLOBAL = "tclPreprocessedPlayer"
     /**
      * Of the solver scripts: a player that other ones preprocessed (e.g. before the app was updated) is preprocessed again
      */
@@ -194,7 +200,6 @@ internal object TclChallengeProvider {
 
         val request = mapOf(
             "type" to "player",
-            "player" to code,
             "challenges" to emptyList<String>(),
             "output_preprocessed" to true
         )
@@ -205,7 +210,23 @@ internal object TclChallengeProvider {
         var preprocessed: String? = null
 
         try {
-            preprocessed = runSolver("JSON.stringify(tclSolver(${Gson().toJson(request)}));")?.preprocessed_player
+            // The source goes in, and the preprocessed player comes out, as globals of the runtime, not in the script or its output
+            // (see runV8With). In a function: nothing else of the run stays in the runtime's globals, holding on to the source.
+            val output = runSolver(SOURCE_GLOBAL, code, """
+                var $PREPROCESSED_GLOBAL;
+                (function () {
+                    var request = ${Gson().toJson(request)};
+                    request.player = $SOURCE_GLOBAL;
+                    var output = tclSolver(request);
+                    $PREPROCESSED_GLOBAL = output.preprocessed_player;
+                    delete output.preprocessed_player;
+                    return JSON.stringify(output);
+                })();
+            """)
+
+            if (output != null) {
+                preprocessed = takeGlobalString(PREPROCESSED_GLOBAL)
+            }
         } finally {
             span.end(if (preprocessed != null) null else FAILED)
         }
@@ -232,7 +253,7 @@ internal object TclChallengeProvider {
     private fun loadNFunction(playerUrl: String, preprocessed: String): Boolean {
         try {
             initRuntime()
-            runV8("var tclNFunctionFactory = new Function(${Gson().toJson(preprocessed)});\n$solveFunctionScript")
+            runV8With(PREPROCESSED_GLOBAL, preprocessed, "var tclNFunctionFactory = new Function($PREPROCESSED_GLOBAL);\n$solveFunctionScript")
         } catch (e: Exception) {
             Log.e(tag, "Cannot load the TCL n-function: ${e.message}")
             disposeRuntime()
@@ -251,9 +272,16 @@ internal object TclChallengeProvider {
     /**
      * Null when the solver fails
      */
-    private fun runSolver(stdin: String): SolverOutput? {
+    private fun runSolver(stdin: String): SolverOutput? = runSolver(null, null, stdin)
+
+    /**
+     * Null when the solver fails
+     *
+     * @param global of the runtime, holding the value while the script runs (see runV8With). Null for none.
+     */
+    private fun runSolver(global: String?, value: String?, stdin: String): SolverOutput? {
         val stdout = try {
-            runV8(stdin)
+            if (global != null && value != null) runV8With(global, value, stdin) else runV8(stdin)
         } catch (e: Exception) {
             Log.e(tag, "TCL n-function solve failed: ${e.message}")
             return null
@@ -295,6 +323,37 @@ internal object TclChallengeProvider {
         val runtime = v8Runtime ?: throw IllegalStateException("V8 runtime not initialized yet")
         return runtime.withLock {
             it.executeStringScript(stdin) ?: throw IllegalStateException("V8 runtime error: empty response")
+        }
+    }
+
+    /**
+     * The script, with a text of a few MB (a player's source, or its preprocessed one) in the runtime's global, let go after. Put in
+     * the script as a JSON literal, it was copied twice on the Java heap (escaped, then into the script) and parsed by V8 as a literal:
+     * on a low-RAM device with a new player, that load and the preprocess ran past 10 s each, the device starved meanwhile.
+     */
+    private fun runV8With(global: String, value: String, stdin: String): String {
+        val runtime = v8Runtime ?: throw IllegalStateException("V8 runtime not initialized yet")
+        return runtime.withLock {
+            try {
+                it.add(global, value)
+                it.executeStringScript(stdin) ?: throw IllegalStateException("V8 runtime error: empty response")
+            } finally {
+                it.addUndefined(global)
+            }
+        }
+    }
+
+    /**
+     * The text a script left in the runtime's global, let go of there. Null when it isn't one (e.g. the solver gave none).
+     */
+    private fun takeGlobalString(global: String): String? {
+        val runtime = v8Runtime ?: return null
+        return runtime.withLock {
+            try {
+                if (it.getType(global) == V8Value.STRING) it.getString(global) else null
+            } finally {
+                it.addUndefined(global)
+            }
         }
     }
 

@@ -15,6 +15,7 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts.Attempt
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService
+import com.liskovsoft.youtubeapi.videoinfo.V2.WarmUps
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal object FormatInfoWrapper {
@@ -61,9 +62,22 @@ internal object FormatInfoWrapper {
     const val WARM_UP_POTOKEN = "poToken"
     const val WARM_UP_PLAYER_DATA = "player data"
     /**
+     * How a step of the warm-up ended (see WarmUps): the languages checked, the player data's n-function loaded or not, a poToken got or
+     * none (else the class of what it threw)
+     */
+    private const val WARM_UP_CHECKED = "checked"
+    private const val WARM_UP_READY = "ready"
+    private const val WARM_UP_NOT_READY = "not ready"
+    private const val WARM_UP_GOT = "got"
+    private const val WARM_UP_NONE = "none"
+    /**
      * One warm-up at a time
      */
     private val mIsWarmingUp = AtomicBoolean()
+    /**
+     * Asked for while one ran (see warmUpAgain)
+     */
+    private val mIsWarmUpAgain = AtomicBoolean()
     /**
      * The warm-up's step running now, null for none
      */
@@ -182,21 +196,37 @@ internal object FormatInfoWrapper {
      * Without the fetches' lock: holding it, a video opened meanwhile waited for all the steps before its request even started
      * (1.8 s on a Shield). Each step runs one at a time by itself (the poToken's attempt is shared, the player data and the languages'
      * check have their own locks), so the video's stage of a step still running waits for that one only (see warmUpDetail).
+     * With one running already (e.g. started with no video when the first section began to load), it runs again after that one (see
+     * warmUpAgain). Each run is recorded (see WarmUps), for the run's first video start to say what it found ready.
      *
-     * @param videoId of a video that likely has subtitles (e.g. the first one shown), for the languages
+     * @param videoId of a video that likely has subtitles (e.g. the first one shown), for the languages. Null for none: they're left
+     * for a later call (or the first fetch) to check.
      */
     @JvmStatic
     fun warmUp(videoId: String?) {
         if (!mIsWarmingUp.compareAndSet(false, true)) {
+            warmUpAgain(videoId)
             return
         }
 
-        try {
-            // Its stages are shown in a fetch that waits for one of its steps (see FetchStages#runWarmUp)
-            FetchStages.runWarmUp { warmUpSteps(videoId) }
-        } finally {
-            mIsWarmingUp.set(false)
-        }
+        do {
+            try {
+                do {
+                    mIsWarmUpAgain.set(false)
+                    val run = WarmUps.begin()
+
+                    try {
+                        // Its stages are shown in a fetch that waits for one of its steps (see FetchStages#runWarmUp)
+                        FetchStages.runWarmUp { warmUpSteps(videoId, run) }
+                    } finally {
+                        run.end()
+                    }
+                } while (mIsWarmUpAgain.get())
+            } finally {
+                mIsWarmingUp.set(false)
+            }
+            // Asked for again as it ended: once more, unless another call runs it
+        } while (mIsWarmUpAgain.get() && mIsWarmingUp.compareAndSet(false, true))
 
         // E.g. one kept by a run before, about to expire
         refreshPoTokenLater()
@@ -212,23 +242,47 @@ internal object FormatInfoWrapper {
         if (mWarmUpStep != step) detail else if (detail != null) "$detail, ${FetchStages.WARM_UP}" else FetchStages.WARM_UP
 
     /**
+     * Asked for while one runs (e.g. by the first videos shown, or another account's): its steps run again once it ends, quick for the
+     * ones still done (e.g. the player loaded), and the video's languages are checked now, by themselves (see
+     * VideoInfoService#checkTranslationLanguages)
+     */
+    @JvmStatic
+    fun warmUpAgain(videoId: String?) {
+        mIsWarmUpAgain.set(true)
+        getVideoInfoService().checkTranslationLanguages(videoId, null)
+    }
+
+    /**
      * The next fetch would wait for its client's poToken being made
      */
     @JvmStatic
     fun isPoTokenToMake(): Boolean = PoTokenGate.isPoTokenToWaitFor(getVideoInfoService().nextClient)
 
-    private fun warmUpSteps(videoId: String?) {
+    /**
+     * The player data before the poToken: on a slow device its load is the longest step (a new player's preprocess ran 10 s on a Realtek
+     * box, past the 15 s a video start is given up at), and it's off the main thread, so it runs while the first section loads. The
+     * poToken's WebView runs on the main thread mostly.
+     */
+    private fun warmUpSteps(videoId: String?, run: WarmUps.Recorder) {
         val client = getVideoInfoService().nextClient
 
         // Before the player data: its request makes its client the one of the player data got with none
         // (see AppServiceCoreCached#firstValidExtractor)
-        runWarmUp(WARM_UP_LANGUAGES) { getVideoInfoService().warmUpTranslationLanguages(videoId) }
-
-        if (client.isTvPotRequired) {
-            runWarmUp(WARM_UP_POTOKEN) { PoTokenGate.getPoToken(client) }
+        if (videoId != null) {
+            runWarmUp(WARM_UP_LANGUAGES, run) {
+                getVideoInfoService().warmUpTranslationLanguages(videoId)
+                WARM_UP_CHECKED
+            }
         }
 
-        runWarmUp(WARM_UP_PLAYER_DATA) { AppService.instance().warmUpPlayerData(client) }
+        runWarmUp(WARM_UP_PLAYER_DATA, run) {
+            AppService.instance().warmUpPlayerData(client)
+            if (AppService.instance().isPlayerDataWarm(client)) WARM_UP_READY else WARM_UP_NOT_READY
+        }
+
+        if (client.isTvPotRequired) {
+            runWarmUp(WARM_UP_POTOKEN, run) { if (PoTokenGate.getPoToken(client) != null) WARM_UP_GOT else WARM_UP_NONE }
+        }
     }
 
     /**
@@ -341,15 +395,22 @@ internal object FormatInfoWrapper {
         }
     }
 
-    private fun runWarmUp(step: String, warmUp: () -> Unit) {
+    /**
+     * @param warmUp how the step ended (see WARM_UP_READY…)
+     */
+    private fun runWarmUp(step: String, run: WarmUps.Recorder, warmUp: () -> String) {
         mWarmUpStep = step
+        val recorder = run.beginStep(step)
+        var result: String? = null
 
         try {
-            warmUp()
+            result = warmUp()
         } catch (e: Exception) {
             Log.e(TAG, "Can't warm up the %s: %s", step, e.message)
+            result = e.javaClass.simpleName
         } finally {
             mWarmUpStep = null
+            recorder.end(result)
         }
     }
 

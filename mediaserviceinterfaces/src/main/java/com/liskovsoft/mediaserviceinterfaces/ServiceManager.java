@@ -12,7 +12,8 @@ public interface ServiceManager {
     void invalidateCache();
     void refreshCacheIfNeeded();
     /**
-     * In the background: gets ready what the first video's formats wait for (e.g. while the user browses)
+     * In the background: gets ready what the first video's formats wait for (e.g. while the user browses). With one running already,
+     * only the video's subtitle languages are checked.
      *
      * @param videoId of a video that likely has subtitles (e.g. the first one shown), null when there's none
      */
@@ -22,6 +23,11 @@ public interface ServiceManager {
      * thread.
      */
     boolean isPoTokenToMake();
+    /**
+     * The player's data is due its refresh, or past it (e.g. the app browsed for long without a video): the next video may load a new
+     * player, which is slow on a slow device. A warm-up refreshes it (see #warmUpPlayback).
+     */
+    boolean isPlayerDataToRefresh();
     /**
      * The app's UI is hidden: what's only kept to be quick again is let go, so the process is a smaller target for the low memory
      * killer (e.g. while a foreground service keeps it). Any thread.

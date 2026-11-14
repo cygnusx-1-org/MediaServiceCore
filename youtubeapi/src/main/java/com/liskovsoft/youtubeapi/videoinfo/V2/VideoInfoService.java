@@ -23,7 +23,9 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoHls;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoReel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.FutureTask;
 
 import retrofit2.Call;
@@ -149,19 +151,27 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     private VideoInfo firstPlayable(String videoId, String clickTrackingParams) {
+        // Of each client asked, its answer (null for none, e.g. its request failed)
+        Map<AppClient, VideoInfo> answers = new HashMap<>();
         // A live stream with nothing to play it from is skipped for the next client's, which may have it
-        VideoInfo result = firstInfoWith(videoId, clickTrackingParams, info -> !info.isUnplayable() && !info.hasNoLiveMedia());
+        VideoInfo result = firstInfoWith(videoId, clickTrackingParams, info -> !info.isUnplayable() && !info.hasNoLiveMedia(), answers);
 
-        // No client has it: its answer still is one, the player tries again later (see VideoLoaderController#processFormatInfo)
+        // No client has it: its answer still is one, the player tries again later (see VideoLoaderController#processFormatInfo). Of the
+        // answers given already: a client is asked again only when it gave none. A video no client plays (e.g. members-only) was asked
+        // of every client a second time, which took as long again.
         return result != null ? result : firstInfoWith(videoId, clickTrackingParams,
-                info -> info.getRegularFormats() != null || (!info.isUnplayable() && info.hasNoLiveMedia()));
+                info -> info.getRegularFormats() != null || (!info.isUnplayable() && info.hasNoLiveMedia()), answers);
     }
 
     private interface InfoTester {
         boolean test(VideoInfo info);
     }
 
-    private VideoInfo firstInfoWith(String videoId, String clickTrackingParams, InfoTester infoTester) {
+    /**
+     * @param answers of the clients asked before (see firstPlayable): one given is tested, not asked for again. Those asked now are
+     *                added.
+     */
+    private VideoInfo firstInfoWith(String videoId, String clickTrackingParams, InfoTester infoTester, Map<AppClient, VideoInfo> answers) {
         final AppClient[] types = getVideoInfoTypes();
         //final AppClient beginType = getDefaultClient();
         final AppClient beginType = mNextInfoType != null ? mNextInfoType : types[0];
@@ -169,6 +179,19 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         do {
             final AppClient type = nextType;
+            VideoInfo answer = answers.get(type);
+
+            if (answer != null) {
+                if (infoTester.test(answer)) {
+                    // Which one is played, as when it was asked again
+                    ClientAttempts.record(videoId, toAttempt(type, answer, true));
+                    return answer;
+                }
+
+                nextType = Helpers.getNextValue(types, nextType);
+                continue;
+            }
+
             mLastResponseCode.set(0);
             FetchStages.Span span = FetchStages.begin(type.name() + " attempt");
             VideoInfo result;
@@ -181,6 +204,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 throw e;
             }
 
+            answers.put(type, result);
             boolean accepted = result != null && infoTester.test(result);
             Attempt attempt = toAttempt(type, result, accepted);
 

@@ -109,6 +109,9 @@ public class YouTubeServiceManager implements ServiceManager {
     @Override
     public void warmUpPlayback(@Nullable String videoId) {
         if (RxHelper.isAnyActionRunning(mWarmUpPlaybackAction)) {
+            // E.g. the one started with no video when the first section began to load: it runs again after it, the video's languages
+            // are checked now
+            RxHelper.runAsync(() -> FormatInfoWrapper.warmUpAgain(videoId));
             return;
         }
 
@@ -118,6 +121,11 @@ public class YouTubeServiceManager implements ServiceManager {
     @Override
     public boolean isPoTokenToMake() {
         return FormatInfoWrapper.isPoTokenToMake();
+    }
+
+    @Override
+    public boolean isPlayerDataToRefresh() {
+        return AppService.instance().isPlayerDataToRefresh();
     }
 
     @Override

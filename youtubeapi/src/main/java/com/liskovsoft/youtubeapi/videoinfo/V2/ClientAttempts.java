@@ -15,7 +15,8 @@ import java.util.Map;
 public final class ClientAttempts {
     static final int MAX_VIDEOS = 20;
     /**
-     * Two passes over every client (see VideoInfoService#firstPlayable) and the Innertube one
+     * Two passes over every client (see VideoInfoService#firstPlayable: the second asks only the ones that gave no answer) and the
+     * Innertube one
      */
     static final int MAX_ATTEMPTS = 24;
     public static final String RESULT_OK = "ok";
