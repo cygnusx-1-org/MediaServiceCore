@@ -19,6 +19,11 @@ public class Metadata {
     private List<String> mBadgeStyles;
     @JsonPath("$.lines[*].lineRenderer.items[0].lineItemRenderer.badge.metadataBadgeRenderer.label")
     private List<String> mBadgeLabels;
+    /**
+     * Of every item, not only the first: the members' badge may follow another (e.g. "New")
+     */
+    @JsonPath("$.lines[*].lineRenderer.items[*].lineItemRenderer.badge.metadataBadgeRenderer")
+    private List<MetadataBadge> mBadges;
 
     public String getTitle() {
         return mTitle != null ? Helpers.toString(mTitle.getText()) : null;
@@ -42,6 +47,13 @@ public class Metadata {
 
     public List<String> getBadgeLabels() {
         return mBadgeLabels;
+    }
+
+    /**
+     * See MediaItem#getMembersLabel
+     */
+    public String getMembersLabel() {
+        return MetadataBadge.findMembersLabel(mBadges);
     }
 
     private CharSequence getViewCountText1() {

@@ -562,11 +562,20 @@ internal data class LockupItem(
                     val metadataRows: List<MetadataRow?>?
                 ) {
                     data class MetadataRow(
-                        val metadataParts: List<MetadataPart?>?
+                        val metadataParts: List<MetadataPart?>?,
+                        val badges: List<Badge?>? // e.g. "Members only"
                     ) {
                         data class MetadataPart(
                             val text: TextItem?
                         )
+                        data class Badge(
+                            val badgeViewModel: BadgeViewModel?
+                        ) {
+                            data class BadgeViewModel(
+                                val badgeText: String?,
+                                val badgeStyle: String? // e.g. BADGE_MEMBERS_ONLY
+                            )
+                        }
                     }
                 }
             }

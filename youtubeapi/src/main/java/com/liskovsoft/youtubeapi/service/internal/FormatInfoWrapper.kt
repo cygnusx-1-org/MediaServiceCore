@@ -1,5 +1,6 @@
 package com.liskovsoft.youtubeapi.service.internal
 
+import android.os.SystemClock
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
@@ -99,14 +100,28 @@ internal object FormatInfoWrapper {
      */
     const val LOCK_PLAYER_DATA_REFRESH = "player data refresh"
     /**
-     * The detail of a fetch's lock wait while the next video's formats are fetched ahead (see prefetchFormatInfo)
+     * The detail of a fetch's lock wait while the next video's formats are fetched ahead (see prefetchFormatInfo), with its id
      */
     const val LOCK_PREFETCH = "next video's prefetch"
     /**
-     * What holds the fetches' lock that isn't a fetch, null for none: what a fetch's lock wait waits for
+     * The detail of a fetch's lock wait while another video's formats are fetched (see getFormatInfo), with its id: e.g. a video opened
+     * before, or a stream reminder's check
+     */
+    const val LOCK_FETCH = "fetch"
+    /**
+     * The detail of a fetch's lock wait while the new poToken is swapped in (see refreshPoTokenLater)
+     */
+    private const val LOCK_POTOKEN_SWAP = "poToken swap"
+    /**
+     * What holds the fetches' lock, null for nothing: what a fetch's lock wait waits for (see withLock, getLockHolder)
      */
     @Volatile
     private var mLockHolder: String? = null
+    /**
+     * When the holder took the lock, in the time of SystemClock#elapsedRealtime
+     */
+    @Volatile
+    private var mLockTakenMs: Long = -1
     /**
      * After a fetch, the poToken that expires soon is made again this much later: its WebView runs on the main thread, so it's made
      * once the video plays, not while it starts (see refreshPoTokenLater)
@@ -122,12 +137,13 @@ internal object FormatInfoWrapper {
 
         try {
             val lockWait = FetchStages.begin("lock wait")
-            // Another fetch, or the player data's refresh (the warm-up doesn't hold the lock). Read before the wait: it's let go after.
-            val holder = mLockHolder
+            // Another fetch, the next video's prefetch or the player data's refresh (the warm-up doesn't hold the lock). Read before the
+            // wait: it's let go after.
+            val holder = getLockHolder()
 
-            synchronized(lock) {
+            return withLock("$LOCK_FETCH $videoId") {
                 lockWait.end(holder)
-                return selectPlaybackFormatInfo(videoId, clickTrackingParams)
+                selectPlaybackFormatInfo(videoId, clickTrackingParams)
             }
         } finally {
             fetch.end(null)
@@ -152,11 +168,10 @@ internal object FormatInfoWrapper {
         if (videoId == null)
             return
 
-        synchronized(lock) {
+        withLock("$LOCK_PREFETCH $videoId") {
             if (mCache.contains(videoId))
                 return
 
-            mLockHolder = LOCK_PREFETCH
             val playing = getFetchState()
 
             try {
@@ -164,9 +179,38 @@ internal object FormatInfoWrapper {
                 mPrefetchedState = getFetchState()
             } finally {
                 setFetchState(playing)
-                mLockHolder = null
             }
         }
+    }
+
+    /**
+     * Holding the fetches' lock, named for a fetch that waits for it (see getLockHolder)
+     *
+     * @param holder e.g. "fetch abc123" (see the LOCK_ constants)
+     */
+    private inline fun <T> withLock(holder: String, block: () -> T): T = synchronized(lock) {
+        // It's reentrant: the outer holder's again after
+        val outerHolder = mLockHolder
+        val outerTakenMs = mLockTakenMs
+        mLockHolder = holder
+        mLockTakenMs = SystemClock.elapsedRealtime()
+
+        try {
+            block()
+        } finally {
+            mLockHolder = outerHolder
+            mLockTakenMs = outerTakenMs
+        }
+    }
+
+    /**
+     * What holds the fetches' lock and since when, e.g. "fetch abc123, 1240 ms in". Null when nothing does.
+     */
+    private fun getLockHolder(): String? {
+        val holder = mLockHolder ?: return null
+        val takenMs = mLockTakenMs
+
+        return if (takenMs >= 0) "$holder, ${SystemClock.elapsedRealtime() - takenMs} ms in" else holder
     }
 
     /**
@@ -347,7 +391,7 @@ internal object FormatInfoWrapper {
                     try {
                         // Swapped not while a fetch runs: its request and its streams would have different ones, the living room id
                         // taken from the new one (see PoTokenGate#getLivingRoomPoTokenId). A fetch doesn't wait for it being made.
-                        PoTokenGate.refreshPoToken(client) { swap -> synchronized(lock) { swap() } }
+                        PoTokenGate.refreshPoToken(client) { swap -> withLock(LOCK_POTOKEN_SWAP) { swap() } }
                     } catch (e: Exception) {
                         Log.e(TAG, "Can't make the poToken again: %s", e.message)
                     } finally {
@@ -378,14 +422,8 @@ internal object FormatInfoWrapper {
                     try {
                         // Not while a fetch runs: its request and its decipher would go by different players, and the solver keeps one
                         // only (see TclChallengeProvider). A fetch started meanwhile waits for it.
-                        synchronized(lock) {
-                            mLockHolder = LOCK_PLAYER_DATA_REFRESH
-
-                            try {
-                                AppService.instance().refreshPlayerData(getVideoInfoService().nextClient)
-                            } finally {
-                                mLockHolder = null
-                            }
+                        withLock(LOCK_PLAYER_DATA_REFRESH) {
+                            AppService.instance().refreshPlayerData(getVideoInfoService().nextClient)
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Can't refresh the player data: %s", e.message)

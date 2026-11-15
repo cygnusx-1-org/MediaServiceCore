@@ -63,6 +63,7 @@ open class BaseMediaItem : MediaItem {
     protected open val isDateMissingItem: Boolean? = null
     protected open val isMovieItem: Boolean? = null
     protected open val isShowItem: Boolean? = null
+    protected open val membersLabelItem: String? = null
     protected open val feedbackTokenItem: String? = null
     protected open val feedbackTokenItem2: String? = null
     protected open val feedbackEndpointItem: FeedbackEndpoint? = null
@@ -210,6 +211,10 @@ open class BaseMediaItem : MediaItem {
 
     override fun isShow(): Boolean {
         return isShowItem ?: false
+    }
+
+    override fun getMembersLabel(): String? {
+        return membersLabelItem
     }
 
     override fun hasNewContent(): Boolean {

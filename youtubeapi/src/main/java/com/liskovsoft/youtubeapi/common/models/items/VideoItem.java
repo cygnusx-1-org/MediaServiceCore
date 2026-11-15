@@ -4,6 +4,7 @@ import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.googlecommon.common.converters.jsonpath.JsonPath;
 import com.liskovsoft.googlecommon.common.models.V2.TextItem;
 import com.liskovsoft.googlecommon.common.models.items.Thumbnail;
+import com.liskovsoft.youtubeapi.common.models.V2.MetadataBadge;
 
 import java.util.List;
 
@@ -57,6 +58,8 @@ public class VideoItem {
     private TextItem mBadgeText;
     @JsonPath("$.badges[0].metadataBadgeRenderer.label")
     private String mDescBadgeText;
+    @JsonPath("$.badges[*].metadataBadgeRenderer")
+    private List<MetadataBadge> mBadges;
     // Sometimes live video contains percent watched as first item
     @JsonPath({"$.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.style",
                "$.thumbnailOverlays[1].thumbnailOverlayTimeStatusRenderer.style"})
@@ -165,8 +168,20 @@ public class VideoItem {
     /**
      * Mostly it's a 4K label
      */
+    /**
+     * Not the members' badge: the card has its own label for it (see #getMembersLabel)
+     */
     public String getDescBadgeText() {
-        return mDescBadgeText;
+        String membersLabel = getMembersLabel();
+
+        return membersLabel != null && membersLabel.equals(mDescBadgeText) ? null : mDescBadgeText;
+    }
+
+    /**
+     * See MediaItem#getMembersLabel
+     */
+    public String getMembersLabel() {
+        return MetadataBadge.findMembersLabel(mBadges);
     }
 
     /**

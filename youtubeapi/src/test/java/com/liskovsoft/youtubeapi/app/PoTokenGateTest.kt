@@ -15,6 +15,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 class PoTokenGateTest {
@@ -251,6 +253,42 @@ class PoTokenGateTest {
         assertFalse(PoTokenGate.rejectPoToken(AppClient.VISIONOS))
 
         assertEquals(false, isTvPotRejected())
+    }
+
+    /**
+     * A token being made holds the lock, and its BotGuard needs the main thread, where a reset is called (an account switch): the reset
+     * waited for it, and the app froze
+     */
+    @Test
+    fun aResetDoesNotWaitForATvPoTokenBeingMade() {
+        providerField("result").set(null, PoTokenResult("", "visitor", "old", "old"))
+        providerField("expirationMs").setLong(null, System.currentTimeMillis() + 60_000)
+        val lock = providerField("lock").get(null)!!
+        val held = CountDownLatch(1)
+        val made = CountDownLatch(1)
+        val maker = Thread {
+            synchronized(lock) {
+                held.countDown()
+                made.await(5, TimeUnit.SECONDS)
+            }
+        }
+        maker.start()
+        assertTrue(held.await(5, TimeUnit.SECONDS))
+        val resetDone = CountDownLatch(1)
+
+        try {
+            Thread {
+                TvPoTokenProvider.reset()
+                resetDone.countDown()
+            }.start()
+
+            assertTrue(resetDone.await(2, TimeUnit.SECONDS))
+            assertNull(TvPoTokenProvider.currentResult())
+            assertNull(TvPoTokenProvider.livingRoomPoTokenId)
+        } finally {
+            made.countDown()
+            maker.join(5_000)
+        }
     }
 
     private companion object {

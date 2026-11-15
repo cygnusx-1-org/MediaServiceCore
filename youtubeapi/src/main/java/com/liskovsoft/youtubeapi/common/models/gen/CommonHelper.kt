@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.browse.v2.gen.getFeedbackToken
 import com.liskovsoft.youtubeapi.browse.v2.gen.getFeedbackTokens
 import com.liskovsoft.youtubeapi.browse.v2.gen.getItems
 import com.liskovsoft.youtubeapi.common.helpers.ProtoReader
+import com.liskovsoft.youtubeapi.common.models.V2.MetadataBadge
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 
 // A badge before the image
@@ -22,6 +23,10 @@ private const val BADGE_STYLE_DEFAULT = "DEFAULT"
 private const val STATUS_STYLE_MOVIE = "BADGE_STYLE_TYPE_YPC" // This mark sometimes presents on regular videos (e.g. fundraiser mark)
 private const val STATUS_STYLE_QUALITY = "BADGE_STYLE_TYPE_SIMPLE"
 private const val STATUS_STYLE_LIVE = "BADGE_STYLE_TYPE_LIVE_NOW"
+// A video only the channel's members watch, now or before everyone else: the label tells them apart ("Members only", "Members first",
+// translated), the style is the same and isn't translated (see MediaItem#getMembersLabel)
+private const val STATUS_STYLE_MEMBERS = MetadataBadge.STYLE_MEMBERS
+private const val LOCKUP_BADGE_STYLE_MEMBERS = "BADGE_MEMBERS_ONLY"
 
 ///////////
 
@@ -113,7 +118,9 @@ internal fun VideoItem.getTitle() = title?.getText() ?: headline?.getText()
 internal fun VideoItem.getVideoId() = videoId
 internal fun VideoItem.getThumbnails() = thumbnail
 internal fun VideoItem.getMovingThumbnails() = richThumbnail?.movingThumbnailRenderer?.movingThumbnailDetails
-internal fun VideoItem.getSubTitle() = badges?.getOrNull(0)?.metadataBadgeRenderer?.label
+// Not the members' badge: the card has its own label for it (see getMembersLabel)
+internal fun VideoItem.getSubTitle() = badges?.firstOrNull { it?.metadataBadgeRenderer?.style != STATUS_STYLE_MEMBERS }?.metadataBadgeRenderer?.label
+internal fun VideoItem.getMembersLabel() = badges?.firstNotNullOfOrNull { it?.metadataBadgeRenderer?.getMembersLabel() }
 internal fun VideoItem.getLengthText() = lengthText?.getText()
 internal fun VideoItem.getPercentWatched() = thumbnailOverlays?.firstNotNullOfOrNull { it?.thumbnailOverlayResumePlaybackRenderer?.percentDurationWatched }
 internal fun VideoItem.getStartTimeSeconds() = navigationEndpoint?.getStartTimeSeconds()
@@ -140,6 +147,10 @@ internal fun VideoItem.isShorts() = BADGE_STYLE_SHORTS == getBadgeStyle()
 internal fun VideoItem.isMovie() = STATUS_STYLE_MOVIE == getStatusStyle() && getVideoId() == null
 internal fun VideoItem.getFeedbackTokens() = menu?.getFeedbackTokens()
 private fun VideoItem.getStatusStyle() = badges?.firstNotNullOfOrNull { it?.metadataBadgeRenderer?.style }
+// Empty when the members' badge has no label, null for another badge (see MediaItem#getMembersLabel)
+private fun VideoItem.BadgeItem.MetadataBadgeRenderer.getMembersLabel() = takeIf { it.style == STATUS_STYLE_MEMBERS }?.let { it.label ?: "" }
+private fun TileMetadataRenderer.Line.LineRenderer.Item.LineItemRenderer.Badge.MetadataBadgeRenderer.getMembersLabel() =
+    takeIf { it.style == STATUS_STYLE_MEMBERS }?.let { it.label ?: "" }
 private fun VideoItem.getBadgeStyle() = thumbnailOverlays?.firstNotNullOfOrNull { it?.thumbnailOverlayTimeStatusRenderer?.style }
 
 ////////////
@@ -203,11 +214,18 @@ internal fun TileItem.getTitle() = metadata?.tileMetadataRenderer?.title?.getTex
     ?: header?.trackTileHeaderRenderer?.title?.getText()
     ?: getShowMenuCommand()?.title?.getText()
 internal fun TileItem.getSubTitle() = metadata?.tileMetadataRenderer?.lines
-    ?.map { it?.lineRenderer?.items?.getOrNull(0)?.lineItemRenderer?.badge?.metadataBadgeRenderer?.label }?.firstOrNull()
+    ?.map { it?.lineRenderer?.items?.getOrNull(0)?.lineItemRenderer?.badge?.metadataBadgeRenderer?.takeIf { it.style != STATUS_STYLE_MEMBERS }?.label }
+    ?.firstOrNull()
     ?: getShowMenuCommand()?.subtitle?.getText()
 internal fun TileItem.getBadgeText() = header?.tileHeaderRenderer?.thumbnailOverlays
     ?.firstNotNullOfOrNull { it?.thumbnailOverlayTimeStatusRenderer?.text?.getText() }
     ?: header?.trackTileHeaderRenderer?.duration?.getText()
+/**
+ * Of any item of any line: the members' badge may follow another (e.g. "New")
+ */
+internal fun TileItem.getMembersLabel() = metadata?.tileMetadataRenderer?.lines?.firstNotNullOfOrNull { line ->
+    line?.lineRenderer?.items?.firstNotNullOfOrNull { it?.lineItemRenderer?.badge?.metadataBadgeRenderer?.getMembersLabel() }
+}
 internal fun TileItem.getVideoId() = onSelectCommand?.getVideoId()
 internal fun TileItem.getPlaylistId() = onSelectCommand?.getPlaylistId() ?: getMenu()?.getPlaylistId()
 internal fun TileItem.getPlaylistIndex() = 0
@@ -316,6 +334,9 @@ internal fun LockupItem.getChannelHandle() = takeIf { it.isChannel() }?.renderer
  */
 internal fun LockupItem.isShorts() = contentType == LOCKUP_CONTENT_TYPE_SHORT || rendererContext?.getOnTapCommand()?.reelWatchEndpoint != null
 internal fun LockupItem.isDateMissing() = getMetadataRows().isNullOrEmpty()
+internal fun LockupItem.getMembersLabel() = getMetadataRows()?.firstNotNullOfOrNull { row ->
+    row?.badges?.firstNotNullOfOrNull { it?.badgeViewModel?.takeIf { it.badgeStyle == LOCKUP_BADGE_STYLE_MEMBERS }?.let { it.badgeText ?: "" } }
+}
 internal fun LockupItem.isShow() = contentType == LOCKUP_CONTENT_TYPE_PODCAST || rendererContext?.getOnTapCommand()?.browseEndpoint?.isShowPage() == true
 // TV search gives mixes as lockups, with the same icon as the tiles of Home
 internal fun LockupItem.isMix() = BADGE_ICON_MIX == getBadge()?.icon?.sources?.firstNotNullOfOrNull { it?.clientResource?.imageName }
@@ -407,6 +428,7 @@ internal fun ItemWrapper.isLive() = getVideoItem()?.isLive() ?: getMusicItem()?.
 internal fun ItemWrapper.isUpcoming() = getVideoItem()?.isUpcoming() ?: getMusicItem()?.isUpcoming() ?: getTileItem()?.isUpcoming() ?: false
 internal fun ItemWrapper.isMovie() = getVideoItem()?.isMovie() ?: getTileItem()?.isMovie() ?: false
 internal fun ItemWrapper.isShow() = getTileItem()?.isShow() ?: getLockupItem()?.isShow() ?: false
+internal fun ItemWrapper.getMembersLabel() = getVideoItem()?.getMembersLabel() ?: getTileItem()?.getMembersLabel() ?: getLockupItem()?.getMembersLabel()
 internal fun ItemWrapper.isMix() = getTileItem()?.isMix() ?: getLockupItem()?.isMix() ?: false
 internal fun ItemWrapper.getSourceId() = getTileItem()?.getSourceId()
 internal fun ItemWrapper.isShorts() = reelItemRenderer != null || shortsLockupViewModel != null || getVideoItem()?.isShorts() ?: getTileItem()?.isShorts()

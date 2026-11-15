@@ -45,6 +45,7 @@ internal open class WrapperMediaItem(internal val itemWrapper: ItemWrapper): Bas
     override val isDateMissingItem by lazy { itemWrapper.isDateMissing() }
     override val isMovieItem by lazy { itemWrapper.isMovie() }
     override val isShowItem by lazy { itemWrapper.isShow() }
+    override val membersLabelItem by lazy { itemWrapper.getMembersLabel() }
     override val feedbackTokenItem by lazy { itemWrapper.getFeedbackToken() }
     override val feedbackTokenItem2 by lazy { itemWrapper.getFeedbackToken2() }
     override val feedbackEndpointItem by lazy { itemWrapper.getFeedbackEndpoint()?.let {

@@ -278,6 +278,10 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
         return commentsKeyItem
     }
 
+    override fun getMembersLabel(): String? {
+        return videoMetadata?.getMembersLabel()
+    }
+
     override fun isUpcoming(): Boolean {
         return isUpcomingItem
     }

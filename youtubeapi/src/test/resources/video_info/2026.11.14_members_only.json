@@ -1,0 +1,42 @@
+{
+  "playabilityStatus": {
+    "status": "UNPLAYABLE",
+    "reason": "This video is available to this channel's members on level: PREMIUM (or any higher level). Join this YouTube channel from your computer or mobile app.",
+    "errorScreen": {
+      "playerLegacyDesktopYpcOfferRenderer": {
+        "itemTitle": "Members-only content",
+        "itemThumbnail": "https://yt3.ggpht.com/MJ5F7cyYIVNvqVvJ9wCU8ZrUwqheW38b5WhXdISaQEcGm19AfKb6SYLxVXBp-JQBkIi3CQCcqw=s176-c-k-c0x00ffffff-no-rj",
+        "offerDescription": "This video is available to this channel's members on level: PREMIUM (or any higher level). Join this YouTube channel from your computer or mobile app.",
+        "offerId": "sponsors_only_video"
+      }
+    },
+    "playableInEmbed": true,
+    "skip": {
+      "playabilityErrorSkipConfig": {
+        "skipOnPlayabilityError": false
+      }
+    },
+    "contextParams": "Q0FFU0FnZ0M="
+  },
+  "videoDetails": {
+    "videoId": "uAr9xWpu3sg",
+    "lengthSeconds": "215",
+    "channelId": "UC2aul0Y3jUJ9sMzOhWPT9AA",
+    "isOwnerViewing": false,
+    "isCrawlable": true,
+    "thumbnail": {
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/uAr9xWpu3sg/sddefault.jpg",
+          "width": 640,
+          "height": 480
+        }
+      ]
+    },
+    "allowRatings": true,
+    "isPrivate": false,
+    "isUnpluggedCorpus": false,
+    "isLiveContent": false,
+    "isTvfilmVideo": false
+  }
+}

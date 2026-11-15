@@ -94,6 +94,14 @@ public interface MediaItem {
      * Found by markers that aren't translated, unlike its badge (e.g. <b>"434 episodes"</b>).
      */
     boolean isShow();
+    /**
+     * A video only the channel's members watch, now (<b>"Members only"</b>) or before everyone else (<b>"Members first"</b>): the label of
+     * its badge, as YouTube shows it, in the language asked for. Found by the badge's style, which isn't translated.<br/>
+     * Empty when the badge has no label, null for any other video.
+     */
+    default String getMembersLabel() {
+        return null;
+    }
     boolean hasUploads();
     String getClickTrackingParams();
     String getSearchQuery();

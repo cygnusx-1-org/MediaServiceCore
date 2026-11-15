@@ -14,6 +14,7 @@ import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.service.internal.KeptTokens
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.FutureTask
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * The living room (TV) client has its own BotGuard request key and challenge (tv_config).
@@ -36,10 +37,9 @@ internal object TvPoTokenProvider {
     @Volatile
     private var refreshFailedMs: Long = -1
     /**
-     * Of reset: a token being made again when it's reset isn't used
+     * Of reset, and of the clearing before one is made: a token being made when it's reset isn't kept (see useUnlessReset)
      */
-    @Volatile
-    private var resets = 0
+    private val resets = AtomicInteger()
     private var generator: PoTokenGenerator? = null
     /**
      * Read without the lock too: a valid one is taken while the next one is made (see getPoToken)
@@ -73,6 +73,7 @@ internal object TvPoTokenProvider {
     /**
      * The id that should be passed to the player request: tvAppInfo.livingRoomPoTokenId
      */
+    @Volatile
     var livingRoomPoTokenId: String? = null
         private set
 
@@ -176,8 +177,8 @@ internal object TvPoTokenProvider {
 
     /**
      * Made again while the one made is still used: if that fails, it's used till it expires. One that expired is made by the next
-     * fetch (see getPoToken). The lock isn't held while it's made: BotGuard needs the main thread, and that may wait for the lock
-     * (see reset, after a player error).
+     * fetch (see getPoToken). The lock isn't held while it's made: a fetch isn't held up by BotGuard, which runs on the main thread
+     * mostly. Reset meanwhile, it's not swapped in (see useUnlessReset).
      *
      * @param whenIdle runs the swap to the new one when no fetch runs: a fetch has the same one in all it sends
      */
@@ -186,7 +187,7 @@ internal object TvPoTokenProvider {
             return
         }
 
-        val resetsBefore = resets
+        val resetsBefore = resets.get()
 
         try {
             val made = makeNext {}
@@ -196,40 +197,55 @@ internal object TvPoTokenProvider {
                 return
             }
 
-            var unused: PoTokenGenerator = made.generator
+            // The new one, unless it's kept: then the one it replaces (none when that was released)
+            val unused = mutableListOf(made.generator)
 
             whenIdle {
                 synchronized(lock) {
-                    if (resets == resetsBefore) {
-                        generator?.let { unused = it }
-                        // Before it's the result: read without the lock, a result is never newer than this (see taken)
-                        refreshedResult = made.result
-                        use(made)
+                    val old = generator
+
+                    // Before it's the result: read without the lock, a result is never newer than this (see taken)
+                    refreshedResult = made.result
+
+                    if (useUnlessReset(made, resetsBefore)) {
+                        unused.clear()
+                        old?.let { unused.add(it) }
+                    } else if (old != null && generator !== old) {
+                        // Reset as it was swapped in: the one it replaced is no one's, the reset's release finds none
+                        unused.add(old)
                     }
                 }
             }
 
             // Not with the lock: it waits for the main thread
-            if (unused !== generator) {
-                runOnMainThreadSync(3) { unused.close() }
-            }
+            unused.forEach { runOnMainThreadSync(3) { it.close() } }
         } catch (e: Exception) {
             refreshFailedMs = System.currentTimeMillis()
             Log.e(TAG, "Could not refresh TV poToken", e)
         }
     }
 
-    /** Clears all state, including the generator and cached tokens. The next call regenerates everything. */
+    /**
+     * Clears all state, including the generator and cached tokens. The next call regenerates everything.
+     * Doesn't wait for a token being made, which holds the lock: its BotGuard needs the main thread, where this is called (an account
+     * switch, the player's error fixer), and the app froze (an ANR). That token isn't kept (see useUnlessReset). The generator is closed
+     * off the caller's thread, once the lock is free.
+     */
     fun reset() {
-        synchronized(lock) {
-            mayTakeKept = false
-            resets++
-            result = null
-            livingRoomPoTokenId = null
-            expirationMs = -1
-            issuedMs = -1
-            release()
-        }
+        resets.incrementAndGet()
+        clear()
+        RxHelper.runAsync { release() }
+    }
+
+    /**
+     * Each value is read without the lock too
+     */
+    private fun clear() {
+        mayTakeKept = false
+        result = null
+        livingRoomPoTokenId = null
+        expirationMs = -1
+        issuedMs = -1
     }
 
     /** Frees the generator to reduce memory. Cached values are kept; the generator is recreated on demand. */
@@ -290,8 +306,49 @@ internal object TvPoTokenProvider {
         return result
     }
 
+    /**
+     * Under the lock. Reset while it's made (e.g. the account switched, see reset), it's still the caller's, as when a reset waited for
+     * it, but not kept: the next call makes another.
+     */
     private fun makePoTokenSync(): PoTokenResult? {
-        return makeNext { reset() }?.let { use(it) }
+        var resetsAfterClear = 0
+        val made = makeNext {
+            // What's made before goes, like a reset. A refresh being made isn't swapped in then.
+            resetsAfterClear = resets.incrementAndGet()
+            clear()
+            release()
+        } ?: return null
+
+        if (!useUnlessReset(made, resetsAfterClear)) {
+            runOnMainThreadSync(3) { made.generator.close() }
+        }
+
+        return made.result
+    }
+
+    /**
+     * Under the lock: the token made is kept, unless it was reset since (a reset doesn't wait for the lock). One reset while it's kept
+     * is cleared again.
+     *
+     * @param resetsBefore of the time it began to be made
+     * @return whether it's kept
+     */
+    private fun useUnlessReset(made: Made, resetsBefore: Int): Boolean {
+        if (resets.get() != resetsBefore) {
+            return false
+        }
+
+        use(made)
+
+        // Reset as it was kept: its clear may have come before
+        if (resets.get() != resetsBefore) {
+            clear()
+            generator = null
+
+            return false
+        }
+
+        return true
     }
 
     private class Made(val generator: PoTokenGenerator, val result: PoTokenResult, val livingRoomId: String)

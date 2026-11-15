@@ -57,6 +57,7 @@ public class YouTubeMediaItem implements MediaItem {
     private String mClickTrackingParams;
     private boolean mIsMovie;
     private boolean mIsShow;
+    private String mMembersLabel;
     private long mPublishedDate;
     private long mUpdatedDate;
     private String mDescription;
@@ -138,6 +139,7 @@ public class YouTubeMediaItem implements MediaItem {
         video.mClickTrackingParams = item.getClickTrackingParams();
         video.mIsMovie = item.isMovie();
         video.mIsShow = item.isShow();
+        video.mMembersLabel = item.getMembersLabel();
 
         addCommonProps(video);
 
@@ -174,6 +176,7 @@ public class YouTubeMediaItem implements MediaItem {
         video.mIsUpcoming = item.isUpcoming();
         video.mFeedbackToken = item.getFeedbackToken();
         video.mClickTrackingParams = item.getClickTrackingParams();
+        video.mMembersLabel = item.getMembersLabel();
 
         addCommonProps(video);
 
@@ -412,6 +415,11 @@ public class YouTubeMediaItem implements MediaItem {
     @Override
     public boolean isShow() {
         return mIsShow;
+    }
+
+    @Override
+    public String getMembersLabel() {
+        return mMembersLabel;
     }
 
     @Override

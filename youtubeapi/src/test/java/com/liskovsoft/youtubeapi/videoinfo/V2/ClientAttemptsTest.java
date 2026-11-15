@@ -9,6 +9,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +38,18 @@ public class ClientAttemptsTest {
         assertEquals("ok", Attempt.ok("TV").describe());
         assertEquals("http_403", Attempt.http("TV", 403).describe());
         assertEquals("no_live_manifest", Attempt.noLiveManifest("TV").describe());
+    }
+
+    /**
+     * A members' video: found by the offer, not by the reason, which is translated
+     */
+    @Test
+    public void aMembersOneSaysSo() {
+        Attempt attempt = Attempt.unplayable("TV", "UNPLAYABLE", "Join this channel to get access to members-only content", true);
+
+        assertTrue(attempt.members);
+        assertEquals("unplayable UNPLAYABLE members: Join this channel to get access to members-only content", attempt.describe());
+        assertFalse(Attempt.unplayable("TV", "UNPLAYABLE", "Video unavailable").members);
     }
 
     /**

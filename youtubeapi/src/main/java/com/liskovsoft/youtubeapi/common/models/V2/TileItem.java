@@ -99,8 +99,21 @@ public class TileItem {
         return mMetadata != null ? mMetadata.getTitle() : mHeader != null ? mHeader.getTitle() : null;
     }
 
+    /**
+     * Not the members' badge: the card has its own label for it (see #getMembersLabel)
+     */
     public String getDescBadgeText() {
-        return mMetadata != null && mMetadata.getBadgeLabels() != null ? mMetadata.getBadgeLabels().get(0) : null;
+        String label = mMetadata != null && mMetadata.getBadgeLabels() != null ? mMetadata.getBadgeLabels().get(0) : null;
+        String membersLabel = getMembersLabel();
+
+        return membersLabel != null && membersLabel.equals(label) ? null : label;
+    }
+
+    /**
+     * See MediaItem#getMembersLabel
+     */
+    public String getMembersLabel() {
+        return mMetadata != null ? mMetadata.getMembersLabel() : null;
     }
 
     public String getUserName() {

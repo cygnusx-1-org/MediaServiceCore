@@ -28,6 +28,11 @@ public class VideoInfo {
     private static final String STATUS_AGE_CHECK_REQUIRED = "AGE_CHECK_REQUIRED";
     private static final String STATUS_AGE_VERIFICATION_REQUIRED = "AGE_VERIFICATION_REQUIRED";
     private static final String STATUS_CONTENT_CHECK_REQUIRED = "CONTENT_CHECK_REQUIRED";
+    /**
+     * The offer of a video only the channel's members watch, now or before everyone else (members only, members first), to an account
+     * that isn't one: "Join this channel…"
+     */
+    private static final String OFFER_MEMBERS = "sponsors_only_video";
 
     @JsonPath("$.streamingData.formats[*]")
     private List<RegularVideoFormat> mRegularFormats;
@@ -81,6 +86,12 @@ public class VideoInfo {
 
     @JsonPath("$.playabilityStatus.errorScreen.playerLegacyDesktopYpcTrailerRenderer.trailerVideoId")
     private String mTrailerVideoId;
+
+    /**
+     * Of what the video is sold with, when it isn't played: {@link #OFFER_MEMBERS} for a members' one. Not translated, unlike the reason.
+     */
+    @JsonPath("$.playabilityStatus.errorScreen.playerLegacyDesktopYpcOfferRenderer.offerId")
+    private String mOfferId;
 
     @JsonPath("$.microformat.playerMicroformatRenderer.liveBroadcastDetails.startTimestamp")
     private String mStartTimestamp;
@@ -226,6 +237,13 @@ public class VideoInfo {
      */
     public boolean isUnknownRestricted() {
         return ServiceHelper.atLeastOneEquals(mPlayabilityStatus, STATUS_UNPLAYABLE);
+    }
+
+    /**
+     * Only the channel's members watch it, and the account isn't one (or the client didn't send it): no client plays it then
+     */
+    public boolean isMembersOnly() {
+        return OFFER_MEMBERS.equals(mOfferId);
     }
 
     /**

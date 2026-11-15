@@ -30,6 +30,10 @@ public final class ClientAttempts {
     public static final String RESULT_EXCEPTION = "exception";
     private static final String RESULT_HTTP_PREFIX = "http_";
     /**
+     * After the status of an unplayable one only the channel's members watch (see Attempt#describe)
+     */
+    static final String MEMBERS = "members";
+    /**
      * Of the reason in an attempt's description (see Attempt#describe)
      */
     static final int MAX_REASON_CHARS = 80;
@@ -72,18 +76,30 @@ public final class ClientAttempts {
          */
         @Nullable
         public final String error;
+        /**
+         * Of an unplayable one: only the channel's members watch it (see VideoInfo#isMembersOnly). Found by the offer, which isn't
+         * translated, unlike the reason.
+         */
+        public final boolean members;
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error) {
+            this(client, result, status, reason, error, false);
+        }
+
+        private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error,
+                        boolean members) {
             this.client = client;
             this.result = result;
             this.status = status;
             this.reason = reason;
             this.error = error;
+            this.members = members;
         }
 
         /**
          * For the timing of the fetch (see FetchStages): the result, with the status and the reason of an unplayable one, e.g.
-         * "unplayable LOGIN_REQUIRED: Sign in to confirm you're not a bot". The status alone doesn't tell a bot check from an age
+         * "unplayable LOGIN_REQUIRED: Sign in to confirm you're not a bot", or "unplayable UNPLAYABLE members: Join this channel…" for a
+         * members' video (see #members). The status alone doesn't tell a bot check from an age
          * check or a private video. The reason is in the language YouTube is asked for, so it isn't matched: its first part, cut short.
          */
         public String describe() {
@@ -92,6 +108,7 @@ public final class ClientAttempts {
             }
 
             String text = status != null ? result + " " + status : result;
+            text = members ? text + " " + MEMBERS : text;
             String shortReason = shortReason(reason);
 
             return shortReason != null ? text + ": " + shortReason : text;
@@ -110,7 +127,14 @@ public final class ClientAttempts {
         }
 
         public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason) {
-            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null);
+            return unplayable(client, status, reason, false);
+        }
+
+        /**
+         * @param members only the channel's members watch it (see #members)
+         */
+        public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason, boolean members) {
+            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members);
         }
 
         public static Attempt noLiveManifest(String client) {

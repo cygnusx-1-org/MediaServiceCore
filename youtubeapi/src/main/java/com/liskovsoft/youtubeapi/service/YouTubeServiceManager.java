@@ -115,7 +115,9 @@ public class YouTubeServiceManager implements ServiceManager {
             return;
         }
 
-        mWarmUpPlaybackAction = RxHelper.execute(RxHelper.fromRunnable(() -> FormatInfoWrapper.warmUp(videoId)));
+        // On an io thread, not one of the bounded pool: it waits for requests and the poToken. Called on the main thread (the first
+        // section's load), it ran there while that pool was full, and froze the app (an ANR).
+        mWarmUpPlaybackAction = RxHelper.runAsync(() -> FormatInfoWrapper.warmUp(videoId));
     }
 
     @Override

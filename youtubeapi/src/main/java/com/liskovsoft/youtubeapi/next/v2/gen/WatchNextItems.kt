@@ -161,10 +161,16 @@ internal data class VideoMetadataRenderer(
     )
 
     data class Badge(
-            val upcomingEventBadge: UpcomingEventBadge?
+            val upcomingEventBadge: UpcomingEventBadge?,
+            val metadataBadgeRenderer: MetadataBadgeRenderer? // e.g. "Members only"
     ) {
         data class UpcomingEventBadge(
                 val label: TextItem?
+        )
+
+        data class MetadataBadgeRenderer(
+                val label: String?,
+                val style: String?
         )
     }
 }

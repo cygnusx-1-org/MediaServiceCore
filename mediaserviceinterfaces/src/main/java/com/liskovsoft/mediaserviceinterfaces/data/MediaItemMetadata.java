@@ -34,4 +34,11 @@ public interface MediaItemMetadata {
     List<NotificationState> getNotificationStates();
     long getDurationMs();
     String getBadgeText();
+    /**
+     * The video only the channel's members watch, now or before everyone else: the label of its badge (see MediaItem#getMembersLabel).
+     * Empty when the badge has no label, null for any other video.
+     */
+    default String getMembersLabel() {
+        return null;
+    }
 }

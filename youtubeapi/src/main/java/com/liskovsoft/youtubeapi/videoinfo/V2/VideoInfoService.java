@@ -163,11 +163,35 @@ public class VideoInfoService extends VideoInfoServiceBase {
         // A live stream with nothing to play it from is skipped for the next client's, which may have it
         VideoInfo result = firstInfoWith(videoId, clickTrackingParams, info -> !info.isUnplayable() && !info.hasNoLiveMedia(), answers);
 
+        // A members' video the account can't watch: no other client plays it (see isMembersOnlyAnswer)
+        if (result != null || hasMembersOnlyAnswer(answers)) {
+            return result;
+        }
+
         // No client has it: its answer still is one, the player tries again later (see VideoLoaderController#processFormatInfo). Of the
         // answers given already: a client is asked again only when it gave none. A video no client plays (e.g. members-only) was asked
         // of every client a second time, which took as long again.
-        return result != null ? result : firstInfoWith(videoId, clickTrackingParams,
+        return firstInfoWith(videoId, clickTrackingParams,
                 info -> info.getRegularFormats() != null || (!info.isUnplayable() && info.hasNoLiveMedia()), answers);
+    }
+
+    /**
+     * The answer of a client that sent the account (see AppClient#isAuthSupported), or would have, says only the channel's members
+     * watch the video: the account isn't one, or there's none. The other clients don't send it, so none plays it. Asking all of them
+     * took ten requests, twenty with the second pass.
+     */
+    private static boolean isMembersOnlyAnswer(@Nullable VideoInfo info) {
+        return info != null && info.isUnplayable() && info.isMembersOnly() && info.isAuth();
+    }
+
+    private static boolean hasMembersOnlyAnswer(Map<AppClient, VideoInfo> answers) {
+        for (VideoInfo answer : answers.values()) {
+            if (isMembersOnlyAnswer(answer)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private interface InfoTester {
@@ -222,6 +246,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 return result;
             }
 
+            if (isMembersOnlyAnswer(result)) {
+                return null;
+            }
+
             nextType = Helpers.getNextValue(types, nextType);
         } while (nextType != beginType);
 
@@ -240,7 +268,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
         }
 
         if (result.isUnplayable()) {
-            return Attempt.unplayable(client.name(), result.getPlayabilityStatusName(), result.getPlayabilityStatus());
+            return Attempt.unplayable(client.name(), result.getPlayabilityStatusName(), result.getPlayabilityStatus(), result.isMembersOnly());
         }
 
         if (result.hasNoLiveMedia()) {

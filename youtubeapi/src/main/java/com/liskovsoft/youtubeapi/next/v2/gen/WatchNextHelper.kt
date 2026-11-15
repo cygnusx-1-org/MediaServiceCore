@@ -7,6 +7,7 @@ import com.liskovsoft.youtubeapi.browse.v2.gen.PlaylistVideoListRenderer
 import com.liskovsoft.youtubeapi.browse.v2.gen.Shelf
 import com.liskovsoft.youtubeapi.browse.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.browse.v2.gen.getItems
+import com.liskovsoft.youtubeapi.common.models.V2.MetadataBadge
 import com.liskovsoft.youtubeapi.common.models.gen.*
 
 private const val ICON_TYPE_MUSIC = "YOUTUBE_MUSIC_FILLED"
@@ -124,6 +125,9 @@ internal fun VideoMetadataRenderer.getAlbumName() = albumName?.getText()
 internal fun VideoMetadataRenderer.getLikeStatus() = likeStatus ?: likeButton?.likeButtonRenderer?.likeStatus
 internal fun VideoMetadataRenderer.getLikeCount() = likeStatus ?: likeButton?.likeButtonRenderer?.likeCountText?.getText()
 internal fun VideoMetadataRenderer.getLikeCountInt() = likeButton?.likeButtonRenderer?.likeCount
+// See MediaItemMetadata#getMembersLabel
+internal fun VideoMetadataRenderer.getMembersLabel() =
+    badges?.firstNotNullOfOrNull { it?.metadataBadgeRenderer?.takeIf { it.style == MetadataBadge.STYLE_MEMBERS }?.let { it.label ?: "" } }
 internal fun VideoMetadataRenderer.isUpcoming() = badges?.firstNotNullOfOrNull { it?.upcomingEventBadge?.label?.getText() }?.let { true } ?: false
 internal fun VideoMetadataRenderer.getPercentWatched() =
     thumbnailOverlays?.firstNotNullOfOrNull { it?.thumbnailOverlayResumePlaybackRenderer?.percentDurationWatched } ?: 0
