@@ -348,6 +348,16 @@ public class VideoFormat {
                 getITag());
     }
 
+    /**
+     * Its URL was refused (see FormatUrlRefusedException): the format is the SABR URL's, as when the answer has no URLs (see isBroken)
+     */
+    public void clearUrl() {
+        mUrl = null;
+        mCipher = null;
+        mSignatureCipher = null;
+        getUrlHolder().clear();
+    }
+
     public boolean isBroken() {
         return Helpers.allNulls(mUrl, mCipher, mSignatureCipher);
     }

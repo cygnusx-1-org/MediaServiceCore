@@ -222,7 +222,23 @@ public class VideoInfo {
     }
 
     public boolean isUnplayable() {
-        return isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isAdaptiveFormatsBroken();
+        return isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isPostLiveSabrOnly();
+    }
+
+    /**
+     * A stream that ended minutes ago and isn't processed yet: its formats are only the SABR URL's, still the live stream's segments
+     * (no index range). Neither a live stream for SABR (the player's live timeline) nor a video (no segment durations): untried, so
+     * another client's answer is taken, as for any SABR-only answer of a live or finished stream before 2026-11-15. A finished
+     * stream's (an index range, seen up to 12 h long and 4 h after its end) and a live one's play over SABR.
+     */
+    private boolean isPostLiveSabrOnly() {
+        if (isLive() || !isLiveContent() || mAdaptiveFormats == null || mAdaptiveFormats.isEmpty()) {
+            return false;
+        }
+
+        AdaptiveVideoFormat format = mAdaptiveFormats.get(0);
+
+        return format.isBroken() && format.getIndex() == null;
     }
 
     /**
@@ -281,7 +297,7 @@ public class VideoInfo {
     }
 
     public boolean containsAdaptiveVideoInfo() {
-        if (getAdaptiveFormats() == null || isAdaptiveFormatsBroken()) {
+        if (getAdaptiveFormats() == null || isPostLiveSabrOnly()) {
             return false;
         }
 
@@ -531,18 +547,6 @@ public class VideoInfo {
 
     private boolean isAdaptiveFullHD() {
         return getAdaptiveFormats() != null && !getAdaptiveFormats().isEmpty() && "1080p".equals(getAdaptiveFormats().get(0).getQualityLabel());
-    }
-
-    /**
-     * TODO: remove when SABR parser will be fixed
-     */
-    private boolean isAdaptiveFormatsBroken() {
-        if (mAdaptiveFormats == null || mAdaptiveFormats.isEmpty()) {
-            return false;
-        }
-
-        // TODO: live SABR formats still broken
-        return mAdaptiveFormats.get(0).isBroken() && (isLive() || isLiveContent());
     }
 
     public String getPoToken() {

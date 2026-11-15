@@ -21,6 +21,9 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.DashInfoApi
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfo
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoContent
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoHeaders
+import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoSabr
+import com.liskovsoft.youtubeapi.videoinfo.FormatUrlRefusedException
+import com.liskovsoft.youtubeapi.videoinfo.SabrLiveHead
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoUrl
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder
 
@@ -169,12 +172,42 @@ internal class Player private constructor(
             return null
         }
 
+        // Only the SABR URL: its stream tells the head (see SabrLiveHead)
+        if (format.getUrl() == null) {
+            return getDashInfoSabr(formatInfo, format)
+        }
+
         return try {
             getDashInfoHeaders(format.getUrl())
+        } catch (_: FormatUrlRefusedException) {
+            // The format URLs are refused: the SABR URL's head (see VideoInfoServiceBase#getDashInfoRefused). Live formats have no range
+            // here, so the answer is played from the SABR URL anyway.
+            getDashInfoSabr(formatInfo, format)
         } catch (_: Exception) {
             fallbackDashInfo(format)
         }
     }
+
+    private fun getDashInfoSabr(formatInfo: MediaItemFormatInfoImpl, audio: MediaFormatImpl): DashInfo? {
+        val source = SabrLiveHead.getSource() ?: return null
+        val sabrUrl = formatInfo.getServerAbrStreamingUrl() ?: return null
+        val ustreamerConfig = formatInfo.getVideoPlaybackUstreamerConfig() ?: return null
+        val clientInfo = formatInfo.getClientInfo() ?: return null
+
+        val video = Helpers.findLast(formatInfo.getAdaptiveFormats(),
+            Helpers.Filter { item -> MediaFormatUtils.isVideo(item!!.getMimeType()) }) // smallest format
+
+        return try {
+            source.fetch(sabrUrl, ustreamerConfig, formatInfo.getPoToken(), clientInfo, toSabrFormat(audio), video?.let { toSabrFormat(it) })
+                ?.let { DashInfoSabr(it) }
+        } catch (e: Exception) {
+            Log.e(TAG, "SABR live head: ${e.message}")
+            null
+        }
+    }
+
+    private fun toSabrFormat(format: MediaFormatImpl) = SabrLiveHead.Format(Helpers.parseInt(format.getITag()),
+        Helpers.parseLong(format.getLmt()), format.getXtags(), Helpers.parseInt(format.getBitrate()))
 
     private fun fallbackDashInfo(format: MediaFormatImpl): DashInfo? {
         return try {
@@ -207,7 +240,13 @@ internal class Player private constructor(
 
         // Range doesn't work???
         //return RetrofitHelper.getHeaders(mFileApi.getHeaders(url + SMALL_RANGE));
-        return DashInfoHeaders(RetrofitHelper.getHeaders(fileApi.getHeaders(url)))
+        val response = RetrofitHelper.getResponse(fileApi.getHeaders(url))
+
+        if (response?.code() == 403) {
+            throw FormatUrlRefusedException(response.code())
+        }
+
+        return DashInfoHeaders(response?.headers())
     }
     
     private fun getDashInfoContent(url: String?): DashInfoContent? {

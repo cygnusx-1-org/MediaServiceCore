@@ -17,13 +17,17 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder;
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoContent;
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoHeaders;
+import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoSabr;
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfoUrl;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.formats.AdaptiveVideoFormat;
 import com.liskovsoft.youtubeapi.videoinfo.models.formats.VideoFormat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Response;
 
 import kotlin.Pair;
 
@@ -33,6 +37,7 @@ public abstract class VideoInfoServiceBase {
      * The detail of the stages of the dash info's second try (see getDashInfo)
      */
     private static final String DASH_INFO_RETRY = "retry";
+    private static final int HTTP_FORBIDDEN = 403;
     private final DashInfoApi mDashInfoApi;
     private final FileApi mFileApi;
     protected final AppService mAppService;
@@ -173,7 +178,13 @@ public abstract class VideoInfoServiceBase {
 
         // Range doesn't work???
         //return RetrofitHelper.getHeaders(mFileApi.getHeaders(url + SMALL_RANGE));
-        return new DashInfoHeaders(RetrofitHelper.getHeaders(mFileApi.getHeaders(url)));
+        Response<Void> response = RetrofitHelper.getResponse(mFileApi.getHeaders(url));
+
+        if (response != null && response.code() == HTTP_FORBIDDEN) {
+            throw new FormatUrlRefusedException(response.code());
+        }
+
+        return new DashInfoHeaders(response != null ? response.headers() : null);
     }
 
     private DashInfo getDashInfo(VideoInfo videoInfo) {
@@ -206,8 +217,15 @@ public abstract class VideoInfoServiceBase {
 
         String url = format.getUrl();
 
+        // Only the SABR URL: its stream tells the head (see SabrLiveHead)
+        if (url == null) {
+            return FetchStages.time("sabr head", detail, () -> getDashInfoSabr(videoInfo, format));
+        }
+
         try {
             return FetchStages.time("headers", detail, () -> getDashInfoHeaders(url));
+        } catch (FormatUrlRefusedException ex) {
+            return getDashInfoRefused(videoInfo, format, detail);
         } catch (ArithmeticException | NumberFormatException | IllegalStateException ex) {
             try {
                 return FetchStages.time("segment", detail, () -> getDashInfoUrl(url));
@@ -216,6 +234,56 @@ public abstract class VideoInfoServiceBase {
                 return FetchStages.time("segment content", detail, () -> getDashInfoContent(url));
             }
         }
+    }
+
+    /**
+     * The format URLs are refused (see FormatUrlRefusedException): the SABR URL's head, and the answer is played from it alone. Before,
+     * the head was asked again (the same 403), the answer was taken for one with nothing to play, and the next client's was fetched
+     * (VISIONOS, 3-6 s more to start, a message, and 2 of 4 such streams not started in 15 s).
+     *
+     * @return null when the SABR URL doesn't tell it either: then as before
+     */
+    @Nullable
+    private DashInfo getDashInfoRefused(VideoInfo videoInfo, AdaptiveVideoFormat audio, @Nullable String detail) {
+        DashInfo info = FetchStages.time("sabr head", detail, () -> getDashInfoSabr(videoInfo, audio));
+
+        if (info != null) {
+            Log.d(TAG, "Format URLs refused, played from the SABR URL");
+
+            for (AdaptiveVideoFormat format : videoInfo.getAdaptiveFormats()) {
+                format.clearUrl();
+            }
+        }
+
+        return info;
+    }
+
+    @Nullable
+    private DashInfo getDashInfoSabr(VideoInfo videoInfo, AdaptiveVideoFormat audio) {
+        SabrLiveHead.Source source = SabrLiveHead.getSource();
+        String sabrUrl = videoInfo.getServerAbrStreamingUrl();
+        String ustreamerConfig = videoInfo.getVideoPlaybackUstreamerConfig();
+
+        if (source == null || sabrUrl == null || ustreamerConfig == null || videoInfo.getClient() == null) {
+            return null;
+        }
+
+        AdaptiveVideoFormat video = getSmallestVideo(videoInfo);
+
+        try {
+            SabrLiveHead head = source.fetch(sabrUrl, ustreamerConfig, videoInfo.getPoToken(), videoInfo.getClient(), toSabrFormat(audio),
+                    video != null ? toSabrFormat(video) : null);
+            Log.d(TAG, "SABR live %s", head);
+            return head != null ? new DashInfoSabr(head) : null;
+        } catch (IOException | RuntimeException e) {
+            // The probe never fails the fetch: without the head, the answer is as before (another client's is fetched)
+            Log.e(TAG, "SABR live head: %s", e.getMessage());
+            return null;
+        }
+    }
+
+    private static SabrLiveHead.Format toSabrFormat(AdaptiveVideoFormat format) {
+        return new SabrLiveHead.Format(format.getITag(), Helpers.parseLong(format.getLastModified()), format.getXtags(), format.getBitrate());
     }
 
     private AdaptiveVideoFormat getSmallestAudio(VideoInfo videoInfo) {

@@ -37,6 +37,18 @@ internal class VideoUrlHolder(private var url: String? = null,
     }
 
     /**
+     * The URL was refused (see FormatUrlRefusedException): none, the format is the SABR URL's
+     */
+    fun clear() {
+        url = null
+        cipher = null
+        signatureCipher = null
+        urlQuery = null
+        extractedSParam = null
+        realSignature = null
+    }
+
+    /**
      * Contains segments list and durations (required for stream switch!!!)
      */
     fun getOtfInitUrl(): String? {

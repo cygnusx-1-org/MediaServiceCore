@@ -107,7 +107,17 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         Helpers.toString(ServiceHelper.createInfo(playerResult.getPlayabilityReason(), playerResult.getPlayabilityDescription()))
     }
     private val _isPlayableInEmbed by lazy { playerResult.isPlayableInEmbed() }
-    private val _isUnplayable by lazy { isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isAdaptiveFormatsBroken() }
+    private val _isUnplayable by lazy { isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isPostLiveSabrOnly() }
+
+    /**
+     * A stream that ended minutes ago and isn't processed yet (see VideoInfo#isPostLiveSabrOnly)
+     */
+    private fun isPostLiveSabrOnly(): Boolean {
+        val format = _adaptiveFormats?.firstOrNull() ?: return false
+
+        return !_isLive && _isLiveContent && format.getUrl() == null && format.getIndex() == null
+    }
+
     /**
      * Reason of unavailability unknown or we received a temporal ban
      */
@@ -440,15 +450,4 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
         }
     }
 
-    /**
-     * TODO: remove when SABR parser will be fixed
-     */
-    private fun isAdaptiveFormatsBroken(): Boolean {
-        if (_adaptiveFormats?.isEmpty() ?: true) {
-            return false
-        }
-
-        // TODO: live SABR formats still broken
-        return !containsDashFormats() && (_isLive || _isLiveContent)
-    }
 }
