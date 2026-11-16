@@ -3,6 +3,7 @@ package com.liskovsoft.youtubeapi.app
 import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider
 import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider.Source
 import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider.Taken
+import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenException
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
@@ -132,6 +133,85 @@ class PoTokenGateTest {
         assertEquals(12 * hour - hour, TvPoTokenProvider.refreshAtMs(0, 12 * hour))
         assertEquals(80 * 60_000L - 40 * 60_000L, TvPoTokenProvider.refreshAtMs(0, 80 * 60_000L))
         assertEquals(5 * hour - hour, TvPoTokenProvider.refreshAtMs(-1, 5 * hour))
+    }
+
+    /**
+     * Longer than 120 characters, BotGuard didn't trust its run (SABR's server held one as pending attestation): made again till one is
+     * trusted, the one not taken discarded
+     */
+    @Test
+    fun anUntrustedTvPoTokenIsMadeAgain() {
+        val made = mutableListOf("a".repeat(128), "b".repeat(120))
+        val discarded = mutableListOf<String>()
+
+        val pot = TvPoTokenProvider.mintTrusted({ made.removeAt(0) }, { it }, { discarded.add(it) })
+
+        assertEquals("b".repeat(120), pot)
+        assertEquals(listOf("a".repeat(128)), discarded)
+        assertTrue(made.isEmpty())
+    }
+
+    @Test
+    fun aTrustedTvPoTokenIsMadeOnce() {
+        var mints = 0
+
+        val pot = TvPoTokenProvider.mintTrusted({ mints++; "a".repeat(120) }, { it }, { throw AssertionError("discarded $it") })
+
+        assertEquals("a".repeat(120), pot)
+        assertEquals(1, mints)
+    }
+
+    /**
+     * None trusted in MAX_MINT_ATTEMPTS: the shortest, the others discarded, and no more made
+     */
+    @Test
+    fun noTrustedTvPoTokenTakesTheShortest() {
+        val made = mutableListOf("a".repeat(128), "b".repeat(124), "c".repeat(128), "d".repeat(100))
+        val discarded = mutableListOf<String>()
+
+        val pot = TvPoTokenProvider.mintTrusted({ made.removeAt(0) }, { it }, { discarded.add(it) })
+
+        assertEquals(3, TvPoTokenProvider.MAX_MINT_ATTEMPTS)
+        assertEquals("b".repeat(124), pot)
+        assertEquals(listOf("a".repeat(128), "c".repeat(128)), discarded)
+        assertEquals(listOf("d".repeat(100)), made)
+    }
+
+    /**
+     * Made again, and BotGuard failed (e.g. webPoSignalOutput is empty): an attempt, the one made before stays, and the next attempt
+     * still runs
+     */
+    @Test
+    fun aFailedRemakeIsAnAttempt() {
+        val made = mutableListOf<() -> String>(
+            { "a".repeat(128) },
+            { throw PoTokenException("webPoSignalOutput is empty") },
+            { "b".repeat(120) }
+        )
+        val discarded = mutableListOf<String>()
+
+        val pot = TvPoTokenProvider.mintTrusted({ made.removeAt(0)() }, { it }, { discarded.add(it) })
+
+        assertEquals("b".repeat(120), pot)
+        assertEquals(listOf("a".repeat(128)), discarded)
+        assertTrue(made.isEmpty())
+    }
+
+    /**
+     * Each attempt failing after the first: the one made before
+     */
+    @Test
+    fun failedRemakesKeepTheTokenMadeBefore() {
+        var mints = 0
+
+        val pot = TvPoTokenProvider.mintTrusted(
+            { if (mints++ == 0) "a".repeat(128) else throw PoTokenException("webPoSignalOutput is empty") },
+            { it },
+            { throw AssertionError("discarded $it") }
+        )
+
+        assertEquals("a".repeat(128), pot)
+        assertEquals(TvPoTokenProvider.MAX_MINT_ATTEMPTS, mints)
     }
 
     /**

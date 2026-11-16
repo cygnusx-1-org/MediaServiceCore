@@ -21,7 +21,13 @@ internal object KeptTokens {
      */
     private data class KeptAuthHeader(val header: String?, val account: String?, val createdMs: Long, val expiresMs: Long)
 
-    data class TvPoToken(val poToken: String, val visitorData: String, val livingRoomId: String, val expirationMs: Long)
+    /**
+     * @param userAgent the one BotGuard ran as when it was made (see TvPoTokenWebView4#USER_AGENT), null in one kept before it was
+     * kept with it
+     */
+    data class TvPoToken(
+        val poToken: String, val visitorData: String, val livingRoomId: String, val expirationMs: Long, val userAgent: String?
+    )
 
     /**
      * The header made for the account, while it's fresh (see YouTubeSignInService#updateAuthHeaders)
@@ -57,10 +63,15 @@ internal object KeptTokens {
     }
 
     /**
-     * Null when it's expired
+     * Null when it's expired, or BotGuard ran as another user agent when it was made: e.g. the Mac one of the runs before an update,
+     * whose weaker tokens SABR's server held as pending attestation (see TvPoTokenWebView4#USER_AGENT). One of those is kept till it
+     * expires, hours later.
+     *
+     * @param userAgent the one BotGuard runs as now
      */
-    fun loadTvPoToken(): TvPoToken? =
-        load(getData()?.keptTvPoToken, TvPoToken::class.java)?.takeIf { System.currentTimeMillis() < it.expirationMs }
+    fun loadTvPoToken(userAgent: String): TvPoToken? =
+        load(getData()?.keptTvPoToken, TvPoToken::class.java)
+            ?.takeIf { System.currentTimeMillis() < it.expirationMs && it.userAgent == userAgent }
 
     fun storeTvPoToken(poToken: TvPoToken) {
         getData()?.keptTvPoToken = toJson(poToken)

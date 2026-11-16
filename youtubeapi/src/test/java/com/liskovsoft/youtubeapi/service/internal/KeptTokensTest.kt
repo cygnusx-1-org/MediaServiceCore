@@ -17,6 +17,11 @@ import org.robolectric.RuntimeEnvironment
  */
 @RunWith(RobolectricTestRunner::class)
 class KeptTokensTest {
+    private companion object {
+        const val TV_USER_AGENT = "Mozilla/5.0 (Linux armeabi-v7a; Android 7.1.2; Fire OS 6.0) Cobalt/22.lts.3.306369-gold"
+        const val MAC_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36(KHTML, like Gecko)"
+    }
+
     @Before
     fun setUp() {
         GlobalPreferences.instance(RuntimeEnvironment.getApplication())
@@ -106,22 +111,40 @@ class KeptTokensTest {
 
     @Test
     fun theTvPoTokenComesBackTillItExpires() {
-        val poToken = KeptTokens.TvPoToken("pot", "visitor", "living room", System.currentTimeMillis() + 60_000)
+        val poToken = KeptTokens.TvPoToken("pot", "visitor", "living room", System.currentTimeMillis() + 60_000, TV_USER_AGENT)
         KeptTokens.storeTvPoToken(poToken)
 
-        assertEquals(poToken, KeptTokens.loadTvPoToken())
+        assertEquals(poToken, KeptTokens.loadTvPoToken(TV_USER_AGENT))
 
         KeptTokens.storeTvPoToken(poToken.copy(expirationMs = System.currentTimeMillis() - 1))
 
-        assertNull(KeptTokens.loadTvPoToken())
+        assertNull(KeptTokens.loadTvPoToken(TV_USER_AGENT))
     }
 
     @Test
     fun aClearedTvPoTokenIsGone() {
-        KeptTokens.storeTvPoToken(KeptTokens.TvPoToken("pot", "visitor", "living room", System.currentTimeMillis() + 60_000))
+        KeptTokens.storeTvPoToken(KeptTokens.TvPoToken("pot", "visitor", "living room", System.currentTimeMillis() + 60_000, TV_USER_AGENT))
         KeptTokens.clearTvPoToken()
 
-        assertNull(KeptTokens.loadTvPoToken())
+        assertNull(KeptTokens.loadTvPoToken(TV_USER_AGENT))
+    }
+
+    /**
+     * Made while BotGuard ran as another user agent (e.g. the Mac one of the runs before an update, whose weaker tokens SABR's server
+     * held as pending attestation), or kept before the user agent was kept with it: the next run makes its own
+     */
+    @Test
+    fun aTvPoTokenMadeAsAnotherUserAgentIsntTaken() {
+        val expirationMs = System.currentTimeMillis() + 60_000
+        KeptTokens.storeTvPoToken(KeptTokens.TvPoToken("pot", "visitor", "living room", expirationMs, MAC_USER_AGENT))
+
+        assertNull(KeptTokens.loadTvPoToken(TV_USER_AGENT))
+
+        // As a run before kept it
+        MediaServiceData.instance().keptTvPoToken =
+            """{"poToken":"pot","visitorData":"visitor","livingRoomId":"living room","expirationMs":$expirationMs}"""
+
+        assertNull(KeptTokens.loadTvPoToken(TV_USER_AGENT))
     }
 
     /**
@@ -152,7 +175,7 @@ class KeptTokensTest {
         MediaServiceData.instance().keptTvPoToken = "{broken"
         MediaServiceData.instance().keptAuthHeader = Gson().toJson(listOf(1, 2))
 
-        assertNull(KeptTokens.loadTvPoToken())
+        assertNull(KeptTokens.loadTvPoToken(TV_USER_AGENT))
         assertNull(KeptTokens.loadAuthHeader("refresh1"))
     }
 

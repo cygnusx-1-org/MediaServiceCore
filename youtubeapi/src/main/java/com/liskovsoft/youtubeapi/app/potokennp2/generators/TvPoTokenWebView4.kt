@@ -10,6 +10,7 @@ import androidx.annotation.MainThread
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors
+import com.liskovsoft.googlecommon.common.helpers.DefaultHeaders
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.okhttp.OkHttpManager
 import com.liskovsoft.youtubeapi.app.potokennp2.core.BadWebViewException
@@ -527,9 +528,14 @@ internal class TvPoTokenWebView4 private constructor(
         // Public API key used by BotGuard, which has been got by looking at BotGuard requests
         private const val GOOGLE_API_KEY = "AIzaSyDyT5W0Jh49F30Pqqtyfdf7pDLFKLJoAnw" // NOSONAR
         private const val REQUEST_KEY = "O43z0dpjhgX20SCx4KAo"
-        private const val USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36(KHTML, like Gecko)"
-        //private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-        //    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.3"
+        /**
+         * BotGuard runs as, and its requests send, the TV client's own user agent: the one its player requests and its streams send.
+         * Run as a Mac desktop one (Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36(KHTML, like Gecko)), BotGuard
+         * made a weaker token one time in three (128 characters, not 124), which SABR's server held as pending attestation on some
+         * videos: a minute of media, then none (51AQC7FS, BQ0MY38T). As the TV client, every token was 120 characters and attested
+         * (the emulator, 2026-11-16, 0IJSLGVTLWs: 0 of 18 starts pending, against 6 of 19).
+         */
+        internal val USER_AGENT: String = DefaultHeaders.APP_USER_AGENT
         private const val JS_INTERFACE = "PoTokenWebView"
         private const val BASE_URL = "https://jnn-pa.googleapis.com"
 
