@@ -10,6 +10,7 @@ import com.liskovsoft.youtubeapi.app.PoTokenGate
 import com.liskovsoft.youtubeapi.app.ReloadPlaybackGate
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.innertube.InnertubeService
+import com.liskovsoft.youtubeapi.innertube.impl.MediaItemFormatInfoImpl
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo
 import com.liskovsoft.youtubeapi.videoinfo.V2.ClientAttempts
@@ -590,7 +591,8 @@ internal object FormatInfoWrapper {
     private fun toAttempt(formatInfo: MediaItemFormatInfo?): Attempt {
         return when {
             formatInfo == null -> Attempt.nullResponse(INNERTUBE_CLIENT)
-            formatInfo.isUnplayable() -> Attempt.unplayable(INNERTUBE_CLIENT, formatInfo.getPlayabilityStatus(), formatInfo.getPlayabilityReason())
+            formatInfo.isUnplayable() -> Attempt.unplayable(INNERTUBE_CLIENT, formatInfo.getPlayabilityStatus(), formatInfo.getPlayabilityReason(),
+                false, (formatInfo as? MediaItemFormatInfoImpl)?.getUnplayableCause())
             else -> Attempt.ok(INNERTUBE_CLIENT)
         }
     }

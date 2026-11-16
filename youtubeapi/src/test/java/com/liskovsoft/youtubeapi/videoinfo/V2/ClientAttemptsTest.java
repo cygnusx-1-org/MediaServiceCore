@@ -41,6 +41,16 @@ public class ClientAttemptsTest {
     }
 
     /**
+     * The status says nothing (OK): the check that judged it unplayable does. AWHPECZK read "unplayable OK".
+     */
+    @Test
+    public void anUnplayableOneWithStatusOkSaysWhy() {
+        assertEquals("unplayable OK post_live_sabr_only",
+                Attempt.unplayable("TV", "OK", null, false, "post_live_sabr_only").describe());
+        assertEquals("unplayable OK", Attempt.unplayable("TV", "OK", null).describe());
+    }
+
+    /**
      * A members' video: found by the offer, not by the reason, which is translated
      */
     @Test

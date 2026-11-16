@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.lang.reflect.Field;
 import java.util.Collections;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +45,16 @@ public class VideoInfoSabrOnlyTest {
 
         assertTrue(info.isUnplayable());
         assertFalse(info.containsAdaptiveVideoInfo());
+    }
+
+    /**
+     * Its status is OK: the attempt says which check judged it unplayable (AWHPECZK read "unplayable OK")
+     */
+    @Test
+    public void aStreamThatJustEndedSaysWhyItsUnplayable() throws Exception {
+        assertEquals(VideoInfo.UNPLAYABLE_POST_LIVE_SABR_ONLY, info(false, true, sabrFormat(null)).getUnplayableCause());
+        assertNull(info(false, true, sabrFormat("221-7064")).getUnplayableCause());
+        assertNull(info(true, true, sabrFormat(null)).getUnplayableCause());
     }
 
     /**

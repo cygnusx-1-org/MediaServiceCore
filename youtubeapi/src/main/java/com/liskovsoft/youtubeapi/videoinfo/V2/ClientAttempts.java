@@ -81,25 +81,33 @@ public final class ClientAttempts {
          * translated, unlike the reason.
          */
         public final boolean members;
+        /**
+         * Of an unplayable one whose status doesn't say why (OK): the check that judged it so, e.g. post_live_sabr_only (see
+         * VideoInfo#getUnplayableCause). Before, it read "unplayable OK" (AWHPECZK: a finished stream taken for a broken one).
+         */
+        @Nullable
+        public final String cause;
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error) {
-            this(client, result, status, reason, error, false);
+            this(client, result, status, reason, error, false, null);
         }
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error,
-                        boolean members) {
+                        boolean members, @Nullable String cause) {
             this.client = client;
             this.result = result;
             this.status = status;
             this.reason = reason;
             this.error = error;
             this.members = members;
+            this.cause = cause;
         }
 
         /**
          * For the timing of the fetch (see FetchStages): the result, with the status and the reason of an unplayable one, e.g.
          * "unplayable LOGIN_REQUIRED: Sign in to confirm you're not a bot", or "unplayable UNPLAYABLE members: Join this channel…" for a
-         * members' video (see #members). The status alone doesn't tell a bot check from an age
+         * members' video (see #members), or "unplayable OK post_live_sabr_only" when the status says nothing (see #cause). The status
+         * alone doesn't tell a bot check from an age
          * check or a private video. The reason is in the language YouTube is asked for, so it isn't matched: its first part, cut short.
          */
         public String describe() {
@@ -108,6 +116,7 @@ public final class ClientAttempts {
             }
 
             String text = status != null ? result + " " + status : result;
+            text = cause != null ? text + " " + cause : text;
             text = members ? text + " " + MEMBERS : text;
             String shortReason = shortReason(reason);
 
@@ -134,7 +143,15 @@ public final class ClientAttempts {
          * @param members only the channel's members watch it (see #members)
          */
         public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason, boolean members) {
-            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members);
+            return unplayable(client, status, reason, members, null);
+        }
+
+        /**
+         * @param cause the check that judged it unplayable when its status doesn't say (see #cause)
+         */
+        public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason, boolean members,
+                                         @Nullable String cause) {
+            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members, cause);
         }
 
         public static Attempt noLiveManifest(String client) {

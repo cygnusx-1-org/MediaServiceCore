@@ -35,6 +35,7 @@ import com.liskovsoft.youtubeapi.innertube.utils.isPlayableInEmbed
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemFormatInfo
 import com.liskovsoft.youtubeapi.service.data.YouTubeMediaItemStoryboard
 import com.liskovsoft.youtubeapi.videoinfo.models.DashInfo
+import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoUrlHolder
 import io.reactivex.Observable
 import java.io.InputStream
@@ -108,6 +109,15 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
     }
     private val _isPlayableInEmbed by lazy { playerResult.isPlayableInEmbed() }
     private val _isUnplayable by lazy { isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isPostLiveSabrOnly() }
+
+    /**
+     * Why it's unplayable when its status doesn't say (see VideoInfo#getUnplayableCause)
+     */
+    fun getUnplayableCause(): String? = when {
+        isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() -> null
+        isPostLiveSabrOnly() -> VideoInfo.UNPLAYABLE_POST_LIVE_SABR_ONLY
+        else -> null
+    }
 
     /**
      * A stream that ended minutes ago and isn't processed yet (see VideoInfo#isPostLiveSabrOnly)

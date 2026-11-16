@@ -21,6 +21,10 @@ public class VideoInfo {
     private static final String PARAM_VM = "vm";
     private static final String PARAM_OF = "of";
     private static final String STATUS_OK = "OK";
+    /**
+     * Of an unplayable one whose status doesn't say why (see #getUnplayableCause, #isPostLiveSabrOnly)
+     */
+    public static final String UNPLAYABLE_POST_LIVE_SABR_ONLY = "post_live_sabr_only";
     private static final String STATUS_UNPLAYABLE = "UNPLAYABLE";
     private static final String STATUS_ERROR = "ERROR";
     private static final String STATUS_OFFLINE = "LIVE_STREAM_OFFLINE";
@@ -223,6 +227,19 @@ public class VideoInfo {
 
     public boolean isUnplayable() {
         return isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isPostLiveSabrOnly();
+    }
+
+    /**
+     * Why it's unplayable when its status doesn't say (OK): the check that judged it so. Null when the status says it, or it's
+     * playable.
+     */
+    @Nullable
+    public String getUnplayableCause() {
+        if (isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted()) {
+            return null;
+        }
+
+        return isPostLiveSabrOnly() ? UNPLAYABLE_POST_LIVE_SABR_ONLY : null;
     }
 
     /**
