@@ -9,6 +9,7 @@ import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.app.AppService;
 import com.liskovsoft.youtubeapi.app.PoTokenGate;
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
+import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors;
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper;
 import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
@@ -22,6 +23,7 @@ import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoHls;
 import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfoReel;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -224,6 +226,8 @@ public class VideoInfoService extends VideoInfoServiceBase {
             }
 
             mLastResponseCode.set(0);
+            // Of a request before (e.g. another client's): this attempt's is its own
+            RetrofitHelper.takeConnectException();
             FetchStages.Span span = FetchStages.begin(type.name() + " attempt");
             VideoInfo result;
 
@@ -231,7 +235,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 result = ClientAttempts.recordException(videoId, type.name(),
                         () -> getVideoInfoWithRentFix(type, videoId, clickTrackingParams));
             } catch (RuntimeException e) {
-                span.end(e.getClass().getSimpleName());
+                // One that couldn't connect says so, e.g. "exception: refused", as its attempt does (see Attempt#describe): its class
+                // alone (IllegalStateException) said nothing of why
+                String connectionError = ConnectionErrors.describe(e);
+                span.end(connectionError != null ? ClientAttempts.RESULT_EXCEPTION + ": " + connectionError : e.getClass().getSimpleName());
                 throw e;
             }
 
@@ -263,6 +270,12 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         if (result == null) {
             Integer code = mLastResponseCode.get();
+            // No response: it couldn't connect, which RetrofitHelper doesn't throw. Not the server answering with nothing.
+            ConnectException connectException = code == null || code == 0 ? RetrofitHelper.takeConnectException() : null;
+
+            if (connectException != null) {
+                return Attempt.exception(client.name(), connectException);
+            }
 
             return code != null && code != 0 && code != 200 ? Attempt.http(client.name(), code) : Attempt.nullResponse(client.name());
         }

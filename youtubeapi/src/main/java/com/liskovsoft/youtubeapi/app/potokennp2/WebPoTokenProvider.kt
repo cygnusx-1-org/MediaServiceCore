@@ -42,7 +42,10 @@ internal object WebPoTokenProvider {
                     return null
                 }
                 null -> throw e
-                else -> throw cause // includes PoTokenException
+                is RuntimeException -> throw cause // includes PoTokenException
+                // A checked one (e.g. the IOException of a request that couldn't connect, see PoTokenWebView#keepInitError) isn't
+                // thrown on its own: callers catch RuntimeException. It stays the cause of this one.
+                else -> throw e
             }
         } catch (e: LinkageError) {
             // NoClassDefFoundError and friends: the poToken code touched a platform API that

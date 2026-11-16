@@ -287,6 +287,8 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
 
     override fun getServerAbrStreamingUrl() = sabrUrlHolder.getUrl()
 
+    override fun getCreatedTimeMs() = createdTimeMs
+
     override fun getStreamsExpireTimeMs(): Long {
         // Of a URL its streams are got by: SABR's, a format's or a manifest's
         val url = getServerAbrStreamingUrl() ?: getAdaptiveFormats()?.firstNotNullOfOrNull { it.url }

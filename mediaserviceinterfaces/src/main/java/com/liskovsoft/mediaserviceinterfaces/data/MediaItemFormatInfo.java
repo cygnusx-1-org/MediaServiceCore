@@ -129,6 +129,10 @@ public interface MediaItemFormatInfo extends FormatInfoProvision {
      * unknown.
      */
     long getStreamsExpireTimeMs();
+    /**
+     * When it was made, on this device's clock (see System#currentTimeMillis): e.g. how old the formats a reload took are
+     */
+    long getCreatedTimeMs();
     String getPoToken();
     String getVisitorCookie();
     ClientInfo getClientInfo();

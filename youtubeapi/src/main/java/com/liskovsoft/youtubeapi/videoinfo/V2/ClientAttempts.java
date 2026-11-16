@@ -2,6 +2,8 @@ package com.liskovsoft.youtubeapi.videoinfo.V2;
 
 import androidx.annotation.Nullable;
 
+import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -87,13 +89,20 @@ public final class ClientAttempts {
          */
         @Nullable
         public final String cause;
+        /**
+         * Of an exception: the request failed on its connection, e.g. "timed out", "refused" (see ConnectionErrors). Null for one that
+         * didn't, e.g. an answer that didn't parse. A client that couldn't connect says nothing of the client: every client failed so
+         * when the network was down (FARAJV5R #47–#99).
+         */
+        @Nullable
+        public final String connectionError;
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error) {
-            this(client, result, status, reason, error, false, null);
+            this(client, result, status, reason, error, false, null, null);
         }
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error,
-                        boolean members, @Nullable String cause) {
+                        boolean members, @Nullable String cause, @Nullable String connectionError) {
             this.client = client;
             this.result = result;
             this.status = status;
@@ -101,6 +110,7 @@ public final class ClientAttempts {
             this.error = error;
             this.members = members;
             this.cause = cause;
+            this.connectionError = connectionError;
         }
 
         /**
@@ -111,6 +121,10 @@ public final class ClientAttempts {
          * check or a private video. The reason is in the language YouTube is asked for, so it isn't matched: its first part, cut short.
          */
         public String describe() {
+            if (connectionError != null) {
+                return result + ": " + connectionError;
+            }
+
             if (!RESULT_UNPLAYABLE.equals(result)) {
                 return result;
             }
@@ -151,7 +165,7 @@ public final class ClientAttempts {
          */
         public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason, boolean members,
                                          @Nullable String cause) {
-            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members, cause);
+            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members, cause, null);
         }
 
         public static Attempt noLiveManifest(String client) {
@@ -162,8 +176,13 @@ public final class ClientAttempts {
             return new Attempt(client, RESULT_NO_REGULAR_FORMATS, null, null, null);
         }
 
+        /**
+         * Also of a request that got no response because it couldn't connect (see RetrofitHelper#takeConnectException), which a null
+         * answer read as a null_response
+         */
         public static Attempt exception(String client, Throwable error) {
-            return new Attempt(client, RESULT_EXCEPTION, null, null, error.getClass().getSimpleName() + ": " + error.getMessage());
+            return new Attempt(client, RESULT_EXCEPTION, null, null, error.getClass().getSimpleName() + ": " + error.getMessage(), false,
+                    null, ConnectionErrors.describe(error));
         }
     }
 

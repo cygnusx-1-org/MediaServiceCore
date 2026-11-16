@@ -6,6 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -146,6 +147,28 @@ public class ClientAttemptsTest {
 
         assertEquals(ClientAttempts.MAX_ATTEMPTS, attempts.size());
         assertEquals("client0", attempts.get(0).client);
+    }
+
+    /**
+     * A client that couldn't connect says so: it tells nothing of the client (FARAJV5R #47–#99, the network was down)
+     */
+    @Test
+    public void anExceptionThatCouldntConnectSaysHow() {
+        Attempt attempt = Attempt.exception("VISIONOS", new IllegalStateException(new SocketTimeoutException("failed to connect")));
+
+        assertEquals("timed out", attempt.connectionError);
+        assertEquals("exception: timed out", attempt.describe());
+    }
+
+    /**
+     * An answer that didn't parse was an answer: not the connection's
+     */
+    @Test
+    public void anExceptionOfAnAnswerIsntTheConnections() {
+        Attempt attempt = Attempt.exception("WEB", new IllegalStateException("Unexpected token"));
+
+        assertNull(attempt.connectionError);
+        assertEquals("exception", attempt.describe());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.liskovsoft.youtubeapi.service.internal
 
 import android.os.SystemClock
+import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
@@ -45,6 +46,8 @@ internal object FormatInfoWrapper {
         { videoId, clickTrackingParams ->
             // A cached one was recorded when it was fetched
             val isCached = getCachedFormatInfo(videoId) != null
+            // Of a request before: this attempt's is its own (see toAttempt)
+            RetrofitHelper.takeConnectException()
 
             ClientAttempts.recordException(videoId, INNERTUBE_CLIENT) {
                 getFormatInfoInnertube(videoId, clickTrackingParams)
@@ -590,7 +593,9 @@ internal object FormatInfoWrapper {
 
     private fun toAttempt(formatInfo: MediaItemFormatInfo?): Attempt {
         return when {
-            formatInfo == null -> Attempt.nullResponse(INNERTUBE_CLIENT)
+            // No response: it couldn't connect, which RetrofitHelper doesn't throw. Not the server answering with nothing.
+            formatInfo == null -> RetrofitHelper.takeConnectException()?.let { Attempt.exception(INNERTUBE_CLIENT, it) }
+                ?: Attempt.nullResponse(INNERTUBE_CLIENT)
             formatInfo.isUnplayable() -> Attempt.unplayable(INNERTUBE_CLIENT, formatInfo.getPlayabilityStatus(), formatInfo.getPlayabilityReason(),
                 false, (formatInfo as? MediaItemFormatInfoImpl)?.getUnplayableCause())
             else -> Attempt.ok(INNERTUBE_CLIENT)

@@ -1,5 +1,6 @@
 package com.liskovsoft.youtubeapi.app
 
+import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors
 import com.liskovsoft.sharedutils.rx.RxHelper
 import com.liskovsoft.youtubeapi.app.potoken.PoTokenService
 import com.liskovsoft.youtubeapi.app.potokennp2.WebPoTokenProvider
@@ -164,7 +165,8 @@ internal object PoTokenGate {
             endDetail = if (detail != null) "$detail, $how" else how
             return poToken
         } catch (e: RuntimeException) {
-            endDetail = e.javaClass.simpleName
+            // A BotGuard request that couldn't connect says so, e.g. "refused" (see PoTokenWebView#keepInitError)
+            endDetail = ConnectionErrors.describe(e) ?: e.javaClass.simpleName
             throw e
         } finally {
             span.end(endDetail)

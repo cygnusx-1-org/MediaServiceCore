@@ -9,6 +9,7 @@ import android.webkit.WebView
 import androidx.annotation.MainThread
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.sharedutils.okhttp.OkHttpManager
 import com.liskovsoft.youtubeapi.app.potokennp2.core.BadWebViewException
@@ -122,6 +123,10 @@ internal class PoTokenWebView4 private constructor(
      */
     @JavascriptInterface
     fun downloadAndRunBotguard() {
+        keepInitError { downloadAndRunBotguardInt() }
+    }
+
+    private fun downloadAndRunBotguardInt() {
         Log.d(TAG, "downloadAndRunBotguard() called")
 
         // PATCH(unstem 2026-08): always mint from the homepage's
@@ -259,6 +264,10 @@ internal class PoTokenWebView4 private constructor(
      */
     @JavascriptInterface
     fun onRunBotguardResult(botguardResponse: String) {
+        keepInitError { onRunBotguardResultInt(botguardResponse) }
+    }
+
+    private fun onRunBotguardResultInt(botguardResponse: String) {
         Log.d(TAG, "botguardResponse: $botguardResponse")
 
         // NOTE: both urls can be used to get botguard response.
@@ -444,6 +453,27 @@ internal class PoTokenWebView4 private constructor(
         }
 
         return response.body?.string()
+    }
+
+    /**
+     * What a method the page's script calls threw is the init error. Thrown back into the WebView, it was only "Error invoking
+     * downloadAndRunBotguard: Java exception was raised during method invocation" (FARAJV5R #60), whatever failed: e.g. a request
+     * that couldn't connect, which OkHttpManager throws with its IOException as the cause. An error told before (e.g. a response
+     * code) is kept: what failed after it followed from it.
+     */
+    private inline fun keepInitError(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: Throwable) {
+            Log.e(TAG, "Initialization failed: $e")
+
+            if (initError == null) {
+                // A request that couldn't connect is the network's, not the WebView's: the variant isn't switched for it, and the
+                // fix of the video knows it. Anything else is told as before, with what failed as its cause.
+                onInitializationErrorCloseAndCancel(if (ConnectionErrors.isConnectionError(e)) e
+                    else BadWebViewException("${e::class.simpleName}: ${e.message}", e))
+            }
+        }
     }
 
     /**

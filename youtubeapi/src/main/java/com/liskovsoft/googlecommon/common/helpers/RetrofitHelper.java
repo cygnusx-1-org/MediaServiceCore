@@ -1,5 +1,7 @@
 package com.liskovsoft.googlecommon.common.helpers;
 
+import androidx.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -40,6 +42,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class RetrofitHelper {
+    /**
+     * Of the last request on each thread that couldn't connect (see takeConnectException)
+     */
+    private static final ThreadLocal<ConnectException> sConnectException = new ThreadLocal<>();
+
     private static final String TAG = RetrofitHelper.class.getSimpleName();
     // Ignored when specified url is absolute
     private static final String DEFAULT_BASE_URL = "https://www.youtube.com";
@@ -140,11 +147,14 @@ public class RetrofitHelper {
     }
 
     public static <T> Response<T> getResponse(Call<T> wrapper) {
+        sConnectException.remove();
+
         try {
             return wrapper.execute();
         } catch (ConnectException e) {
             // ConnectException - server is down or address is banned (returnyoutubedislikeapi.com)
             e.printStackTrace();
+            sConnectException.set(e);
         } catch (IOException e) {
             // SocketException - no internet
             // InterruptedIOException - Thread interrupted. Thread died!!
@@ -154,6 +164,19 @@ public class RetrofitHelper {
         }
 
         return null;
+    }
+
+    /**
+     * Why the last request on this thread got no response (see getResponse): it couldn't connect. Null when it got one, or failed
+     * otherwise (that one is thrown). Without it, a refused connection looked like a server that answered with nothing (a client's
+     * null_response, see VideoInfoService#toAttempt). Taken once.
+     */
+    @Nullable
+    public static ConnectException takeConnectException() {
+        ConnectException result = sConnectException.get();
+        sConnectException.remove();
+
+        return result;
     }
 
     public static <T> JsonPathTypeAdapter<T> adaptJsonPathSkip(Class<?> clazz) {

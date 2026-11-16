@@ -455,6 +455,11 @@ public class YouTubeMediaItemFormatInfo implements MediaItemFormatInfo {
     }
 
     @Override
+    public long getCreatedTimeMs() {
+        return mCreatedTimeMs;
+    }
+
+    @Override
     public long getStreamsExpireTimeMs() {
         long lifetimeMs = getStreamsLifetimeMs(getStreamsUrl());
 

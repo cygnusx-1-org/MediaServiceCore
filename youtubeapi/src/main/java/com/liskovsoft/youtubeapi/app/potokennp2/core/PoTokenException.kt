@@ -1,9 +1,14 @@
 package com.liskovsoft.youtubeapi.app.potokennp2.core
 
+import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors
+
 internal class PoTokenException(message: String) : RuntimeException(message)
 
 // to be thrown if the WebView provided by the system is broken
-internal class BadWebViewException(message: String) : RuntimeException(message)
+/**
+ * @param cause what failed, e.g. what a method the page's script calls threw (see PoTokenWebView#keepInitError)
+ */
+internal class BadWebViewException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
 
 internal class V8WrapperException(message: String, cause: Exception? = null) : RuntimeException(message, cause)
 
@@ -30,6 +35,7 @@ internal fun describePoTokenFailure(error: Throwable): String {
         // A generator that didn't get ready, or a token that didn't come, in time: what it waited for never set (see TvPoTokenWebView4)
         error is UninitializedPropertyAccessException || message.contains("within the specified time") -> "timeout"
         message.contains("BotGuard request key") -> "no request key"
-        else -> error.javaClass.simpleName
+        // A BotGuard request that couldn't connect, e.g. "refused" (see PoTokenWebView#keepInitError)
+        else -> ConnectionErrors.describe(error) ?: error.javaClass.simpleName
     }
 }
