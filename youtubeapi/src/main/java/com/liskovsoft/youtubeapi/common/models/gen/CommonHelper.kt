@@ -241,7 +241,8 @@ internal fun TileItem.getUpcomingEventText() = null
 internal fun TileItem.getThumbnails() = header?.tileHeaderRenderer?.thumbnail ?: header?.trackTileHeaderRenderer?.thumbnail
 internal fun TileItem.getMovingThumbnails() = header?.tileHeaderRenderer?.let { it.movingThumbnail ?: it.onFocusThumbnail }
 internal fun TileItem.getMovingThumbnailUrl() = header?.tileHeaderRenderer?.movingThumbnail?.thumbnails?.getOrNull(0)?.url
-internal fun TileItem.getChannelId() = onSelectCommand?.getBrowseId() ?: getMenu()?.getBrowseId()
+// A suggestion under the player has no menu to take it from, only the channel link of its byline
+internal fun TileItem.getChannelId() = onSelectCommand?.getBrowseId() ?: getMenu()?.getBrowseId() ?: metadata?.getBrowseId()
 // The long-press menu subtitle has the form "Channel Name • @handle". Suggestions have a channel link in the metadata lines instead.
 internal fun TileItem.getChannelHandle() = getShowMenuCommand()?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
     ?: metadata?.tileMetadataRenderer?.lines?.firstNotNullOfOrNull { it?.lineRenderer?.items?.firstNotNullOfOrNull {
@@ -271,6 +272,9 @@ private fun TileItem.Header.getBadgeStyle() = tileHeaderRenderer?.thumbnailOverl
 private fun TileItem.getBadgeIconType() = header?.tileHeaderRenderer?.thumbnailOverlays
     ?.firstNotNullOfOrNull { it?.thumbnailOverlayTimeStatusRenderer?.icon?.iconType }
 private fun TileItem.Metadata.getStatusStyle() = tileMetadataRenderer?.lines?.firstNotNullOfOrNull { it?.lineRenderer?.items?.firstNotNullOfOrNull { it?.lineItemRenderer?.badge?.metadataBadgeRenderer?.style } }
+// The byline's channel link. A collaboration's opens the list of its channels instead, so it has none.
+private fun TileItem.Metadata.getBrowseId() = tileMetadataRenderer?.lines?.firstNotNullOfOrNull { it?.lineRenderer?.items?.firstNotNullOfOrNull {
+    it?.lineItemRenderer?.text?.runs?.firstNotNullOfOrNull { it?.navigationEndpoint?.getBrowseId() } } }
 private fun TileItem.getMenu() = menu ?: getShowMenuCommand()?.menu
 private fun TileItem.getTileStyle() = style
 private fun TileItem.getBadgeStyle() = header?.getBadgeStyle()
@@ -322,13 +326,16 @@ internal fun LockupItem.getPercentWatched() = getOverlays()?.firstNotNullOfOrNul
 internal fun LockupItem.isEmpty() = getPercentWatched() == 100 && getBadgeText() == null
 internal fun LockupItem.getFeedbackTokens() =
     metadata?.lockupMetadataViewModel?.menuButton?.buttonViewModel?.onTap?.innertubeCommand?.getFeedbackTokens()
-internal fun LockupItem.getChannelId() = rendererContext?.getBrowseId()
+/**
+ * A channel's opens it. A video's (e.g. of TV search) is only in "Go to channel" of its long-press menu.
+ */
+internal fun LockupItem.getChannelId() = rendererContext?.getBrowseId() ?: rendererContext?.getShowMenuCommand()?.menu?.getBrowseId()
 internal fun LockupItem.isChannel() = contentType == LOCKUP_CONTENT_TYPE_CHANNEL
 /**
  * A channel's handle, from its long-press menu subtitle "@handle". A video's has only the channel name.
  */
-internal fun LockupItem.getChannelHandle() = takeIf { it.isChannel() }?.rendererContext?.commandContext?.onLongPress?.innertubeCommand
-    ?.showMenuCommand?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
+internal fun LockupItem.getChannelHandle() = takeIf { it.isChannel() }?.rendererContext?.getShowMenuCommand()
+    ?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
 /**
  * A short of a row of videos (e.g. on Home TV) has a landscape thumbnail and no duration, so only its type or the shorts player it opens tells.
  */
@@ -527,6 +534,7 @@ internal fun RendererContext.getBrowseId() = getOnTapCommand()?.getBrowseId()
 internal fun RendererContext.getContinuationToken() = getOnTapCommand()?.getContinuationToken()
 internal fun RendererContext.getFeedbackToken() = getOnTapCommand()?.getFeedbackToken()
 private fun RendererContext.getOnTapCommand() = commandContext?.onTap?.innertubeCommand
+private fun RendererContext.getShowMenuCommand() = commandContext?.onLongPress?.innertubeCommand?.showMenuCommand
 
 ///////
 
