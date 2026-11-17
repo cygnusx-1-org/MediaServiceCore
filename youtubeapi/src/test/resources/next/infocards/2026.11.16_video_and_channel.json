@@ -1,0 +1,276 @@
+{
+  "cards": {
+    "cardCollectionRenderer": {
+      "cards": [
+        {
+          "cardRenderer": {
+            "teaser": {
+              "simpleCardTeaserRenderer": {
+                "message": {
+                  "simpleText": "The Switch 2 Hack That Shouldn’t Have Worked"
+                },
+                "trackingParams": "CAUQ0DYiEwjx_oqQsI2YAxWngIoHHZfALHE=",
+                "onTapCommand": {
+                  "showEngagementPanelEndpoint": {
+                    "panelIdentifier": "engagement-panel-structured-description",
+                    "forcePortrait": false,
+                    "engagementPanelExtras": {
+                      "sectionListEngagementPanelExtras": {
+                        "scrollToItemSectionIdentifier": "infocards-item-section",
+                        "scrollToItemSectionOffsetDistance": 88
+                      }
+                    }
+                  }
+                },
+                "channelAvatar": {
+                  "thumbnails": [
+                    {
+                      "url": "https://yt3.ggpht.com/TecITSHmfFNFQmEhuQdsMkIS6Sq8nYz_y2Uwtbb9FxY-IVniM6HiIVRz8xEfVccOu9P8IBjbzg=s48-c-k-c0x00ffffff-no-rj",
+                      "width": 48,
+                      "height": 48
+                    }
+                  ]
+                }
+              }
+            },
+            "cueRanges": [
+              {
+                "startCardActiveMs": "154878",
+                "endCardActiveMs": "0",
+                "teaserDurationMs": "6000"
+              }
+            ],
+            "trackingParams": "CAQQwJcBGAAiEwjx_oqQsI2YAxWngIoHHZfALHE="
+          }
+        },
+        {
+          "cardRenderer": {
+            "teaser": {
+              "simpleCardTeaserRenderer": {
+                "message": {
+                  "simpleText": "Like + Subscribe!"
+                },
+                "trackingParams": "CAMQ0DYiEwjx_oqQsI2YAxWngIoHHZfALHE=",
+                "onTapCommand": {
+                  "showEngagementPanelEndpoint": {
+                    "panelIdentifier": "engagement-panel-structured-description",
+                    "forcePortrait": false,
+                    "engagementPanelExtras": {
+                      "sectionListEngagementPanelExtras": {
+                        "scrollToItemSectionIdentifier": "infocards-item-section",
+                        "scrollToItemSectionOffsetDistance": 190
+                      }
+                    }
+                  }
+                },
+                "channelAvatar": {
+                  "thumbnails": [
+                    {
+                      "url": "https://yt3.ggpht.com/TecITSHmfFNFQmEhuQdsMkIS6Sq8nYz_y2Uwtbb9FxY-IVniM6HiIVRz8xEfVccOu9P8IBjbzg=s48-c-k-c0x00ffffff-no-rj",
+                      "width": 48,
+                      "height": 48
+                    }
+                  ]
+                }
+              }
+            },
+            "cueRanges": [
+              {
+                "startCardActiveMs": "199648",
+                "endCardActiveMs": "0",
+                "teaserDurationMs": "6000"
+              }
+            ],
+            "trackingParams": "CAIQs5cBGAEiEwjx_oqQsI2YAxWngIoHHZfALHE="
+          }
+        }
+      ],
+      "headerText": {
+        "simpleText": "More from Better Gaming"
+      },
+      "trackingParams": "CAEQwjciEwjx_oqQsI2YAxWngIoHHZfALHE=",
+      "onIconTapCommand": {
+        "showEngagementPanelEndpoint": {
+          "panelIdentifier": "engagement-panel-structured-description",
+          "forcePortrait": false,
+          "engagementPanelExtras": {
+            "sectionListEngagementPanelExtras": {
+              "scrollToItemSectionIdentifier": "infocards-item-section"
+            }
+          }
+        }
+      }
+    }
+  },
+  "engagementPanels": [
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-comments-section",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-ads",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-ads-business-agent-chat",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "PAsearch_preview",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-macro-markers-description-chapters",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-structured-description",
+        "content": {
+          "structuredDescriptionContentRenderer": {
+            "items": [
+              {
+                "videoDescriptionHeaderRenderer": {
+                  "title": {
+                    "runs": [
+                      {
+                        "text": "New Zelda Remake on PC in 42 Hours: How They Did It"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "videoDescriptionInfocardsSectionRenderer": {
+                  "sectionTitle": {
+                    "simpleText": "Better Gaming"
+                  },
+                  "infocards": [
+                    {
+                      "compactInfocardRenderer": {
+                        "content": {
+                          "structuredDescriptionVideoLockupRenderer": {
+                            "thumbnail": {
+                              "thumbnails": [
+                                {
+                                  "url": "https://yt3.ggpht.com/proxy/JwTp3S_0ixHcnb5JrWaVVa9HfjzOwI3j4euBvxN5JNFn8YeV9gQtRL826ItF6gOTCMH5kOhpByvJtPJCGrBx82r7oUOk=s112-w112-h64-nd",
+                                  "width": 112,
+                                  "height": 64
+                                },
+                                {
+                                  "url": "https://yt3.ggpht.com/proxy/JwTp3S_0ixHcnb5JrWaVVa9HfjzOwI3j4euBvxN5JNFn8YeV9gQtRL826ItF6gOTCMH5kOhpByvJtPJCGrBx82r7oUOk=s224-w224-h128-nd",
+                                  "width": 224,
+                                  "height": 128
+                                }
+                              ]
+                            },
+                            "title": {
+                              "simpleText": "The Switch 2 Hack That Shouldn’t Have Worked"
+                            },
+                            "shortBylineText": {
+                              "simpleText": "by Better Gaming"
+                            },
+                            "metadataDetails": {
+                              "simpleText": "96K views · 9 days ago"
+                            },
+                            "navigationEndpoint": {
+                              "watchEndpoint": {
+                                "videoId": "sZcczm1cq1U"
+                              }
+                            },
+                            "lengthText": {
+                              "simpleText": "23:32"
+                            },
+                            "trackingParams": "CCMQ1TYiEwjx_oqQsI2YAxWngIoHHZfALHE=",
+                            "isLiveVideo": false,
+                            "disableNavigationEndpoint": true,
+                            "maxLinesTitle": 2,
+                            "maxLinesShortBylineText": 1,
+                            "maxLinesMetadataDetails": 1,
+                            "thumbnailWidth": 112,
+                            "aspectRatio": 1.7779,
+                            "thumbnailOverlays": [
+                              {
+                                "thumbnailOverlayTimeStatusRenderer": {
+                                  "text": {
+                                    "simpleText": "23:32"
+                                  },
+                                  "style": "DEFAULT"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "trackingParams": "CCIQwJcBGAAiEwjx_oqQsI2YAxWngIoHHZfALHE="
+                      }
+                    },
+                    {
+                      "compactInfocardRenderer": {
+                        "content": {
+                          "structuredDescriptionChannelLockupRenderer": {
+                            "thumbnail": {
+                              "thumbnails": [
+                                {
+                                  "url": "https://yt3.ggpht.com/TecITSHmfFNFQmEhuQdsMkIS6Sq8nYz_y2Uwtbb9FxY-IVniM6HiIVRz8xEfVccOu9P8IBjbzg=s64-c-k-c0x00ffffff-no-rj",
+                                  "width": 64,
+                                  "height": 64
+                                },
+                                {
+                                  "url": "https://yt3.ggpht.com/TecITSHmfFNFQmEhuQdsMkIS6Sq8nYz_y2Uwtbb9FxY-IVniM6HiIVRz8xEfVccOu9P8IBjbzg=s128-c-k-c0x00ffffff-no-rj",
+                                  "width": 128,
+                                  "height": 128
+                                }
+                              ]
+                            },
+                            "title": {
+                              "simpleText": "Better Gaming"
+                            },
+                            "subscriberCountText": {
+                              "simpleText": "48.2K subscribers"
+                            },
+                            "navigationEndpoint": {
+                              "browseEndpoint": {
+                                "browseId": "UCWMZ8UwScunBu0ZYRIwPDkw"
+                              }
+                            },
+                            "trackingParams": "CCEQ1TYiEwjx_oqQsI2YAxWngIoHHZfALHE=",
+                            "disableNavigationEndpoint": true,
+                            "thumbnailWidth": 112,
+                            "maxLinesTitle": 2,
+                            "maxLinesSubscriberCountText": 1
+                          }
+                        },
+                        "trackingParams": "CCAQs5cBGAEiEwjx_oqQsI2YAxWngIoHHZfALHE="
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-searchable-transcript",
+        "content": {}
+      }
+    }
+  ]
+}

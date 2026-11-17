@@ -11,6 +11,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.EndScreenItem;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackReasons;
+import com.liskovsoft.mediaserviceinterfaces.data.InfoCardItem;
 import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
@@ -34,6 +35,7 @@ import com.liskovsoft.youtubeapi.aislist.AiSListService;
 import com.liskovsoft.youtubeapi.videocategory.VideoCategoryService;
 import com.liskovsoft.youtubeapi.dearrow.DeArrowService;
 import com.liskovsoft.youtubeapi.feedback.FeedbackService;
+import com.liskovsoft.youtubeapi.next.infocards.InfoCardsService;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextService;
 import com.liskovsoft.youtubeapi.next.v2.WatchNextServiceWrapper;
 import com.liskovsoft.youtubeapi.panel.PanelService;
@@ -573,6 +575,11 @@ public class YouTubeMediaItemService implements MediaItemService {
     @Override
     public Observable<List<EndScreenItem>> getEndScreenObserve(String videoId) {
         return RxHelper.fromCallable(() -> new ArrayList<>(getVideoInfoService().getEndScreen(videoId)));
+    }
+
+    @Override
+    public Observable<List<InfoCardItem>> getInfoCardsObserve(String videoId) {
+        return RxHelper.fromCallable(() -> new ArrayList<>(InfoCardsService.instance().getInfoCards(videoId)));
     }
 
     @Override

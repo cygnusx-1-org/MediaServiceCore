@@ -1,0 +1,461 @@
+{
+  "cards": {
+    "cardCollectionRenderer": {
+      "cards": [
+        {
+          "cardRenderer": {
+            "teaser": {
+              "simpleCardTeaserRenderer": {
+                "message": {
+                  "simpleText": "The Shady Acquisition of EA Games"
+                },
+                "trackingParams": "CAkQ0DYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                "onTapCommand": {
+                  "showEngagementPanelEndpoint": {
+                    "panelIdentifier": "engagement-panel-structured-description",
+                    "forcePortrait": false,
+                    "engagementPanelExtras": {
+                      "sectionListEngagementPanelExtras": {
+                        "scrollToItemSectionIdentifier": "infocards-item-section",
+                        "scrollToItemSectionOffsetDistance": 88
+                      }
+                    }
+                  }
+                },
+                "channelAvatar": {
+                  "thumbnails": [
+                    {
+                      "url": "https://yt3.ggpht.com/ytc/AIdro_n50Rj8oqwUnusv4I6_DllKflZrSdSxmXhYvpHs0hOEj5o=s48-c-k-c0x00ffffff-no-rj",
+                      "width": 48,
+                      "height": 48
+                    }
+                  ]
+                }
+              }
+            },
+            "cueRanges": [
+              {
+                "startCardActiveMs": "211011",
+                "endCardActiveMs": "0",
+                "teaserDurationMs": "6000"
+              }
+            ],
+            "trackingParams": "CAgQwJcBGAAiEwjr-72psI2YAxXiuYoHHR7ADL4="
+          }
+        },
+        {
+          "cardRenderer": {
+            "teaser": {
+              "simpleCardTeaserRenderer": {
+                "message": {
+                  "simpleText": "SUPPORT GN"
+                },
+                "trackingParams": "CAcQ0DYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                "onTapCommand": {
+                  "showEngagementPanelEndpoint": {
+                    "panelIdentifier": "engagement-panel-structured-description",
+                    "forcePortrait": false,
+                    "engagementPanelExtras": {
+                      "sectionListEngagementPanelExtras": {
+                        "scrollToItemSectionIdentifier": "infocards-item-section",
+                        "scrollToItemSectionOffsetDistance": 190
+                      }
+                    }
+                  }
+                },
+                "channelAvatar": {
+                  "thumbnails": [
+                    {
+                      "url": "https://yt3.ggpht.com/ytc/AIdro_n50Rj8oqwUnusv4I6_DllKflZrSdSxmXhYvpHs0hOEj5o=s48-c-k-c0x00ffffff-no-rj",
+                      "width": 48,
+                      "height": 48
+                    }
+                  ]
+                }
+              }
+            },
+            "cueRanges": [
+              {
+                "startCardActiveMs": "464005",
+                "endCardActiveMs": "0",
+                "teaserDurationMs": "6000"
+              }
+            ],
+            "trackingParams": "CAYQvJcBGAEiEwjr-72psI2YAxXiuYoHHR7ADL4="
+          }
+        },
+        {
+          "cardRenderer": {
+            "teaser": {
+              "simpleCardTeaserRenderer": {
+                "message": {
+                  "simpleText": "Support us on Patreon"
+                },
+                "trackingParams": "CAUQ0DYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                "onTapCommand": {
+                  "showEngagementPanelEndpoint": {
+                    "panelIdentifier": "engagement-panel-structured-description",
+                    "forcePortrait": false,
+                    "engagementPanelExtras": {
+                      "sectionListEngagementPanelExtras": {
+                        "scrollToItemSectionIdentifier": "infocards-item-section",
+                        "scrollToItemSectionOffsetDistance": 292
+                      }
+                    }
+                  }
+                },
+                "channelAvatar": {
+                  "thumbnails": [
+                    {
+                      "url": "https://yt3.ggpht.com/ytc/AIdro_n50Rj8oqwUnusv4I6_DllKflZrSdSxmXhYvpHs0hOEj5o=s48-c-k-c0x00ffffff-no-rj",
+                      "width": 48,
+                      "height": 48
+                    }
+                  ]
+                }
+              }
+            },
+            "cueRanges": [
+              {
+                "startCardActiveMs": "2261929",
+                "endCardActiveMs": "0",
+                "teaserDurationMs": "6000"
+              }
+            ],
+            "trackingParams": "CAQQvJcBGAIiEwjr-72psI2YAxXiuYoHHR7ADL4="
+          }
+        },
+        {
+          "cardRenderer": {
+            "teaser": {
+              "simpleCardTeaserRenderer": {
+                "message": {
+                  "simpleText": "Own Everything & Be Happy, Ep. 1 | DIY Router Guide"
+                },
+                "trackingParams": "CAMQ0DYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                "onTapCommand": {
+                  "showEngagementPanelEndpoint": {
+                    "panelIdentifier": "engagement-panel-structured-description",
+                    "forcePortrait": false,
+                    "engagementPanelExtras": {
+                      "sectionListEngagementPanelExtras": {
+                        "scrollToItemSectionIdentifier": "infocards-item-section",
+                        "scrollToItemSectionOffsetDistance": 394
+                      }
+                    }
+                  }
+                },
+                "channelAvatar": {
+                  "thumbnails": [
+                    {
+                      "url": "https://yt3.ggpht.com/ytc/AIdro_n50Rj8oqwUnusv4I6_DllKflZrSdSxmXhYvpHs0hOEj5o=s48-c-k-c0x00ffffff-no-rj",
+                      "width": 48,
+                      "height": 48
+                    }
+                  ]
+                }
+              }
+            },
+            "cueRanges": [
+              {
+                "startCardActiveMs": "0",
+                "endCardActiveMs": "0",
+                "teaserDurationMs": "0"
+              }
+            ],
+            "trackingParams": "CAIQwJcBGAMiEwjr-72psI2YAxXiuYoHHR7ADL4="
+          }
+        }
+      ],
+      "headerText": {
+        "simpleText": "More from Gamers Nexus"
+      },
+      "trackingParams": "CAEQwjciEwjr-72psI2YAxXiuYoHHR7ADL4=",
+      "onIconTapCommand": {
+        "showEngagementPanelEndpoint": {
+          "panelIdentifier": "engagement-panel-structured-description",
+          "forcePortrait": false,
+          "engagementPanelExtras": {
+            "sectionListEngagementPanelExtras": {
+              "scrollToItemSectionIdentifier": "infocards-item-section"
+            }
+          }
+        }
+      }
+    }
+  },
+  "engagementPanels": [
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-comments-section",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-ads",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "PAsearch_preview",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-macro-markers-description-chapters",
+        "content": {}
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-structured-description",
+        "content": {
+          "structuredDescriptionContentRenderer": {
+            "items": [
+              {
+                "videoDescriptionHeaderRenderer": {
+                  "title": {
+                    "runs": [
+                      {
+                        "text": "Tim Sweeney is a Lunatic | WTF Happened to Epic Games?"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "videoDescriptionInfocardsSectionRenderer": {
+                  "sectionTitle": {
+                    "simpleText": "Gamers Nexus"
+                  },
+                  "infocards": [
+                    {
+                      "compactInfocardRenderer": {
+                        "content": {
+                          "structuredDescriptionVideoLockupRenderer": {
+                            "thumbnail": {
+                              "thumbnails": [
+                                {
+                                  "url": "https://yt3.ggpht.com/proxy/-32kDAXIMLTm8wf3S8yVfCwyYu1iLeOGnnEQWVTev_aNgsCdYOSEIDzCyY31g2Run8HQ9qzXvFQvJy_j=s112-w112-h64-nd",
+                                  "width": 112,
+                                  "height": 64
+                                },
+                                {
+                                  "url": "https://yt3.ggpht.com/proxy/-32kDAXIMLTm8wf3S8yVfCwyYu1iLeOGnnEQWVTev_aNgsCdYOSEIDzCyY31g2Run8HQ9qzXvFQvJy_j=s224-w224-h128-nd",
+                                  "width": 224,
+                                  "height": 128
+                                }
+                              ]
+                            },
+                            "title": {
+                              "simpleText": "The Shady Acquisition of EA Games"
+                            },
+                            "shortBylineText": {
+                              "simpleText": "by GNCA - GamersNexus Consumer Advocacy"
+                            },
+                            "metadataDetails": {
+                              "simpleText": "299K views · 1 year ago"
+                            },
+                            "navigationEndpoint": {
+                              "watchEndpoint": {
+                                "videoId": "FEbopZkd7BU"
+                              }
+                            },
+                            "lengthText": {
+                              "simpleText": "26:50"
+                            },
+                            "trackingParams": "CCkQ1TYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                            "isLiveVideo": false,
+                            "disableNavigationEndpoint": true,
+                            "maxLinesTitle": 2,
+                            "maxLinesShortBylineText": 1,
+                            "maxLinesMetadataDetails": 1,
+                            "thumbnailWidth": 112,
+                            "aspectRatio": 1.7779,
+                            "thumbnailOverlays": [
+                              {
+                                "thumbnailOverlayTimeStatusRenderer": {
+                                  "text": {
+                                    "simpleText": "26:50"
+                                  },
+                                  "style": "DEFAULT"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "trackingParams": "CCgQwJcBGAAiEwjr-72psI2YAxXiuYoHHR7ADL4="
+                      }
+                    },
+                    {
+                      "compactInfocardRenderer": {
+                        "content": {
+                          "mediaLockupRenderer": {
+                            "title": {
+                              "simpleText": "GamersNexus Official Store"
+                            },
+                            "subtitle": {
+                              "simpleText": "Visit the store!"
+                            },
+                            "thumbnailDetails": {
+                              "thumbnails": [
+                                {
+                                  "url": "https://i.ytimg.com/an/jHT4iHJxzOI/10074445074185957738_hq.jpg?v=6af8c118",
+                                  "width": 112,
+                                  "height": 64
+                                },
+                                {
+                                  "url": "https://i.ytimg.com/an/jHT4iHJxzOI/10074445074185957738_hq.jpg?v=6af8c118",
+                                  "width": 224,
+                                  "height": 128
+                                }
+                              ]
+                            },
+                            "endpoint": {
+                              "urlEndpoint": {
+                                "url": "https://www.youtube.com/redirect?event=infocard&redir_token=QUlxb01IYUoxY1pZel9yaFdwaU8xay15Y0NpZXxBQnJ0Njlud1ZZOXpmcmg4OHpiMGJIWS02cmJfOFRDTy10Zkh3dUlZWFNOakk5R0tnYUFNTDYzalp3SC1RN0M2Ty1zMDYyTEtPYWRFLWpMcFhURXEtTGpxYWNUenhWYmVKY3Nt&q=https%3A%2F%2Fstore.gamersnexus.net%2F",
+                                "target": "TARGET_NEW_WINDOW"
+                              }
+                            },
+                            "trackingParams": "CCcQ1TYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                            "enableSubtitleLaunchIcon": true,
+                            "uiTweaks": {
+                              "useZeroPadding": true,
+                              "thumbnailWidth": 112,
+                              "thumbnailHeight": 62.99567
+                            },
+                            "maxLinesTitle": 2,
+                            "maxLinesSubtitle": 1,
+                            "disableEndpoint": true
+                          }
+                        },
+                        "trackingParams": "CCYQvJcBGAEiEwjr-72psI2YAxXiuYoHHR7ADL4="
+                      }
+                    },
+                    {
+                      "compactInfocardRenderer": {
+                        "content": {
+                          "mediaLockupRenderer": {
+                            "title": {
+                              "simpleText": "Get more from GamersNexus on Patreon"
+                            },
+                            "subtitle": {
+                              "simpleText": "Visit our Patreon page!"
+                            },
+                            "thumbnailDetails": {
+                              "thumbnails": [
+                                {
+                                  "url": "https://i.ytimg.com/an/jHT4iHJxzOI/10074445074185960919_hq.jpg?v=6af8c119",
+                                  "width": 112,
+                                  "height": 64
+                                },
+                                {
+                                  "url": "https://i.ytimg.com/an/jHT4iHJxzOI/10074445074185960919_hq.jpg?v=6af8c119",
+                                  "width": 224,
+                                  "height": 128
+                                }
+                              ]
+                            },
+                            "endpoint": {
+                              "urlEndpoint": {
+                                "url": "https://www.youtube.com/redirect?event=infocard&redir_token=QUlxb01IWXVjQjlMSzktZE1IRUY1ck5Wbjc4VHxBQnJ0NjlrQW5pRm5EeWs3S1BXUzljV0lBZnZmb0VXWUJnX0pDTzRpZ3JXSEEtdGZZcV9JU1lHWDNfN3FGVXIxaDQ3OFJyRDlVelJHZmNzNG5ueTBCWVdHbmh2dDB3MlEzR3Rs&q=https%3A%2F%2Fwww.patreon.com%2Fgamersnexus",
+                                "target": "TARGET_NEW_WINDOW"
+                              }
+                            },
+                            "trackingParams": "CCUQ1TYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                            "enableSubtitleLaunchIcon": true,
+                            "uiTweaks": {
+                              "useZeroPadding": true,
+                              "thumbnailWidth": 112,
+                              "thumbnailHeight": 62.99567
+                            },
+                            "maxLinesTitle": 2,
+                            "maxLinesSubtitle": 1,
+                            "disableEndpoint": true
+                          }
+                        },
+                        "trackingParams": "CCQQvJcBGAIiEwjr-72psI2YAxXiuYoHHR7ADL4="
+                      }
+                    },
+                    {
+                      "compactInfocardRenderer": {
+                        "content": {
+                          "structuredDescriptionVideoLockupRenderer": {
+                            "thumbnail": {
+                              "thumbnails": [
+                                {
+                                  "url": "https://yt3.ggpht.com/proxy/ZeAy5Fe7c4ZVShHEOhJhZvn138qu0QE5_E9iwfnrU9eKBkhES0asoOEYdooT7ZO8ljf-FQFNgTi9stq68KgKgqhz=s112-w112-h64-nd",
+                                  "width": 112,
+                                  "height": 64
+                                },
+                                {
+                                  "url": "https://yt3.ggpht.com/proxy/ZeAy5Fe7c4ZVShHEOhJhZvn138qu0QE5_E9iwfnrU9eKBkhES0asoOEYdooT7ZO8ljf-FQFNgTi9stq68KgKgqhz=s224-w224-h128-nd",
+                                  "width": 224,
+                                  "height": 128
+                                }
+                              ]
+                            },
+                            "title": {
+                              "simpleText": "Own Everything & Be Happy, Ep. 1 | DIY Router Guide"
+                            },
+                            "shortBylineText": {
+                              "simpleText": "by Gamers Nexus"
+                            },
+                            "metadataDetails": {
+                              "simpleText": "914K views · 3 weeks ago"
+                            },
+                            "navigationEndpoint": {
+                              "watchEndpoint": {
+                                "videoId": "sJidlu3pPb4"
+                              }
+                            },
+                            "lengthText": {
+                              "simpleText": "58:23"
+                            },
+                            "trackingParams": "CCMQ1TYiEwjr-72psI2YAxXiuYoHHR7ADL4=",
+                            "isLiveVideo": false,
+                            "disableNavigationEndpoint": true,
+                            "maxLinesTitle": 2,
+                            "maxLinesShortBylineText": 1,
+                            "maxLinesMetadataDetails": 1,
+                            "thumbnailWidth": 112,
+                            "aspectRatio": 1.7779,
+                            "thumbnailOverlays": [
+                              {
+                                "thumbnailOverlayTimeStatusRenderer": {
+                                  "text": {
+                                    "simpleText": "58:23"
+                                  },
+                                  "style": "DEFAULT"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "trackingParams": "CCIQwJcBGAMiEwjr-72psI2YAxXiuYoHHR7ADL4="
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "engagementPanelSectionListRenderer": {
+        "panelIdentifier": "engagement-panel-searchable-transcript",
+        "content": {}
+      }
+    }
+  ]
+}

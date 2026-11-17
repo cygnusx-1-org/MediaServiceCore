@@ -7,6 +7,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.DislikeData;
 import com.liskovsoft.mediaserviceinterfaces.data.EndScreenItem;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackReasons;
+import com.liskovsoft.mediaserviceinterfaces.data.InfoCardItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
@@ -113,6 +114,10 @@ public interface MediaItemService {
      * it. Empty when the video has none.
      */
     Observable<List<EndScreenItem>> getEndScreenObserve(String videoId);
+    /**
+     * The cards the creator put partway through the video (see InfoCardItem), in no particular order. Empty when it has none.
+     */
+    Observable<List<InfoCardItem>> getInfoCardsObserve(String videoId);
     Observable<List<SponsorSegment>> getSponsorSegmentsObserve(String videoId);
     Observable<List<SponsorSegment>> getSponsorSegmentsObserve(String videoId, Set<String> categories);
     Observable<DeArrowData> getDeArrowDataObserve(String videoId);

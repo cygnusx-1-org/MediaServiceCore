@@ -214,10 +214,10 @@ public class EndScreenElement implements EndScreenItem {
 
     /**
      * A link goes through YouTube's redirect page, e.g. https://www.youtube.com/redirect?event=endscreen&redir_token=...&q=https%3A%2F%2Fexample.com%2F:
-     * the site is its q parameter
+     * the site is its q parameter. An info card's link goes through it too (see InfoCardLockup).
      */
     @Nullable
-    static String unwrapRedirect(@Nullable String url) {
+    public static String unwrapRedirect(@Nullable String url) {
         if (url == null || !url.contains(REDIRECT_URL)) {
             return url;
         }
