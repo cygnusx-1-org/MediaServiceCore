@@ -45,9 +45,11 @@ public interface TrackingApi {
      * Updates watch time. Doesn't work as standalone method!<br/>
      * In order to work it should be invoked after {@link #createWatchRecordShort}<br/>
      * Minimal watch time url:<br/>
-     * https://www.youtube.com/api/stats/watchtime?ns=yt&cpn=gTdSeB6WpIvUxxnP&docid=AgqZaq_IQ8k&ver=2&cmt=71.572&ei=90Q5X5-bOIGZ7ATGuabYAQ&final=1&len=671.0&st=71.572&et=71.572
+     * https://www.youtube.com/api/stats/watchtime?ns=yt&cpn=gTdSeB6WpIvUxxnP&docid=AgqZaq_IQ8k&ver=2&cmt=71.572&ei=90Q5X5-bOIGZ7ATGuabYAQ&final=1&len=671.0&st=71.572&et=71.572<br/>
+     * Each ends the session (final=1): the player request carries the cpn, and for such a playback YouTube keeps the resume position
+     * only of a ping that ends it. Without it, nothing or an earlier ping's position was kept. A later one still moves the position.
      */
-    @GET("https://www.youtube.com/api/stats/watchtime?ns=yt&ver=2")
+    @GET("https://www.youtube.com/api/stats/watchtime?ns=yt&ver=2&final=1")
     Call<WatchTimeEmptyResult> updateWatchTime(
             @Query("docid") String videoId,              // Video Id
             @Query("len") float lengthSec,               // e.g. 526.91
