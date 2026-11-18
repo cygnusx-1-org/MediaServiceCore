@@ -22,7 +22,6 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.VideoInfoService;
 import io.reactivex.Observable;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class YouTubeAccountManager {
     private static final String TAG = YouTubeAccountManager.class.getSimpleName();
@@ -37,36 +36,9 @@ public class YouTubeAccountManager {
     private final YouTubeSignInService mSignInService;
     private final WeakHashSet<OnAccountChange> mListeners = new WeakHashSet<>();
     /**
-     * Fix ConcurrentModificationException when using {@link #getSelectedAccount()}
+     * In the same order on every device and every start (see AccountList)
      */
-    private final List<Account> mAccounts = new CopyOnWriteArrayList<Account>() {
-        @Override
-        public boolean add(Account account) {
-            if (account == null) {
-                return false;
-            }
-
-            mergeAndRemove(account);
-
-            return super.add(account);
-        }
-
-        private void mergeAndRemove(Account account) {
-            int index = indexOf(account);
-
-            if (index != -1) {
-                Account matched = get(index);
-
-                // Don't remove these lines or you won't be able to enter to the account.
-                while (contains(account)) {
-                    remove(account);
-                }
-
-                // Do merge after the remove not before!!!
-                ((YouTubeAccount) account).merge(matched);
-            }
-        }
-    };
+    private final List<Account> mAccounts = new AccountList();
 
     private YouTubeAccountManager(YouTubeSignInService signInService) {
         mSignInService = signInService;
