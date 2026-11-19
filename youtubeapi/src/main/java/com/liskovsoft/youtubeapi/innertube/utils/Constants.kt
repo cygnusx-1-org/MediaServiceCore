@@ -149,6 +149,18 @@ internal object CLIENTS {
         REFERER = "https://www.youtube.com/tv"
     )
 
+    // A Samsung Tizen TV's: it supports auth, and still gets DASH formats
+    val TV_SAMSUNG = CLIENT(
+        NAME = "TVHTML5",
+        VERSION = "5.20260707",
+        OS_NAME = "Tizen",
+        OS_VERSION = "2.4.0",
+        DEVICE_MAKE = "Samsung",
+        DEVICE_MODEL = "UKS9800",
+        USER_AGENT = "Mozilla/5.0 (SMART-TV; Linux; Tizen 2.4.0) AppleWebKit/538.1 (KHTML, like Gecko) Version/2.4.0 TV Safari/538.1",
+        REFERER = "https://www.youtube.com/tv"
+    )
+
     val TV_SIMPLY = CLIENT(
         NAME = "TVHTML5_SIMPLY",
         VERSION = "1.0",

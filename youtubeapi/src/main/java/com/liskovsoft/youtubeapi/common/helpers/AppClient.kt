@@ -74,7 +74,10 @@ internal enum class AppClient(
     VISIONOS(CLIENTS.VISIONOS.NAME, CLIENTS.VISIONOS.VERSION, CLIENT_NAME_IDS[CLIENTS.VISIONOS.NAME],
         userAgent = CLIENTS.VISIONOS.USER_AGENT!!, referer = null, postData = String.format(POST_DATA_IOS_MODEL, CLIENTS.VISIONOS.DEVICE_MODEL, CLIENTS.VISIONOS.OS_VERSION)),
     INITIAL(WEB),
-    GEO(WEB);
+    GEO(WEB),
+    // Last, so the others keep their ordinals: the client in use is saved as one (see VideoInfoService#persistVideoInfoType)
+    TV_SAMSUNG(CLIENTS.TV_SAMSUNG.NAME, CLIENTS.TV_SAMSUNG.VERSION, CLIENT_NAME_IDS[CLIENTS.TV_SAMSUNG.NAME],
+        userAgent = CLIENTS.TV_SAMSUNG.USER_AGENT!!, referer = CLIENTS.TV_SAMSUNG.REFERER, postDataBrowse = POST_DATA_BROWSE_TV);
 
     constructor(baseClient: AppClient, clientVersion: String? = null, userAgent: String? = null, postData: String? = null, postDataBrowse: String? = null):
             this(baseClient.clientName, clientVersion ?: baseClient.clientVersion, baseClient.innerTubeName,
@@ -108,9 +111,9 @@ internal enum class AppClient(
     val baseTemplate by lazy { String.format(JSON_POST_DATA_BASE, clientName, clientVersion, clientScreen, userAgent,
         (postDataBrowser ?: "") + (postData ?: "")) }
 
-    val isAuthSupported by lazy { Helpers.equalsAny(this, TV, TV_LEGACY, TV_EMBED, TV_KIDS, TV_DOWNGRADED) } // NOTE: TV_SIMPLY doesn't support auth
+    val isAuthSupported by lazy { Helpers.equalsAny(this, TV, TV_LEGACY, TV_EMBED, TV_KIDS, TV_DOWNGRADED, TV_SAMSUNG) } // NOTE: TV_SIMPLY doesn't support auth
     val isWebPotRequired by lazy { Helpers.equalsAny(this, WEB, MWEB, WEB_EMBED, WEB_SAFARI, INITIAL, GEO) }
-    val isTvPotRequired by lazy { Helpers.equalsAny(this, TV) }
+    val isTvPotRequired by lazy { Helpers.equalsAny(this, TV, TV_SAMSUNG) }
     // TODO: remove after implement SABR
     val isPlaybackBroken by lazy { Helpers.equalsAny(this, INITIAL, WEB, WEB_CREATOR, WEB_MUSIC, WEB_SAFARI, ANDROID_VR, GEO, MWEB, WEB_EMBED, TV_EMBED, IOS) }
     val isReelClient by lazy { Helpers.equalsAny(this, ANDROID_REEL) }

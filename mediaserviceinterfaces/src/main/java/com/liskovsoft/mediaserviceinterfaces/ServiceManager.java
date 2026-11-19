@@ -10,6 +10,10 @@ public interface ServiceManager {
     NotificationsService getNotificationsService();
     ChannelGroupService getChannelGroupService();
     void invalidateCache();
+    /**
+     * The formats kept are dropped: the next fetch of a video asks for them again (e.g. a reload that would get the same URLs)
+     */
+    void invalidateFormatCache();
     void refreshCacheIfNeeded();
     /**
      * In the background: gets ready what the first video's formats wait for (e.g. while the user browses). With one running already,

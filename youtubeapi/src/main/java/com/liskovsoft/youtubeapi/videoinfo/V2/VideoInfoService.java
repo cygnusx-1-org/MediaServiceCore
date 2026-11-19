@@ -45,6 +45,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
     // The default order. The one chosen in the settings is the one used (see getVideoInfoTypes)
     private final static AppClient[] VIDEO_INFO_TYPE_LIST = {
             AppClient.TV, // Supports auth. Fixes "please sign in" bug! (the best for Premium users)
+            AppClient.TV_SAMSUNG, // Supports auth. Still contains DASH formats
             AppClient.VISIONOS, // no url formats
             AppClient.TV_DOWNGRADED, // works with old UAs like old Cobalt and old Xbox (non-tcl players)
             AppClient.WEB, // Fix video clip blocked in current location
