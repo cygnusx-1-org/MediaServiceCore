@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo
 import com.liskovsoft.sharedutils.mylogger.Log
+import com.liskovsoft.sharedutils.okhttp.RequestScope
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
 import com.liskovsoft.sharedutils.rx.RxHelper
 import com.liskovsoft.youtubeapi.app.AppService
@@ -127,6 +128,11 @@ internal object FormatInfoWrapper {
     @Volatile
     private var mLockTakenMs: Long = -1
     /**
+     * Of the task the holder runs in, null for none: cancelled, nobody waits for what it fetches (see getLockHolder)
+     */
+    @Volatile
+    private var mLockHolderScope: RequestScope? = null
+    /**
      * After a fetch, the poToken that expires soon is made again this much later: its WebView runs on the main thread, so it's made
      * once the video plays, not while it starts (see refreshPoTokenLater)
      */
@@ -138,6 +144,8 @@ internal object FormatInfoWrapper {
             return null
 
         val fetch = FetchStages.open(videoId)
+        // Of the task that asks for them, cancelled when its observer is disposed (e.g. the video was left before they came)
+        val scope = RequestScope.current()
 
         try {
             val lockWait = FetchStages.begin("lock wait")
@@ -147,6 +155,12 @@ internal object FormatInfoWrapper {
 
             return withLock("$LOCK_FETCH $videoId") {
                 lockWait.end(holder)
+
+                // Nobody waits for them any more: not fetched, the lock goes to the next fetch at once. A video opened as the app started
+                // waited behind "fetch -MFigmQupa8, 23444 ms in", a video no start was recorded for (CGHFJ3BZ).
+                if (scope?.isCancelled() == true)
+                    return null
+
                 selectPlaybackFormatInfo(videoId, clickTrackingParams)
             }
         } finally {
@@ -196,25 +210,31 @@ internal object FormatInfoWrapper {
         // It's reentrant: the outer holder's again after
         val outerHolder = mLockHolder
         val outerTakenMs = mLockTakenMs
+        val outerScope = mLockHolderScope
         mLockHolder = holder
         mLockTakenMs = SystemClock.elapsedRealtime()
+        mLockHolderScope = RequestScope.current()
 
         try {
             block()
         } finally {
             mLockHolder = outerHolder
             mLockTakenMs = outerTakenMs
+            mLockHolderScope = outerScope
         }
     }
 
     /**
-     * What holds the fetches' lock and since when, e.g. "fetch abc123, 1240 ms in". Null when nothing does.
+     * What holds the fetches' lock and since when, e.g. "fetch abc123, 1240 ms in", with "abandoned" after its name when nobody waits
+     * for what it fetches any more (its task was cancelled, e.g. the video was left), as a fetch can't be stopped once it began. Null when
+     * nothing does.
      */
     private fun getLockHolder(): String? {
         val holder = mLockHolder ?: return null
         val takenMs = mLockTakenMs
+        val name = if (mLockHolderScope?.isCancelled() == true) "$holder, abandoned" else holder
 
-        return if (takenMs >= 0) "$holder, ${SystemClock.elapsedRealtime() - takenMs} ms in" else holder
+        return if (takenMs >= 0) "$name, ${SystemClock.elapsedRealtime() - takenMs} ms in" else name
     }
 
     /**
