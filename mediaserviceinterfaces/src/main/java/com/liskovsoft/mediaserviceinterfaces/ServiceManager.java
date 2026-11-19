@@ -28,11 +28,6 @@ public interface ServiceManager {
      * player, which is slow on a slow device. A warm-up refreshes it (see #warmUpPlayback).
      */
     boolean isPlayerDataToRefresh();
-    /**
-     * The app's UI is hidden: what's only kept to be quick again is let go, so the process is a smaller target for the low memory
-     * killer (e.g. while a foreground service keeps it). Any thread.
-     */
-    void trimMemory();
     void switchNextClient();
     void switchNextClientNow();
     void resetClient();

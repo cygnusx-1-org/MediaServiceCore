@@ -9,6 +9,7 @@ import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenGenerator
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenResult
 import com.liskovsoft.youtubeapi.app.potokennp2.core.describePoTokenFailure
 import com.liskovsoft.youtubeapi.app.potokennp2.generators.TvPoTokenWebView4
+import com.liskovsoft.youtubeapi.app.potokennp2.misc.runOnMainThread
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.runOnMainThreadSync
 import com.liskovsoft.youtubeapi.common.helpers.AppClient
 import com.liskovsoft.youtubeapi.service.internal.KeptTokens
@@ -51,7 +52,6 @@ internal object TvPoTokenProvider {
      * Of reset, and of the clearing before one is made: a token being made when it's reset isn't kept (see useUnlessReset)
      */
     private val resets = AtomicInteger()
-    private var generator: PoTokenGenerator? = null
     /**
      * Read without the lock too: a valid one is taken while the next one is made (see getPoToken)
      */
@@ -210,33 +210,17 @@ internal object TvPoTokenProvider {
 
             // One BotGuard didn't trust isn't swapped in for the one in use, still valid: made again later (see mintTrusted)
             if (!isTrusted(made.result.playerRequestPoToken)) {
-                runOnMainThreadSync(3) { made.generator.close() }
                 refreshFailedMs = System.currentTimeMillis()
                 return
             }
 
-            // The new one, unless it's kept: then the one it replaces (none when that was released)
-            val unused = mutableListOf(made.generator)
-
             whenIdle {
                 synchronized(lock) {
-                    val old = generator
-
                     // Before it's the result: read without the lock, a result is never newer than this (see taken)
                     refreshedResult = made.result
-
-                    if (useUnlessReset(made, resetsBefore)) {
-                        unused.clear()
-                        old?.let { unused.add(it) }
-                    } else if (old != null && generator !== old) {
-                        // Reset as it was swapped in: the one it replaced is no one's, the reset's release finds none
-                        unused.add(old)
-                    }
+                    useUnlessReset(made, resetsBefore)
                 }
             }
-
-            // Not with the lock: it waits for the main thread
-            unused.forEach { runOnMainThreadSync(3) { it.close() } }
         } catch (e: Exception) {
             refreshFailedMs = System.currentTimeMillis()
             Log.e(TAG, "Could not refresh TV poToken", e)
@@ -244,15 +228,13 @@ internal object TvPoTokenProvider {
     }
 
     /**
-     * Clears all state, including the generator and cached tokens. The next call regenerates everything.
+     * Clears the token made. The next call makes another.
      * Doesn't wait for a token being made, which holds the lock: its BotGuard needs the main thread, where this is called (an account
-     * switch, the player's error fixer), and the app froze (an ANR). That token isn't kept (see useUnlessReset). The generator is closed
-     * off the caller's thread, once the lock is free.
+     * switch, the player's error fixer), and the app froze (an ANR). That token isn't kept (see useUnlessReset).
      */
     fun reset() {
         resets.incrementAndGet()
         clear()
-        RxHelper.runAsync { release() }
     }
 
     /**
@@ -266,17 +248,8 @@ internal object TvPoTokenProvider {
         issuedMs = -1
     }
 
-    /** Frees the generator to reduce memory. Cached values are kept; the generator is recreated on demand. */
-    fun release() {
-        synchronized(lock) {
-            val old = generator
-            generator = null
-            old?.let { runOnMainThreadSync(3) { it.close() } }
-        }
-    }
-
     /**
-     * It's made once, then used till it expires: without its generator too (e.g. one released, or kept by a run before)
+     * It's made once, then used till it expires, without its generator (see closeMinted)
      */
     private fun validResult(): PoTokenResult? = result?.takeIf { !isPotExpired() }
 
@@ -334,12 +307,9 @@ internal object TvPoTokenProvider {
             // What's made before goes, like a reset. A refresh being made isn't swapped in then.
             resetsAfterClear = resets.incrementAndGet()
             clear()
-            release()
         } ?: return null
 
-        if (!useUnlessReset(made, resetsAfterClear)) {
-            runOnMainThreadSync(3) { made.generator.close() }
-        }
+        useUnlessReset(made, resetsAfterClear)
 
         return made.result
     }
@@ -361,7 +331,6 @@ internal object TvPoTokenProvider {
         // Reset as it was kept: its clear may have come before
         if (resets.get() != resetsBefore) {
             clear()
-            generator = null
 
             return false
         }
@@ -369,7 +338,10 @@ internal object TvPoTokenProvider {
         return true
     }
 
-    private class Made(val generator: PoTokenGenerator, val result: PoTokenResult, val livingRoomId: String)
+    /**
+     * @param expirationMs of its generator, closed once it was made (see closeMinted)
+     */
+    private class Made(val result: PoTokenResult, val livingRoomId: String, val expirationMs: Long)
 
     /**
      * @param beforeGenerator what's made before goes before the new generator starts, if it should
@@ -428,8 +400,25 @@ internal object TvPoTokenProvider {
 
         // Log.d(TAG, "TV poToken: livingRoomId=$livingRoomId, pot=$sessionPot, visitor_data=$visitorData")
 
+        val expirationMs = madeGenerator.expirationMs
+        closeMinted(madeGenerator)
+
         // Same session token is used both for the player request and the streaming
-        return Made(madeGenerator, PoTokenResult("", visitorData, sessionPot, sessionPot), livingRoomId)
+        return Made(PoTokenResult("", visitorData, sessionPot, sessionPot), livingRoomId, expirationMs)
+    }
+
+    /**
+     * The generator of the token made isn't kept: the token is used till it expires without it, as one kept by a run before is, and the
+     * next one is made by a new generator. Kept, its WebView's renderer stayed through the playback, 49 MB more on a Fire TV Stick
+     * 4K (upstream's app, 2026-11-19), and its death took the app with it (see onRendererGone). Not waited for: the fetch that made the
+     * token goes on.
+     */
+    private fun closeMinted(generator: PoTokenGenerator) {
+        try {
+            runOnMainThread { generator.close() }
+        } catch (e: PoTokenException) {
+            Log.e(TAG, "Could not close the TV poToken's generator: %s", e.message)
+        }
     }
 
     /**
@@ -478,9 +467,8 @@ internal object TvPoTokenProvider {
     private fun isTrusted(pot: String): Boolean = pot.length <= MAX_TRUSTED_POT_LENGTH
 
     private fun use(made: Made): PoTokenResult {
-        generator = made.generator
         issuedMs = System.currentTimeMillis()
-        expirationMs = made.generator.expirationMs
+        expirationMs = made.expirationMs
         livingRoomPoTokenId = made.livingRoomId
         result = made.result
 

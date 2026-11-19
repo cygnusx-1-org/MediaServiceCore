@@ -12,6 +12,13 @@ internal class BadWebViewException(message: String, cause: Throwable? = null) : 
 
 internal class V8WrapperException(message: String, cause: Exception? = null) : RuntimeException(message, cause)
 
+/**
+ * The renderer of the generator's WebView died: crashed, or killed (e.g. for memory). Not a broken WebView: the next generator gets
+ * a new renderer.
+ */
+internal class RendererGoneException(val didCrash: Boolean) :
+    RuntimeException(if (didCrash) "The WebView's renderer crashed" else "The WebView's renderer was killed")
+
 internal fun buildExceptionForJsError(error: String): Throwable {
     return if (error.contains("SyntaxError"))
         BadWebViewException(error)
@@ -35,6 +42,7 @@ internal fun describePoTokenFailure(error: Throwable): String {
         // A generator that didn't get ready, or a token that didn't come, in time: what it waited for never set (see TvPoTokenWebView4)
         error is UninitializedPropertyAccessException || message.contains("within the specified time") -> "timeout"
         message.contains("BotGuard request key") -> "no request key"
+        error is RendererGoneException -> if (error.didCrash) "renderer crashed" else "renderer killed"
         // A BotGuard request that couldn't connect, e.g. "refused" (see PoTokenWebView#keepInitError)
         else -> ConnectionErrors.describe(error) ?: error.javaClass.simpleName
     }

@@ -1,7 +1,6 @@
 package com.liskovsoft.youtubeapi.app
 
 import com.liskovsoft.googlecommon.common.helpers.ConnectionErrors
-import com.liskovsoft.sharedutils.rx.RxHelper
 import com.liskovsoft.youtubeapi.app.potoken.PoTokenService
 import com.liskovsoft.youtubeapi.app.potokennp2.WebPoTokenProvider
 import com.liskovsoft.youtubeapi.app.potokennp2.TvPoTokenProvider
@@ -287,8 +286,7 @@ internal object PoTokenGate {
         mTvPotRejected = true
         mTvPoToken = null
         KeptTokens.clearTvPoToken()
-        // Off the caller's (main) thread: the generator is closed on the main thread and waited for (see TvPoTokenProvider#release)
-        RxHelper.runAsync { TvPoTokenProvider.reset() }
+        TvPoTokenProvider.reset()
 
         return true
     }
@@ -370,19 +368,12 @@ internal object PoTokenGate {
     }
 
     /**
-     * The TV poToken's generator, a WebView, isn't used once the token is made: the token is used till it expires, and the next one is
-     * made with a new generator (see TvPoTokenProvider#makeNext). The WEB one makes a token for each video. Not on the main thread:
-     * it waits for a token being made, which needs that thread.
+     * The WEB poToken's generator, a WebView kept for the token of each video, isn't used by the TV client. The TV one has none to
+     * release: it's closed once its token is made (see TvPoTokenProvider#closeMinted).
      */
-    @JvmStatic
-    fun releaseUnused() {
-        TvPoTokenProvider.release()
-    }
-
     private fun releaseOtherProviders(client: AppClient) {
-        when {
-            client.isWebPotRequired -> TvPoTokenProvider.release()
-            client.isTvPotRequired -> WebPoTokenProvider.release()
+        if (client.isTvPotRequired) {
+            WebPoTokenProvider.release()
         }
     }
 }

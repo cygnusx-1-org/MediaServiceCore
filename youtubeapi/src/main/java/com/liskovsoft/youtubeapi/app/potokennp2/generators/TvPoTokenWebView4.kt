@@ -16,10 +16,13 @@ import com.liskovsoft.sharedutils.okhttp.OkHttpManager
 import com.liskovsoft.youtubeapi.app.potokennp2.core.BadWebViewException
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenException
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenGenerator
+import com.liskovsoft.youtubeapi.app.potokennp2.core.RendererGoneException
 import com.liskovsoft.youtubeapi.app.potokennp2.core.buildExceptionForJsError
+import com.liskovsoft.youtubeapi.app.potokennp2.misc.destroyBotGuard
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.evaluateJavascriptLegacy
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.hasThermalServiceBug
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.hasUsbServiceBug
+import com.liskovsoft.youtubeapi.app.potokennp2.misc.onRendererGone
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.parseDescrambledChallengeData
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.parseIntegrityTokenData
 import com.liskovsoft.youtubeapi.app.potokennp2.misc.parseLooseJSON
@@ -50,9 +53,18 @@ internal class TvPoTokenWebView4 private constructor(
 ) : PoTokenGenerator {
     private val webView = WebView(context)
     private val poTokenEmitters = mutableListOf<Pair<String, (String) -> Unit>>()
+    @Volatile
     var initError: Throwable? = null
     override var expirationMs: Long = -1
         private set
+    /**
+     * Its renderer died: the WebView can only be destroyed (see destroyBotGuard). Of the main thread, like close.
+     */
+    private var isRendererGone = false
+    /**
+     * Closed by an error, then by its owner: once
+     */
+    private var isClosed = false
 
     //region Initialization
     init {
@@ -86,6 +98,15 @@ internal class TvPoTokenWebView4 private constructor(
                 }
                 return super.onConsoleMessage(m)
             }
+        }
+
+        // Its renderer dying would take the app down with it (see onRendererGone)
+        webView.onRendererGone { didCrash ->
+            isRendererGone = true
+            Log.e(TAG, "The WebView's renderer is gone, crashed: %s", didCrash)
+
+            // What failed before stays the error: the renderer may have died of it
+            if (initError == null) onInitializationErrorCloseAndCancel(RendererGoneException(didCrash)) else close()
         }
     }
 
@@ -329,6 +350,11 @@ internal class TvPoTokenWebView4 private constructor(
     //region Obtaining poTokens
     override fun generatePoToken(identifier: String): String {
         Log.d(TAG, "generatePoToken() called with identifier $identifier")
+
+        // Closed by an error since it was made (e.g. its renderer was killed between two videos): no token would come, its owner
+        // makes another generator
+        initError?.let { throw it }
+
         val latch = CountDownLatch(1)
         lateinit var pot: String
 
@@ -497,7 +523,9 @@ internal class TvPoTokenWebView4 private constructor(
      */
     private fun onInitializationErrorCloseAndCancel(error: Throwable) {
         initError = error
-        popAllPoTokenEmitters()
+        // The tokens being made wake now and throw the error (see generatePoToken), not when their wait runs out: e.g. a renderer
+        // that died while one was made
+        popAllPoTokenEmitters().forEach { (_, emitter) -> emitter("") }
         runOnMainThread {
             close()
             // throw error
@@ -510,16 +538,12 @@ internal class TvPoTokenWebView4 private constructor(
      */
     @MainThread
     override fun close() {
-        webView.clearHistory()
-        // clears RAM cache and disk cache (globally for all WebViews)
-        webView.clearCache(true)
+        if (isClosed) {
+            return
+        }
 
-        // ensures that the WebView isn't doing anything when destroying it
-        webView.loadUrl("about:blank")
-
-        webView.onPause()
-        webView.removeAllViews()
-        webView.destroy()
+        isClosed = true
+        webView.destroyBotGuard(isRendererGone)
     }
     //endregion
 

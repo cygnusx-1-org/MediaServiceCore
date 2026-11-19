@@ -6,9 +6,12 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.ValueCallback
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.annotation.Keep
+import androidx.annotation.MainThread
 import androidx.annotation.RequiresApi
 import com.liskovsoft.sharedutils.mylogger.Log
 import com.liskovsoft.youtubeapi.app.potokennp2.core.PoTokenException
@@ -115,6 +118,49 @@ internal fun WebView.evaluateJavascriptLegacy(script: String, resultCallback: Va
         // NOTE: callbacks not supported. Use jsInterface instead
         loadUrl("javascript:(function() { $script })();")
     }
+}
+
+/**
+ * Tells [onGone] when this WebView's renderer dies, crashed or killed (e.g. for memory), and keeps the app alive. Unhandled, Chromium
+ * takes the app down with it ("Render process's crash wasn't handled by all associated webviews, triggering application crash"): a
+ * native crash, which no crash handler sees. On a Fire TV Stick 4K, a crash of the BotGuard WebView's renderer closed upstream's app
+ * to the launcher within 2 s (2026-11-19, yuliskov/SmartTube#6506). [onGone] runs on the main thread, and the WebView can only be
+ * destroyed after it (see destroyBotGuard). Android 7 has no such callback.
+ */
+internal fun WebView.onRendererGone(onGone: (didCrash: Boolean) -> Unit) {
+    if (Build.VERSION.SDK_INT >= 26) {
+        webViewClient = RendererGoneClient(onGone)
+    }
+}
+
+@RequiresApi(26)
+private class RendererGoneClient(private val onGone: (didCrash: Boolean) -> Unit) : WebViewClient() {
+    // Nullable: a null from the platform would throw here, and the app would die with the renderer after all
+    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+        onGone(detail?.didCrash() ?: true)
+
+        return true
+    }
+}
+
+/**
+ * Releases a generator's WebView. One whose renderer is gone is only destroyed: a load would start another renderer for it.
+ */
+@MainThread
+internal fun WebView.destroyBotGuard(isRendererGone: Boolean) {
+    if (!isRendererGone) {
+        clearHistory()
+        // clears RAM cache and disk cache (globally for all WebViews)
+        clearCache(true)
+
+        // ensures that the WebView isn't doing anything when destroying it
+        loadUrl("about:blank")
+
+        onPause()
+        removeAllViews()
+    }
+
+    destroy()
 }
 
 /**
