@@ -18,12 +18,21 @@ import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.WrapperMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.getItems
 import com.liskovsoft.youtubeapi.next.v2.gen.getContinuationToken
 import com.liskovsoft.youtubeapi.next.v2.gen.getShelves
+import com.liskovsoft.sharedutils.mylogger.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
+private val TAG = BrowseService2::class.java.simpleName
 private const val PLAYLIST_MAX_PAGES = 500 // 15 videos a page on TV. A playlist holds 5000 at most.
+// The pages of a playlist read at the same time (see readPlaylistPagesAtOnce): 1864 videos in 4.8 s rather than 26 s, a few more
+// would crowd the requests of the rows being shown meanwhile (e.g. Home while Watch later is read, see WatchLaterManager)
+private const val PLAYLIST_PAGES_AT_ONCE = 6
 private const val CHANNEL_ID_PREFIX = "UC"
 private const val SHORTS_PLAYLIST_PREFIX = "UUSH" // the uploads playlist of a channel is "UU", its shorts "UUSH"
 private const val VIDEOS_PLAYLIST_PREFIX = "UULF" // its videos, without the shorts and the live streams
@@ -599,13 +608,31 @@ internal open class BrowseService2 {
      * @return null when a page failed, so a partial list is never taken for the whole
      */
     fun getPlaylistItems(channelId: String): List<MediaItem>? {
+        val startTimeMs = System.currentTimeMillis()
         val options = MediaGroupOptions.create(MediaGroup.TYPE_UNDEFINED)
         val browseResult = mBrowseApi.getBrowseResultTV(BrowseApiHelper.getChannelQuery(options.clientTV, channelId))
         val firstPage = RetrofitHelper.get(browseResult) ?: return null
         val result = mutableListOf<MediaItem>()
 
         firstPage.getItems()?.forEach { addPlaylistItem(result, it) }
-        var nextKey = firstPage.getContinuationToken()
+        val nextKey = firstPage.getContinuationToken() ?: return result
+
+        val pagesAtOnce = readPlaylistPagesAtOnce(nextKey, firstPage.getItems()?.size ?: 0, options)
+        val pages = if (pagesAtOnce != null) pagesAtOnce.items else readPlaylistPagesInOrder(nextKey, options)
+
+        Log.d(TAG, "Playlist %s: %s videos in %s ms, %s", channelId, pages?.let { result.size + it.size },
+            System.currentTimeMillis() - startTimeMs, if (pagesAtOnce != null) "${pagesAtOnce.pageCount} pages at once" else "one page after another")
+
+        return pages?.let { result + it }
+    }
+
+    /**
+     * The pages after the first one, one after another
+     * @return null when a page failed
+     */
+    private fun readPlaylistPagesInOrder(key: String, options: MediaGroupOptions): List<MediaItem>? {
+        val result = mutableListOf<MediaItem>()
+        var nextKey: String? = key
 
         // The cap stops a key that never ends
         for (i in 0 until PLAYLIST_MAX_PAGES) {
@@ -620,6 +647,206 @@ internal open class BrowseService2 {
         }
 
         return result
+    }
+
+    /**
+     * A page of a playlist read on its own (see [readPlaylistPagesAtOnce])
+     * @param start the entry it starts at, counted from 0 (the hidden ones too, e.g. a deleted video)
+     * @param size its cards, the ones without a video too
+     * @param end the entry the next page starts at, null for the last page
+     */
+    private class PlaylistPage(val start: Int, val items: List<MediaItem>, val size: Int, val end: Int?, val isUnderstood: Boolean = true) {
+        companion object {
+            // Its continuation, or the next one, isn't understood (see PlaylistCursor)
+            val NOT_UNDERSTOOD = PlaylistPage(0, emptyList(), 0, null, isUnderstood = false)
+        }
+    }
+
+    /**
+     * @param items the videos of the pages after the first one, or null when the thread was interrupted
+     * @param pageCount the pages read, the ones past the last one too
+     */
+    private class PlaylistPagesRead(val items: List<MediaItem>?, val pageCount: Int)
+
+    /**
+     * The pages after the first one, [PLAYLIST_PAGES_AT_ONCE] at a time, rather than each after the one before (about 0.25 s a page).
+     * The continuation of each one is the first one moved to its position (see PlaylistCursor), [pageSize] entries past the one before:
+     * a page shows that many cards, from the entries it doesn't skip (e.g. a deleted video), so it starts by the next one's start at
+     * the latest. The ones read past the last page are left out.
+     * @param pageSize the cards of the first page
+     * @return null when a page failed, a continuation isn't understood, a moved one doesn't start at its position (see [readPlaylistPage]),
+     * or the pages are shorter than the first one (see [joinPlaylistPages]): to be read one page after another
+     */
+    private fun readPlaylistPagesAtOnce(key: String, pageSize: Int, options: MediaGroupOptions): PlaylistPagesRead? {
+        val firstStart = PlaylistCursor.getPosition(key) ?: return null
+
+        if (pageSize <= 0) {
+            return null
+        }
+
+        val pages = ConcurrentHashMap<Int, PlaylistPage>()
+        // The first page without a next one, the first one that failed, and the first one not understood, once they're read.
+        // Only the ones up to the last page count: the ones past it are read while it's not known yet.
+        val lastPage = AtomicInteger(PLAYLIST_MAX_PAGES)
+        val failedPage = AtomicInteger(Int.MAX_VALUE)
+        val notUnderstoodPage = AtomicInteger(Int.MAX_VALUE)
+        val stopPage = { minOf(lastPage.get(), failedPage.get(), notUnderstoodPage.get()) }
+        var pageCount = 0
+
+        try {
+            // Returns once each page launched is read
+            runBlocking {
+                val semaphore = Semaphore(PLAYLIST_PAGES_AT_ONCE)
+
+                // The next page as soon as one is read, until the last one is known
+                while (pageCount < stopPage()) {
+                    semaphore.acquire()
+
+                    if (pageCount >= stopPage()) {
+                        semaphore.release()
+                        break
+                    }
+
+                    val number = ++pageCount
+
+                    launch(Dispatchers.IO) {
+                        try {
+                            val page = readPlaylistPage(key, firstStart + (number - 1) * pageSize, number, options)
+
+                            when {
+                                page == null -> failedPage.accumulateAndGet(number) { first, read -> minOf(first, read) }
+                                !page.isUnderstood -> notUnderstoodPage.accumulateAndGet(number) { first, read -> minOf(first, read) }
+                                else -> {
+                                    pages[number] = page
+
+                                    if (page.end == null) {
+                                        lastPage.accumulateAndGet(number) { last, read -> minOf(last, read) }
+                                    }
+
+                                    // Shorter pages than the first one: stopped at once rather than once all are read (see joinPlaylistPages)
+                                    if (!isJoined(pages[number - 1], page) || !isJoined(page, pages[number + 1])) {
+                                        notUnderstoodPage.accumulateAndGet(number) { first, read -> minOf(first, read) }
+                                    }
+                                }
+                            }
+                        } finally {
+                            semaphore.release()
+                        }
+                    }
+                }
+            }
+        } catch (e: InterruptedException) {
+            // Left: not read, no playlist
+            Thread.currentThread().interrupt()
+            return PlaylistPagesRead(null, pageCount)
+        }
+
+        if (notUnderstoodPage.get() <= lastPage.get()) {
+            Log.d(TAG, "Playlist pages at once: the continuation of page %s isn't understood", notUnderstoodPage.get())
+            return null
+        }
+
+        // Read again one page after another, as before: several requests at once mustn't fail a playlist that can be read
+        if (failedPage.get() <= lastPage.get()) {
+            Log.d(TAG, "Playlist pages at once: page %s failed", failedPage.get())
+            return null
+        }
+
+        val items = joinPlaylistPages(pages, lastPage.get()) ?: return null
+
+        return PlaylistPagesRead(items, pageCount)
+    }
+
+    /**
+     * The first page is the continuation as YouTube wrote it, the others it moved to their position
+     * @param number of the page, the first after the first one being 1
+     * @return null when it failed twice
+     */
+    private fun readPlaylistPage(key: String, start: Int, number: Int, options: MediaGroupOptions): PlaylistPage? {
+        val pageKey = if (number == 1) key else PlaylistCursor.withPosition(key, start, number) ?: return PlaylistPage.NOT_UNDERSTOOD
+
+        // A request of the several at once failing doesn't fail the playlist at once
+        repeat(2) {
+            val continuation = mBrowseApi.getContinuationResultTV(BrowseApiHelper.getContinuationQuery(options.clientTV, pageKey))
+            // A network error (e.g. a timeout) is thrown rather than null (see RetrofitHelper.getResponse)
+            val page = try {
+                RetrofitHelper.get(continuation)
+            } catch (e: IllegalStateException) {
+                Log.d(TAG, "Playlist pages at once: page %s: %s", number, e.message)
+                null
+            } ?: return@repeat
+            val items = mutableListOf<MediaItem>()
+
+            page.getItems()?.forEach { addPlaylistItem(items, it) }
+            val end = page.getContinuationToken()?.let { PlaylistCursor.getPosition(it) ?: return PlaylistPage.NOT_UNDERSTOOD }
+            val size = page.getItems()?.size ?: 0
+
+            // Its cards are of the entries from its start on. One that YouTube read from elsewhere (e.g. as the first one) ends before:
+            // known at once rather than once every page is read, as none would be the last one.
+            if (end != null && end < start + size) {
+                Log.d(TAG, "Playlist pages at once: page %s doesn't start at %s", number, start)
+                return PlaylistPage.NOT_UNDERSTOOD
+            }
+
+            return PlaylistPage(start, items, size, end)
+        }
+
+        return null
+    }
+
+    /**
+     * The page ends where the next one starts or past it, or one of them isn't read yet
+     */
+    private fun isJoined(page: PlaylistPage?, next: PlaylistPage?): Boolean {
+        val end = page?.end ?: return true // the last page or not read
+
+        return next == null || end >= next.start
+    }
+
+    /**
+     * The pages in their order, each video once: a page that skipped entries ends past the next one's start, and the videos of those
+     * entries end it and start the next one
+     * @return null when a page ends before the next one starts (pages shorter than the first one)
+     */
+    private fun joinPlaylistPages(pages: Map<Int, PlaylistPage>, lastPage: Int): List<MediaItem>? {
+        val result = mutableListOf<MediaItem>()
+        var previous: PlaylistPage? = null
+
+        for (number in 1..lastPage) {
+            val page = pages[number] ?: return null
+            var shared = 0
+
+            if (previous != null) {
+                // Only the last page has none
+                val previousEnd = previous.end ?: return null
+
+                if (previousEnd < page.start) {
+                    Log.d(TAG, "Playlist pages at once: page %s ends at %s, before %s", number - 1, previousEnd, page.start)
+                    return null
+                }
+
+                shared = countSharedItems(previous.items, page.items, previousEnd - page.start)
+            }
+
+            result.addAll(page.items.subList(shared, page.items.size))
+            previous = page
+        }
+
+        return result
+    }
+
+    /**
+     * The videos the page before ends with that the page starts with
+     * @param maxCount the entries both pages have: their videos, the hidden ones aside
+     */
+    private fun countSharedItems(previous: List<MediaItem>, items: List<MediaItem>, maxCount: Int): Int {
+        for (count in minOf(maxCount, previous.size, items.size) downTo 1) {
+            if ((0 until count).all { previous[previous.size - count + it].videoId == items[it].videoId }) {
+                return count
+            }
+        }
+
+        return 0
     }
 
     private fun addPlaylistItem(result: MutableList<MediaItem>, item: ItemWrapper?) {
