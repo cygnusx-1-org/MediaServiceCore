@@ -14,6 +14,7 @@ import com.liskovsoft.youtubeapi.common.models.impl.mediaitem.ShuffleMediaItem
 import com.liskovsoft.youtubeapi.next.v2.gen.*
 import com.liskovsoft.youtubeapi.browse.v2.gen.getShelfItems
 import com.liskovsoft.youtubeapi.common.models.impl.NotificationStateImpl
+import com.liskovsoft.youtubeapi.actions.ActionsServiceWrapper
 
 internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNextResult,
                                  private val suggestionsResult: WatchNextResult? = null) : MediaItemMetadata {
@@ -295,7 +296,8 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     }
 
     override fun getLikeStatus(): Int {
-        return likeStatusItem
+        // YouTube tells about the rating given in the app only a while after it's saved
+        return ActionsServiceWrapper.getRecentLikeStatus(videoIdItem) ?: likeStatusItem
     }
 
     override fun getLikeCount(): String? {

@@ -18,31 +18,26 @@ public class ActionsService {
     }
 
     public void setLike(String videoId) {
-        Call<ActionResult> wrapper =
-                mActionsApi.setLike(ActionsApiHelper.getLikeActionQuery(videoId));
-
-        RetrofitHelper.get(wrapper); // ignore result
+        rate(mActionsApi.setLike(ActionsApiHelper.getLikeActionQuery(videoId)));
     }
 
     public void removeLike(String videoId) {
-        Call<ActionResult> wrapper =
-                mActionsApi.removeLike(ActionsApiHelper.getLikeActionQuery(videoId));
-
-        RetrofitHelper.get(wrapper); // ignore result
+        rate(mActionsApi.removeLike(ActionsApiHelper.getLikeActionQuery(videoId)));
     }
 
     public void setDislike(String videoId) {
-        Call<ActionResult> wrapper =
-                mActionsApi.setDislike(ActionsApiHelper.getLikeActionQuery(videoId));
-
-        RetrofitHelper.get(wrapper); // ignore result
+        rate(mActionsApi.setDislike(ActionsApiHelper.getLikeActionQuery(videoId)));
     }
 
     public void removeDislike(String videoId) {
-        Call<ActionResult> wrapper =
-                mActionsApi.removeDislike(ActionsApiHelper.getLikeActionQuery(videoId));
+        rate(mActionsApi.removeDislike(ActionsApiHelper.getLikeActionQuery(videoId)));
+    }
 
-        RetrofitHelper.get(wrapper); // ignore result
+    /**
+     * Throws when YouTube refused the rating or never got it, so that a lost rating isn't taken for a saved one
+     */
+    private static void rate(Call<ActionResult> wrapper) {
+        RetrofitHelper.getWithErrorsStrict(wrapper);
     }
 
     /**
