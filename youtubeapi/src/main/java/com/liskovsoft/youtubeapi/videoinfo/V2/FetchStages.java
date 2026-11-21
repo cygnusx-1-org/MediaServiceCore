@@ -105,12 +105,25 @@ public final class FetchStages {
         private final int mDepth;
         private final long mStartMs;
         private boolean mIsEnded;
+        /**
+         * What it's at while it runs, for a fetch that hangs in it (see {@link #describe}), null for nothing to tell
+         */
+        @Nullable
+        private volatile String mOpenDetail;
 
         private Span(@Nullable Trace trace, String name, int depth, long startMs) {
             mTrace = trace;
             mName = name;
             mDepth = depth;
             mStartMs = startMs;
+        }
+
+        /**
+         * Told before it's ended, e.g. what holds the lock it waits for: a fetch that hangs in it says so (see {@link #peek}). Its end
+         * gives its detail as before. A detail that waits for the warm-up (see {@link #WARM_UP}) shows the warm-up's stages so far under it.
+         */
+        public void describe(@Nullable String detail) {
+            mOpenDetail = detail;
         }
 
         /**
@@ -358,6 +371,22 @@ public final class FetchStages {
         }
     }
 
+    /**
+     * The warm-up's stages since the span that waits for it began, ended or not, nested under it: the ones still going end
+     * {@link Stage#OPEN}
+     */
+    private static void addOpenWarmUpStages(List<Stage> result, Span wait) {
+        for (Stage stage : peek(WARM_UP_KEY)) {
+            if (!stage.isOpen() && stage.endMs < wait.mStartMs) {
+                continue;
+            }
+
+            String detail = stage.detail == null ? WARM_UP : stage.detail + ", " + WARM_UP;
+            result.add(new Stage(stage.name, wait.mTrace.withMark(detail), wait.mDepth + 1 + stage.depth,
+                    Math.max(stage.startMs, wait.mStartMs), stage.endMs));
+        }
+    }
+
     private static synchronized void addOpenSpan(Span span) {
         sOpenSpans.add(span);
     }
@@ -418,11 +447,22 @@ public final class FetchStages {
             result.addAll(stages);
         }
 
+        List<Stage> warmUpStages = new ArrayList<>();
+
         for (Span span : sOpenSpans) {
             if (span.mTrace != null && span.mTrace.videoId.equals(videoId)) {
-                result.add(new Stage(span.mName, null, span.mDepth, span.mStartMs, Stage.OPEN));
+                String detail = span.mOpenDetail;
+                result.add(new Stage(span.mName, span.mTrace.withMark(detail), span.mDepth, span.mStartMs, Stage.OPEN));
+
+                // Waits for the warm-up still: what the warm-up is at, under it (C4JB8CZX: a start given up after 13.5 s in a lock wait
+                // the warm-up's player data held, which said nothing of what it ran)
+                if (isWarmUpWait(detail) && !WARM_UP_KEY.equals(videoId)) {
+                    addOpenWarmUpStages(warmUpStages, span);
+                }
             }
         }
+
+        result.addAll(warmUpStages);
 
         Collections.sort(result, (a, b) -> a.startMs != b.startMs ? Long.compare(a.startMs, b.startMs) : Integer.compare(a.depth, b.depth));
 

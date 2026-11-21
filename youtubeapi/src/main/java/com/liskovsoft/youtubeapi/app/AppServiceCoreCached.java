@@ -158,6 +158,8 @@ class AppServiceCoreCached extends AppServiceCore {
         FetchStages.Span lockWait = FetchStages.begin("lock wait");
         // The warm-up's player data being got
         String holder = FormatInfoWrapper.warmUpDetail(FormatInfoWrapper.WARM_UP_PLAYER_DATA, null);
+        // Before it may wait: a fetch given up in the wait says what it waited for (C4JB8CZX: 13.5 s with no holder named)
+        lockWait.describe(holder);
 
         synchronized (isTcl(client) ? mTclPlayerSync : mWebPlayerSync) {
             lockWait.end(holder);

@@ -433,6 +433,71 @@ public class FetchStagesTest {
     }
 
     /**
+     * A fetch hung in a wait for the warm-up (C4JB8CZX: given up after 13.5 s in the player JS lock): peeked, the wait says what it
+     * waits for, and the warm-up's stages so far are under it, the one it's still in too
+     */
+    @Test
+    public void aWaitStillGoingShowsItsHolderAndTheWarmUpSoFar() throws InterruptedException {
+        java.util.concurrent.CountDownLatch inV8 = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        Thread warmUp = new Thread(() -> FetchStages.runWarmUp(() -> FetchStages.time("player JS load", null, () -> {
+            FetchStages.time("player download", null, () -> mNow.addAndGet(9_000));
+            return FetchStages.time("V8 start", null, () -> {
+                inV8.countDown();
+                try {
+                    release.await();
+                } catch (InterruptedException e) {
+                    throw new IllegalStateException(e);
+                }
+                return null;
+            });
+        })));
+        warmUp.start();
+        inV8.await();
+
+        FetchStages.open("video");
+        FetchStages.Span lockWait = FetchStages.begin("lock wait");
+        lockWait.describe(FetchStages.WARM_UP);
+
+        List<Stage> stages = FetchStages.peek("video");
+
+        release.countDown();
+        warmUp.join();
+        FetchStages.close();
+
+        assertEquals(5, stages.size());
+        assertEquals("lock wait", stages.get(1).name);
+        assertTrue(stages.get(1).isOpen());
+        assertEquals("warm-up", stages.get(1).detail);
+        // The warm-up's, nested under the wait from its start, the one still running open
+        assertEquals("player JS load", stages.get(2).name);
+        assertEquals(2, stages.get(2).depth);
+        assertTrue(stages.get(2).isOpen());
+        assertEquals("player download", stages.get(3).name);
+        assertEquals(3, stages.get(3).depth);
+        assertEquals("warm-up", stages.get(3).detail);
+        assertEquals("V8 start", stages.get(4).name);
+        assertTrue(stages.get(4).isOpen());
+    }
+
+    /**
+     * Described as waiting for something else: none of the warm-up's stages
+     */
+    @Test
+    public void aWaitStillGoingForSomethingElseShowsNoneOfTheWarmUp() {
+        runWarmUp();
+
+        FetchStages.open("video");
+        FetchStages.begin("lock wait").describe("fetch abc");
+
+        List<Stage> stages = FetchStages.peek("video");
+        FetchStages.close();
+
+        assertEquals(2, stages.size());
+        assertEquals("fetch abc", stages.get(1).detail);
+    }
+
+    /**
      * Its player JS load from 1 s to 10.2 s: 9 s downloading, 0.2 s starting V8
      */
     private void runWarmUp() {

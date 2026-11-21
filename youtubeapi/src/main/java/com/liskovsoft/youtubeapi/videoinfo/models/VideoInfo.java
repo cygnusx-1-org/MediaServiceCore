@@ -287,6 +287,13 @@ public class VideoInfo {
     }
 
     /**
+     * The client refused it unless signed in: the video's age, or the session itself (e.g. "Sign in to confirm you're not a bot")
+     */
+    public boolean isLoginRequired() {
+        return STATUS_LOGIN_REQUIRED.equals(mPlayabilityStatus);
+    }
+
+    /**
      * Age restricted video
      */
     public boolean isAgeRestricted() {

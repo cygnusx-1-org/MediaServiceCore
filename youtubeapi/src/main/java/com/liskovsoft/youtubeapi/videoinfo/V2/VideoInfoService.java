@@ -1,6 +1,9 @@
 package com.liskovsoft.youtubeapi.videoinfo.V2;
 
+import android.os.SystemClock;
+
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
@@ -61,6 +64,19 @@ public class VideoInfoService extends VideoInfoServiceBase {
             //AppClient.TV_SIMPLY, // hangs?
             //AppClient.ANDROID_SDK_LESS, // doesn't require pot (hangs on Cronet!)
     };
+    /**
+     * The order's first client answered LOGIN_REQUIRED for this many videos running, each played by a client after it: the session is
+     * refused (e.g. "Sign in to confirm you're not a bot" signed out), not the video (e.g. its age), and the fetches begin at the one
+     * that played (see noteAnswers). One video's refusal is its own: an age-restricted one doesn't move the others.
+     */
+    @VisibleForTesting
+    static final int LOGIN_REFUSALS_TO_SKIP = 2;
+    /**
+     * How long the fetches begin past the refusing client (see LOGIN_REFUSALS_TO_SKIP). Then it's asked again: refused once more, the
+     * skip is back at once.
+     */
+    @VisibleForTesting
+    static final long LOGIN_SKIP_MS = 10 * 60 * 1_000;
     @Nullable
     private AppClient mActualInfoType = null;
     @Nullable
@@ -98,6 +114,16 @@ public class VideoInfoService extends VideoInfoServiceBase {
      */
     private int mInfoTypeResets;
     private final Object mFetchStateLock = new Object();
+    /**
+     * Of the first client's LOGIN_REQUIRED answers (see LOGIN_REFUSALS_TO_SKIP): the fetches of the next video run on other threads
+     */
+    private final Object mLoginSkipLock = new Object();
+    private int mLoginRefusals;
+    @Nullable
+    private String mLoginRefusedVideoId;
+    @Nullable
+    private AppClient mLoginSkipClient;
+    private long mLoginSkipUntilMs;
     /**
      * Of the last video info request on the thread, 0 when it got no response (see firstInfoWith). Per thread: the history's
      * auth info (see getAuthVideoInfo) is fetched while the next video's formats are.
@@ -251,6 +277,8 @@ public class VideoInfoService extends VideoInfoServiceBase {
             span.end(attempt.describe());
 
             if (accepted) {
+                VideoInfo firstAnswer = answers.get(types[0]);
+                noteAnswers(videoId, type, types[0], firstAnswer != null && firstAnswer.isLoginRequired());
                 return result;
             }
 
@@ -309,7 +337,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
      * The client tried first by the next video info request (see firstInfoWith)
      */
     public AppClient getNextClient() {
-        return mNextInfoType != null ? mNextInfoType : getVideoInfoTypes()[0];
+        return getFirstClient(null, getVideoInfoTypes());
     }
 
     /**
@@ -364,7 +392,68 @@ public class VideoInfoService extends VideoInfoServiceBase {
             return picked;
         }
 
-        return mNextInfoType != null ? mNextInfoType : types[0];
+        if (mNextInfoType != null) {
+            return mNextInfoType;
+        }
+
+        AppClient loginSkip = getLoginSkipClient(types);
+
+        return loginSkip != null ? loginSkip : types[0];
+    }
+
+    /**
+     * A video's formats were accepted from a client (see firstInfoWith): whether the order's first one refused the session (see
+     * LOGIN_REFUSALS_TO_SKIP)
+     *
+     * @param isFirstLoginRequired the order's first client was asked for this video and answered LOGIN_REQUIRED
+     */
+    @VisibleForTesting
+    void noteAnswers(String videoId, AppClient accepted, AppClient first, boolean isFirstLoginRequired) {
+        synchronized (mLoginSkipLock) {
+            if (accepted == first) {
+                // It plays again: the refusal is over
+                mLoginRefusals = 0;
+                mLoginRefusedVideoId = null;
+                mLoginSkipClient = null;
+                return;
+            }
+
+            if (!isFirstLoginRequired || Helpers.equals(videoId, mLoginRefusedVideoId)) {
+                return;
+            }
+
+            mLoginRefusedVideoId = videoId;
+
+            if (++mLoginRefusals >= LOGIN_REFUSALS_TO_SKIP) {
+                Log.d(TAG, "%s refused %s videos running with LOGIN_REQUIRED: %s is asked first for %s min", first, mLoginRefusals,
+                        accepted, LOGIN_SKIP_MS / 60_000);
+                mLoginSkipClient = accepted;
+                mLoginSkipUntilMs = SystemClock.elapsedRealtime() + LOGIN_SKIP_MS;
+            }
+        }
+    }
+
+    /**
+     * The client the fetches begin at while the order's first one refuses the session (see noteAnswers), null for none
+     */
+    @Nullable
+    private AppClient getLoginSkipClient(AppClient[] types) {
+        synchronized (mLoginSkipLock) {
+            if (mLoginSkipClient == null || SystemClock.elapsedRealtime() >= mLoginSkipUntilMs
+                    || !Arrays.asList(types).contains(mLoginSkipClient)) {
+                return null;
+            }
+
+            return mLoginSkipClient;
+        }
+    }
+
+    private void clearLoginSkip() {
+        synchronized (mLoginSkipLock) {
+            mLoginRefusals = 0;
+            mLoginRefusedVideoId = null;
+            mLoginSkipClient = null;
+        }
     }
 
     private static final class PickedClient {
@@ -502,6 +591,8 @@ public class VideoInfoService extends VideoInfoServiceBase {
      */
     public void resetClient() {
         resetInfoTypeToDefault();
+        // The new order's first one is asked again, refused or not before
+        clearLoginSkip();
     }
 
     public boolean isRestrictedVideosAllowed() {
