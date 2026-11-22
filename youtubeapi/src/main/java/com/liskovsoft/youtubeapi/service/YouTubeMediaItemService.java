@@ -13,6 +13,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.FeedbackEndpoint;
 import com.liskovsoft.mediaserviceinterfaces.data.FeedbackReasons;
 import com.liskovsoft.mediaserviceinterfaces.data.InfoCardItem;
 import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup;
+import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemMetadata;
@@ -540,6 +541,27 @@ public class YouTubeMediaItemService implements MediaItemService {
      */
     public Observable<Set<String>> getPlaylistTitlesObserve() {
         return RxHelper.fromCallable(() -> PlaylistServiceWrapper.instance().getPlaylistTitles());
+    }
+
+    /**
+     * An entry of the Playlists section that is a playlist kept on this device (its videos are exported from here), not one on YouTube
+     */
+    public boolean isKeptOnDevice(MediaItem playlist) {
+        return PlaylistServiceWrapper.isKeptOnDevice(playlist);
+    }
+
+    /**
+     * A playlist of the add dialog (see getPlaylistsInfoObserve) kept on this device, not one on YouTube
+     */
+    public boolean isKeptOnDevice(PlaylistInfo playlist) {
+        return PlaylistServiceWrapper.isKeptOnDevice(playlist);
+    }
+
+    /**
+     * A row of the Playlists section with the videos of a playlist kept on this device, not of one on YouTube
+     */
+    public boolean isKeptOnDevice(MediaGroup playlist) {
+        return PlaylistServiceWrapper.isKeptOnDevice(playlist);
     }
 
     /**

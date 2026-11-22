@@ -12,6 +12,7 @@ public class YouTubePlaylistInfo implements PlaylistInfo {
     private String mTitle;
     private String mPlaylistId;
     private boolean mIsSelected;
+    private boolean mIsKeptOnDevice;
 
     public static List<PlaylistInfo> from(PlaylistsResult info) {
         if (info == null) {
@@ -43,6 +44,7 @@ public class YouTubePlaylistInfo implements PlaylistInfo {
         info.mTitle = itemGroup.getTitle();
         info.mPlaylistId = String.valueOf(itemGroup.getId());
         info.mIsSelected = isSelected;
+        info.mIsKeptOnDevice = true;
 
         return info;
     }
@@ -70,6 +72,13 @@ public class YouTubePlaylistInfo implements PlaylistInfo {
     @Override
     public int getCurrentIndex() {
         return -1;
+    }
+
+    /**
+     * A playlist kept on this device, not one of YouTube's list
+     */
+    public boolean isKeptOnDevice() {
+        return mIsKeptOnDevice;
     }
 
     public void setSelected(boolean selected) {

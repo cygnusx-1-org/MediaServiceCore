@@ -16,14 +16,31 @@ internal object WatchNextServiceWrapper: WatchNextService() {
             return super.getMetadata(videoId, playlistId, playlistIndex, playlistParams)
         }
 
-        return super.getMetadata(videoId, playlistId, playlistIndex, playlistParams)?.let {
-            if (playlistId != null && it.suggestions?.firstOrNull()?.mediaItems?.firstOrNull()?.playlistId != playlistId) {
-                transformMetadata(it, videoId, playlistId, playlistIndex)
-            } else {
-                it
-            }
-        } ?: transformMetadata(null, videoId, playlistId, playlistIndex)
+        return withCachedPlaylist(super.getMetadata(videoId, playlistId, playlistIndex, playlistParams), videoId, playlistId, playlistIndex)
     }
+
+    /**
+     * The playlist kept on this device in place of YouTube's rows when YouTube doesn't tell about it: a playlist kept here only.
+     * YouTube's own when it tells about the playlist, though its first row might not be the playlist (seen with big playlists and
+     * shuffle). A copy kept here by a YouTube playlist's id, with only the videos added in the app, took that playlist's place
+     * before: it seemed to have one video, and shuffle stopped working (yuliskov/SmartTube#5728). No playlist here has a YouTube
+     * id now (see PlaylistGroupServiceImpl.separated).
+     */
+    internal fun withCachedPlaylist(metadata: MediaItemMetadata?, videoId: String?, playlistId: String?, playlistIndex: Int): MediaItemMetadata? {
+        if (playlistId == null || (metadata != null && isOfPlaylist(metadata, playlistId))) {
+            return metadata
+        }
+
+        return transformMetadata(metadata, videoId, playlistId, playlistIndex)
+    }
+
+    /**
+     * Its first row is the playlist, or it has the playlist's info. Both have the id as it's asked for, e.g. "PL…" or "UU…",
+     * without the "VL" of the playlist opened as a channel.
+     */
+    private fun isOfPlaylist(metadata: MediaItemMetadata, playlistId: String) =
+        metadata.suggestions?.firstOrNull()?.mediaItems?.firstOrNull()?.playlistId == playlistId ||
+            metadata.playlistInfo?.playlistId == playlistId
 
     private fun transformMetadata(metadata: MediaItemMetadata?, videoId: String?, playlistId: String?, playlistIndex: Int) =
         getCachedGroup(playlistId)?.let { cached ->

@@ -46,17 +46,18 @@ class PlaylistOrderTest {
     }
 
     /**
-     * A copy kept on this device has the playlist id as the channel id
+     * A playlist kept on this device titled Watch later (e.g. a copy of it from before) is a playlist of its own: by its title
      */
     @Test
-    fun watchLaterAndLikedCopiesFirstInPlaylistsSection() {
+    fun playlistKeptHereTitledWatchLaterByTitle() {
         val playlists = listOf(
-            item("Arc", "VLPLarc"),
-            item("Liked videos", BrowseApiHelper.LIKED_PLAYLIST),
-            item("Watch later", BrowseApiHelper.WATCH_LATER_PLAYLIST)
+            item("Zoo", "VLPLzoo"),
+            item("Watch later", "p-0123456789abcdef"),
+            item("Watch later", BrowseApiHelper.WATCH_LATER_CHANNEL_ID)
         )
 
-        assertEquals(listOf("Watch later", "Liked videos", "Arc"), PlaylistOrder.sort(playlists).map { it.title })
+        assertEquals(listOf(BrowseApiHelper.WATCH_LATER_CHANNEL_ID, "p-0123456789abcdef", "VLPLzoo"),
+            PlaylistOrder.sort(playlists).map { it.channelId })
     }
 
     /**

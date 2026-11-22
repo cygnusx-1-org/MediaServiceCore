@@ -4,6 +4,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.MediaGroup
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItem
 import com.liskovsoft.youtubeapi.channelfeed.ChannelFeedService
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl
+import com.liskovsoft.youtubeapi.channelgroups.models.ItemGroupImpl
 import com.liskovsoft.youtubeapi.playlist.PlaylistOrder
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService
@@ -89,37 +90,16 @@ internal object BrowseService2Wrapper: BrowseService2() {
         return getCachedPlaylists(super.getMyPlaylists())
     }
 
-    private fun getCachedPlaylists(myPlaylists: MediaGroup?): MediaGroup? {
+    /**
+     * YouTube's playlists and the ones kept on this device, separate playlists also when one of each has one title. Watch later and
+     * Liked videos first, the rest by title (see PlaylistOrder).
+     */
+    internal fun getCachedPlaylists(myPlaylists: MediaGroup?): MediaGroup? {
         val playlistGroups = PlaylistGroupServiceImpl.getPlaylistGroups()
         if (playlistGroups.isNotEmpty()) {
-            val result: MutableList<MediaItem> = mutableListOf()
-            // Pin playlists
-            myPlaylists?.mediaItems?.firstOrNull { it.channelId == BrowseApiHelper.WATCH_LATER_CHANNEL_ID }?.let { result.add(it) } // WatchLater
-            myPlaylists?.mediaItems?.firstOrNull { it.channelId?.startsWith(BrowseApiHelper.LIKED_CHANNEL_ID) ?: false }?.let { result.add(it) } // Liked
-
-            var firstIdx: Int = -1
-            var firstIdxShift: Int = -1
+            val result: MutableList<MediaItem> = myPlaylists?.mediaItems?.toMutableList() ?: mutableListOf()
 
             playlistGroups.forEach { group ->
-                firstIdxShift++
-                // Replace local pl with matched remote one
-                if (myPlaylists?.mediaItems?.isNotEmpty() == true) {
-                    myPlaylists.mediaItems?.firstOrNull {
-                        // Can't match only by playlistId because we have only reloadPageKey
-                        it.title == group.title || it.playlistId == group.id
-                    }?.let {
-                        if (!result.contains(it)) {
-                            result.add(it)
-
-                            if (firstIdx == -1) { // Save idx of the first unpinned playlist (see above)
-                                firstIdx = myPlaylists.mediaItems?.indexOf(it) ?: -1
-                            }
-                        }
-                        return@forEach
-                    }
-                }
-
-                // Add remained local playlists
                 result.add(YouTubeMediaItem().apply {
                     title = group.title
                     cardImageUrl = group.items?.firstOrNull()?.iconUrl ?: group.iconUrl
@@ -128,18 +108,6 @@ internal object BrowseService2Wrapper: BrowseService2() {
                     //reloadPageKey = group.id
                     badgeText = group.badge ?: "${group.items.size} videos"
                 })
-            }
-
-            // Add remained remote playlists
-            myPlaylists?.mediaItems?.forEachIndexed { idx, item ->
-                if (!result.contains(item)) {
-                    // Move newer playlists before
-                    if (idx < firstIdx && result.size > (idx + firstIdxShift)) {
-                        result.add(idx + firstIdxShift, item)
-                    } else {
-                        result.add(item)
-                    }
-                }
             }
 
             return YouTubeMediaGroup(myPlaylists?.type ?: MediaGroup.TYPE_USER_PLAYLISTS).apply {
@@ -162,11 +130,17 @@ internal object BrowseService2Wrapper: BrowseService2() {
         return super.getChannelAsGrid(channelId) ?: getCachedGroup(channelId, MediaGroup.TYPE_CHANNEL_UPLOADS)
     }
 
-    private fun getCachedGroup(reloadPageKey: String?, type: Int): MediaGroup? {
+    /**
+     * A playlist kept on this device, by an id YouTube can't open. The entry of a copy of a YouTube playlist from before (e.g. pinned)
+     * has its YouTube id: the copy is found by the id of its own now (see PlaylistGroupServiceImpl.separated).
+     */
+    internal fun getCachedGroup(reloadPageKey: String?, type: Int): MediaGroup? {
         val group = PlaylistGroupServiceImpl.findPlaylistGroup(reloadPageKey)
+            ?: reloadPageKey?.let { PlaylistGroupServiceImpl.findPlaylistGroup(ItemGroupImpl.playlistCopyId(it)) }
         if (group != null && !group.isEmpty) {
             return YouTubeMediaGroup(type).apply {
                 title = group.title
+                isKeptOnDevice = true
                 mediaItems = group.items?.map {
                     YouTubeMediaItem().apply {
                         title = it.title
@@ -174,7 +148,8 @@ internal object BrowseService2Wrapper: BrowseService2() {
                         cardImageUrl = it.iconUrl
                         videoId = it.videoId
                         channelId = it.channelId
-                        playlistId = reloadPageKey
+                        // Its id now: an edit of the playlist is kept here (see PlaylistServiceWrapper.isCachedPlaylist)
+                        playlistId = group.id
                         badgeText = it.badge
                     }
                 }

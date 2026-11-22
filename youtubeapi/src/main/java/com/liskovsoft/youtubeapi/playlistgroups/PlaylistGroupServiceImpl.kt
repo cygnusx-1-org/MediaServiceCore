@@ -17,7 +17,7 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
     var cachedItem: MediaItem? = null
     /**
      * A playlist kept on this device by an id from before its id came from its title: a number or 12 random characters
-     * (see ServiceHelper.generateRandomId). A YouTube playlist's (a copy of one is keyed by it) never is: it's longer, e.g. PL
+     * (see ServiceHelper.generateRandomId). A YouTube playlist's (a copy of one was keyed by it) never is: it's longer, e.g. PL
      * and 16 or 32 characters, or WL and LL.
      */
     private val RANDOM_ID = Regex("[A-Za-z0-9]{12}|[0-9]+")
@@ -76,20 +76,6 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
     }
 
     @JvmStatic
-    fun createPlaylistGroup(id: String, title: String, iconUrl: String?): ItemGroup {
-        return ItemGroupImpl(id = id, title = title, iconUrl = iconUrl, items = mutableListOf())
-    }
-
-    /**
-     * Keyed by the YouTube playlist id when there is one, so removing that playlist removes this group too
-     */
-    @JvmStatic
-    fun createPlaylistGroup(id: String?, title: String, iconUrl: String?, items: List<Item>): ItemGroup {
-        return if (id != null) ItemGroupImpl(id = id, title = title, iconUrl = iconUrl, items = items.toMutableList())
-            else createPlaylistGroup(title, iconUrl, items)
-    }
-
-    @JvmStatic
     fun getPlaylistGroups(): List<ItemGroup> {
         return mPlaylists
     }
@@ -103,14 +89,6 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
         return mPlaylists.firstOrNull { it.id == id } ?: mPlaylists.firstOrNull { ItemGroupImpl.hasId(it, id) }
     }
 
-    @JvmStatic
-    fun findPlaylistGroupByTitle(title: String?): ItemGroup? {
-        if (title == null)
-            return null
-
-        return mPlaylists.firstOrNull { it.title == title }
-    }
-
     private fun restoreData() {
         val data = MediaServicePrefs.getProfileData(PLAYLIST_GROUP_DATA)
         restoreData(data)
@@ -118,12 +96,13 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
 
     /**
      * A playlist kept on this device by a random id gets its title's (see ItemGroupImpl.normalized): the same playlist on two
-     * devices of an account has one id, so what refers to it, synced from the other device, finds it. The copies of YouTube
-     * playlists keep the YouTube ids.
+     * devices of an account has one id, so what refers to it, synced from the other device, finds it. A copy of a YouTube
+     * playlist, kept by its YouTube id before, is a playlist of this device (see separated).
      */
     private fun restoreData(data: String?) {
         val split = Helpers.splitData(data)
-        val (playlists, changed) = ItemGroupImpl.normalized(Helpers.parseList(split, 0, ItemGroupImpl::fromString),
+        val (groups, separated) = separated(Helpers.parseList(split, 0, ItemGroupImpl::fromString))
+        val (playlists, changed) = ItemGroupImpl.normalized(groups,
             { !RANDOM_ID.matches(it.id.orEmpty()) }) { title, groupOf -> ItemGroupImpl.playlistGroupId(title, groupOf) }
 
         mPlaylists = playlists
@@ -132,9 +111,34 @@ internal object PlaylistGroupServiceImpl : MediaServicePrefs.ProfileChangeListen
             it.onChange = { persistData() }
         }
 
-        if (changed) {
+        if (changed || separated) {
             persistData()
         }
+    }
+
+    /**
+     * The copies of YouTube playlists, made by the app before (of one created, imported, copied to YouTube or saved in the app, or a
+     * video was added to), keyed by the YouTube ids: playlists of this device of their own, apart from the YouTube ones. Edits made
+     * elsewhere never reached them, so they're kept as they are, under ids of their own (see ItemGroupImpl.playlistCopyId): a
+     * YouTube playlist's id never finds one, and two of one title stay two. Without YouTube's video count.
+     * @return the groups, and whether any changed
+     */
+    private fun separated(groups: List<ItemGroup>): Pair<List<ItemGroup>, Boolean> {
+        var changed = false
+
+        val result = groups.map { group ->
+            val id = group.id
+
+            if (id == null || RANDOM_ID.matches(id) || ItemGroupImpl.isTitleId(id)) {
+                group
+            } else {
+                changed = true
+                ItemGroupImpl(ItemGroupImpl.playlistCopyId(id), group.title, group.iconUrl, group.items.toMutableList(),
+                    aliases = ItemGroupImpl.aliasesOf(group))
+            }
+        }
+
+        return Pair(result, changed)
     }
 
     /**

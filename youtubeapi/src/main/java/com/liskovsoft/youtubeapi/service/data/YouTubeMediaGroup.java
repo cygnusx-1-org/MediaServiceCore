@@ -27,6 +27,7 @@ public class YouTubeMediaGroup implements MediaGroup {
     private String mChannelId;
     private String mParams;
     private String mReloadPageKey;
+    private boolean mIsKeptOnDevice;
 
     public YouTubeMediaGroup(int type) {
         mType = type;
@@ -242,6 +243,17 @@ public class YouTubeMediaGroup implements MediaGroup {
     @Override
     public String getReloadPageKey() {
         return mReloadPageKey;
+    }
+
+    /**
+     * The videos of a playlist kept on this device, read from here (see BrowseService2Wrapper)
+     */
+    public boolean isKeptOnDevice() {
+        return mIsKeptOnDevice;
+    }
+
+    public void setKeptOnDevice(boolean keptOnDevice) {
+        mIsKeptOnDevice = keptOnDevice;
     }
 
     @Override

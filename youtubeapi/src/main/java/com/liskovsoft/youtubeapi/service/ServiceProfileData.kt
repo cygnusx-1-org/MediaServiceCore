@@ -62,8 +62,8 @@ object ServiceProfileData {
 
     /**
      * The id the selected account's playlist kept on this device has now, from any id it had: one made before its id came from
-     * its title is found by its old random id too. A copy of a YouTube playlist keeps the YouTube id. Null when no playlist here
-     * has the id.
+     * its title is found by its old random id too. A copy of a YouTube playlist from before has an id of its own, its YouTube id
+     * doesn't find it (see PlaylistGroupServiceImpl.separated). Null when no playlist here has the id.
      */
     @JvmStatic
     fun playlistGroupId(id: String?): String? = PlaylistGroupServiceImpl.findPlaylistGroup(id)?.id

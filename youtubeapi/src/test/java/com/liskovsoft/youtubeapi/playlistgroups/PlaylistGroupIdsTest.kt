@@ -37,25 +37,25 @@ class PlaylistGroupIdsTest {
 
     @Test
     fun newPlaylistGetsItsTitlesId() {
-        val climbing = PlaylistGroupServiceImpl.createPlaylistGroup(null, "Climbing", null, emptyList())
+        val climbing = PlaylistGroupServiceImpl.createPlaylistGroup("Climbing", null, emptyList())
 
         assertEquals("p-acc35f14123a6dca", climbing.id)
-        assertEquals("PLyoutube", PlaylistGroupServiceImpl.createPlaylistGroup("PLyoutube", "Climbing", null, emptyList()).id)
     }
 
     /**
      * The random ids of before become the titles', kept as aliases: what refers to a playlist by its old id still finds it,
-     * after the playlists are read again too. A copy of a YouTube playlist keeps its id, a number id is random too.
+     * after the playlists are read again too. A copy of a YouTube playlist from before is a playlist of this device, with an id of
+     * its own: the YouTube id doesn't find it. A number id is random too.
      */
     @Test
     fun randomIdsBecomeTheTitles() {
         restore(playlist("Ab12Cd34Ef56", "Climbing", "video1"), playlist("PLyoutubeplaylist00", "Music", "video2"),
             playlist("WL", "Watch later", "video3"), playlist("123456789", "Old", "video4"))
 
-        assertEquals(listOf("p-acc35f14123a6dca", "PLyoutubeplaylist00", "WL", ItemGroupImpl.playlistGroupId("Old") { null }),
-            PlaylistGroupServiceImpl.getPlaylistGroups().map { it.id })
+        assertEquals(listOf("p-acc35f14123a6dca", ItemGroupImpl.playlistCopyId("PLyoutubeplaylist00"), ItemGroupImpl.playlistCopyId("WL"),
+            ItemGroupImpl.playlistGroupId("Old") { null }), PlaylistGroupServiceImpl.getPlaylistGroups().map { it.id })
         assertEquals("p-acc35f14123a6dca", ServiceProfileData.playlistGroupId("Ab12Cd34Ef56"))
-        assertEquals("PLyoutubeplaylist00", ServiceProfileData.playlistGroupId("PLyoutubeplaylist00"))
+        assertNull(ServiceProfileData.playlistGroupId("PLyoutubeplaylist00"))
         assertNull(ServiceProfileData.playlistGroupId("PLunknown"))
 
         restore(*PlaylistGroupServiceImpl.getPlaylistGroups().toTypedArray())
@@ -74,6 +74,7 @@ class PlaylistGroupIdsTest {
         assertTrue(PlaylistServiceWrapper.isCachedPlaylist("p-acc35f14123a6dca"))
         assertTrue(PlaylistServiceWrapper.isCachedPlaylist("Ab12Cd34Ef56"))
         assertFalse(PlaylistServiceWrapper.isCachedPlaylist("PLyoutubeplaylist00"))
+        assertTrue(PlaylistServiceWrapper.isCachedPlaylist(ItemGroupImpl.playlistCopyId("PLyoutubeplaylist00")))
         assertFalse(PlaylistServiceWrapper.isCachedPlaylist("p-0000000000000000"))
     }
 

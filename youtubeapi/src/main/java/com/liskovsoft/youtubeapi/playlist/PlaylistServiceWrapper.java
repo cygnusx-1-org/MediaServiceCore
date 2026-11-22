@@ -22,6 +22,7 @@ import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo;
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistFile;
 import com.liskovsoft.youtubeapi.playlistgroups.PlaylistGroupServiceImpl;
 import com.liskovsoft.youtubeapi.service.YouTubeSignInService;
+import com.liskovsoft.youtubeapi.service.data.YouTubeMediaGroup;
 import com.liskovsoft.youtubeapi.service.internal.MediaServicePrefs;
 
 import java.util.ArrayList;
@@ -36,7 +37,6 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
     private static final String TAG = PlaylistServiceWrapper.class.getSimpleName();
     private static final int LOCAL_PLAYLIST_ID_MAX_LENGTH = 12; // ItemGroupImpl GROUP_ID_LENGTH
     private static PlaylistServiceWrapper sInstance;
-    private @Nullable List<PlaylistInfo> mCachedPlaylistInfos;
     private final RecentPlaylistEdits mRecentEdits = new RecentPlaylistEdits();
 
     private PlaylistServiceWrapper() {
@@ -77,8 +77,11 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
             Log.e(TAG, "Can't create the playlist on YouTube: %s", e.getMessage());
             error = e;
         }
-        
-        createCachedPlaylist(playlistId, playlistName, videoId);
+
+        // On YouTube, it's YouTube's only: none is kept here too, a playlist here is another one
+        if (playlistId == null) {
+            createCachedPlaylist(playlistName, videoId);
+        }
 
         // Signed in, the user expects it on YouTube, so the caller has to say it was kept on this device
         if (error != null && YouTubeSignInService.instance().isSigned()) {
@@ -92,17 +95,17 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
      * A playlist kept on this device only, never sent to YouTube
      */
     public void createLocalPlaylist(String playlistName) {
-        createCachedPlaylist(null, playlistName, null);
+        createCachedPlaylist(playlistName, null);
     }
 
-    private static void createCachedPlaylist(@Nullable String playlistId, String playlistName, @Nullable String videoId) {
+    private static void createCachedPlaylist(String playlistName, @Nullable String videoId) {
         MediaItem cachedVideo = PlaylistGroupServiceImpl.cachedItem;
 
         if (videoId == null) {
-            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, playlistName, null, Collections.emptyList());
+            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistName, null, Collections.emptyList());
             PlaylistGroupServiceImpl.addPlaylistGroup(playlist);
         } else if (cachedVideo != null && Helpers.equals(cachedVideo.getVideoId(), videoId)) {
-            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, playlistName, cachedVideo.getCardImageUrl(),
+            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistName, cachedVideo.getCardImageUrl(),
                     Collections.singletonList(ItemImpl.fromMediaItem(cachedVideo)));
             PlaylistGroupServiceImpl.addPlaylistGroup(playlist);
         } else {
@@ -111,7 +114,7 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
             CharSequence subtitle = ytMetadata != null ? ytMetadata.getSecondTitle() : null;
             String badgeText = ytMetadata != null ? ytMetadata.getBadgeText() : null;
             String channelId = ytMetadata != null ? ytMetadata.getChannelId() : null;
-            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, playlistName, null,
+            ItemGroup playlist = PlaylistGroupServiceImpl.createPlaylistGroup(playlistName, null,
                     Collections.singletonList(new ItemImpl(channelId, title, null, videoId, subtitle, badgeText, -1)));
             PlaylistGroupServiceImpl.addPlaylistGroup(playlist);
         }
@@ -119,18 +122,18 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
 
     /**
      * A playlist kept on this device only. Its id comes from its title (see ItemGroupImpl.playlistGroupId), or, made before
-     * that, is a number or 12 random characters (an alias of it then), while a YouTube playlist id (that a copy of one here is
-     * keyed by) is longer, e.g. PL and 16 or 32 characters.
+     * that, is a number or 12 random characters (an alias of it then), while a YouTube playlist id is longer, e.g. PL and 16 or
+     * 32 characters.
      */
     public static boolean isCachedPlaylist(@Nullable String playlistId) {
-        // Adding to Watch later keeps a copy of it here too (see addToCachedPlaylist)
+        // Watch later and Liked videos are YouTube's, though their ids are short
         return playlistId != null && (playlistId.length() <= LOCAL_PLAYLIST_ID_MAX_LENGTH || ItemGroupImpl.isPlaylistTitleId(playlistId))
                 && !Helpers.equalsAny(playlistId, BrowseApiHelper.LIKED_PLAYLIST, BrowseApiHelper.WATCH_LATER_PLAYLIST)
                 && PlaylistGroupServiceImpl.findPlaylistGroup(playlistId) != null;
     }
 
     /**
-     * Creates a playlist kept on this device on YouTube, videos included, and keys the copy here by the new YouTube id
+     * Creates a playlist on YouTube with the videos of a playlist kept on this device. That one stays: they're separate playlists.
      */
     public void copyCachedPlaylist(String playlistId) {
         ItemGroup playlist = PlaylistGroupServiceImpl.findPlaylistGroup(playlistId);
@@ -147,16 +150,12 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
             }
         }
 
-        String newPlaylistId = super.createPlaylist(playlist.getTitle(), videoIds);
-
-        PlaylistGroupServiceImpl.removePlaylistGroup(playlist);
-        PlaylistGroupServiceImpl.addPlaylistGroup(PlaylistGroupServiceImpl.createPlaylistGroup(
-                newPlaylistId, playlist.getTitle(), playlist.getIconUrl(), playlist.getItems()));
+        super.createPlaylist(playlist.getTitle(), videoIds);
     }
 
     /**
-     * The titles of the playlists on YouTube and on this device. A new playlist can't have one: a playlist kept on this device
-     * with the title of a YouTube one is shown as that one (see getCachedPlaylistInfo).
+     * The titles of the playlists on YouTube and on this device. A new playlist can't have one: two playlists of one title can't be
+     * told apart in the lists, though they're separate playlists.
      */
     public Set<String> getPlaylistTitles() {
         Set<String> result = new HashSet<>();
@@ -205,15 +204,37 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
         return PlaylistFile.write(result);
     }
 
+    /**
+     * An entry of the Playlists section that is a playlist kept on this device, its videos read from here: the section gives it its
+     * id as the channel id (see BrowseService2Wrapper). Else one on YouTube, opened as a channel ("VL" + the playlist id).
+     */
+    public static boolean isKeptOnDevice(MediaItem playlist) {
+        return PlaylistGroupServiceImpl.findPlaylistGroup(playlist.getChannelId()) != null;
+    }
+
+    /**
+     * A playlist of the add dialog kept on this device, not one of YouTube's (see getCachedPlaylistInfo)
+     */
+    public static boolean isKeptOnDevice(PlaylistInfo playlist) {
+        return playlist instanceof YouTubePlaylistInfo && ((YouTubePlaylistInfo) playlist).isKeptOnDevice();
+    }
+
+    /**
+     * The videos of a playlist kept on this device, read from here: a row of the Playlists section (see BrowseService2Wrapper)
+     */
+    public static boolean isKeptOnDevice(MediaGroup playlist) {
+        return playlist instanceof YouTubeMediaGroup && ((YouTubeMediaGroup) playlist).isKeptOnDevice();
+    }
+
     private static List<ItemGroup.Item> getPlaylistItems(MediaItem playlist) {
-        // Kept on this device: the Playlists section gives it its id as the channel id (see BrowseService2Wrapper)
+        // Kept on this device (see isKeptOnDevice)
         ItemGroup cachedPlaylist = PlaylistGroupServiceImpl.findPlaylistGroup(playlist.getChannelId());
 
         if (cachedPlaylist != null) {
             return cachedPlaylist.getItems();
         }
 
-        // On YouTube, opened as a channel ("VL" + the playlist id). All of it: a copy kept here has only the videos added in the app.
+        // On YouTube, opened as a channel ("VL" + the playlist id), all of it
         List<MediaItem> videos = playlist.getChannelId() != null && playlist.getChannelId().startsWith("VL") ?
                 BrowseService2Wrapper.INSTANCE.getPlaylistItems(playlist.getChannelId()) : null;
 
@@ -239,8 +260,6 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
         for (Map.Entry<String, ItemGroup> entry : playlists.entrySet()) {
             String title = entry.getKey();
             List<ItemGroup.Item> items = addMetadata(entry.getValue().getItems());
-            String playlistId = null;
-
             if (toYouTube) {
                 List<String> videoIds = new ArrayList<>();
 
@@ -248,11 +267,11 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
                     videoIds.add(item.getVideoId());
                 }
 
-                playlistId = super.createPlaylist(title, videoIds);
+                // YouTube's only: none is kept here too (see createPlaylist)
+                super.createPlaylist(title, videoIds);
+            } else {
+                PlaylistGroupServiceImpl.addPlaylistGroup(PlaylistGroupServiceImpl.createPlaylistGroup(title, null, items));
             }
-
-            // A copy is kept here, keyed by the YouTube id, as for a playlist created in the app (see createCachedPlaylist)
-            PlaylistGroupServiceImpl.addPlaylistGroup(PlaylistGroupServiceImpl.createPlaylistGroup(playlistId, title, null, items));
         }
     }
 
@@ -312,60 +331,24 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
                 info -> BrowseApiHelper.LIKED_PLAYLIST.equals(info.getPlaylistId()));
     }
 
-    private List<PlaylistInfo> getCachedPlaylistInfo(List<PlaylistInfo> playlistsInfos, String videoId) {
-        mCachedPlaylistInfos = playlistsInfos;
+    /**
+     * YouTube's playlists and the ones kept on this device, separate playlists also when one of each has one title. Ordered later
+     * (see getPlaylistsInfo).
+     */
+    List<PlaylistInfo> getCachedPlaylistInfo(List<PlaylistInfo> playlistsInfos, String videoId) {
         List<ItemGroup> playlistGroups = PlaylistGroupServiceImpl.getPlaylistGroups();
-        if (!playlistGroups.isEmpty()) {
-            List<PlaylistInfo> result = new ArrayList<>();
 
-            if (playlistsInfos != null && !playlistsInfos.isEmpty()) {
-                result.add(playlistsInfos.get(0)); // WatchLater
-            }
-
-            int firstIdx = -1;
-            int firstIdxShift = -1;
-
-            for (ItemGroup itemGroup : playlistGroups) {
-                firstIdxShift++;
-                // Replace local pl with remote one
-                if (playlistsInfos != null && !playlistsInfos.isEmpty()) {
-                    PlaylistInfo item = findFirst(playlistsInfos, itemGroup);
-                    if (item != null) {
-                        if (!result.contains(item)) {
-                            result.add(item);
-
-                            if (firstIdx == -1) { // Save for later
-                                firstIdx = playlistsInfos.indexOf(item);
-                            }
-                        }
-                        continue;
-                    }
-                }
-
-                // Add remained local playlists
-                result.add(YouTubePlaylistInfo.from(itemGroup, itemGroup.contains(videoId)));
-            }
-
-            // Add remained remote playlists
-            if (playlistsInfos != null && !playlistsInfos.isEmpty()) {
-                int idx = -1;
-                for (PlaylistInfo info : playlistsInfos) {
-                    idx++;
-                    if (!result.contains(info)) {
-                        // Move newer playlists before
-                        if (idx < firstIdx && result.size() > (idx + firstIdxShift)) {
-                            result.add(idx + firstIdxShift, info);
-                        } else {
-                            result.add(info);
-                        }
-                    }
-                }
-            }
-
-            return result;
+        if (playlistGroups.isEmpty()) {
+            return playlistsInfos;
         }
 
-        return playlistsInfos;
+        List<PlaylistInfo> result = playlistsInfos != null ? new ArrayList<>(playlistsInfos) : new ArrayList<>();
+
+        for (ItemGroup itemGroup : playlistGroups) {
+            result.add(YouTubePlaylistInfo.from(itemGroup, itemGroup.contains(videoId)));
+        }
+
+        return result;
     }
 
     @Override
@@ -385,23 +368,16 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
         addToCachedPlaylist(playlistId, videoId);
     }
 
-    private void addToCachedPlaylist(String playlistId, String videoId) {
+    /**
+     * To the playlist kept on this device of the id, if it's one. A YouTube playlist gets none kept here: before
+     * yuliskov/SmartTube#5728 one with only the videos added in the app took the playlist's place (it seemed to have one video, and
+     * shuffle stopped working). Never to a playlist here of the same title: they're separate playlists.
+     */
+    void addToCachedPlaylist(String playlistId, String videoId) {
         ItemGroup playlistGroup = PlaylistGroupServiceImpl.findPlaylistGroup(playlistId);
 
         if (playlistGroup == null) {
-            String title = findCashedTitle(playlistId);
-
-            if (title == null) {
-                return;
-            }
-
-            // YT playlist id may be changed over time
-            playlistGroup = PlaylistGroupServiceImpl.findPlaylistGroupByTitle(title);
-
-            if (playlistGroup == null) {
-                playlistGroup = PlaylistGroupServiceImpl.createPlaylistGroup(
-                        playlistId, title, (String) null);
-            }
+            return;
         }
 
         MediaItem cachedVideo = PlaylistGroupServiceImpl.cachedItem;
@@ -493,28 +469,6 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
         }
     }
 
-    @Override
-    public void savePlaylist(String playlistId) {
-        super.savePlaylist(playlistId);
-
-        MediaItem cachedList = PlaylistGroupServiceImpl.cachedItem;
-
-        if (cachedList != null && Helpers.equals(cachedList.getPlaylistId(), playlistId)) {
-            PlaylistGroupServiceImpl.addPlaylistGroup(ItemGroupImpl.fromMediaItem(cachedList));
-        }
-    }
-
-    private PlaylistInfo findFirst(List<PlaylistInfo> playlistsInfos, ItemGroup itemGroup) {
-        // Can't match only by playlistId because the id possible may change during the time
-        return Helpers.findFirst(playlistsInfos, item -> Helpers.equals(item.getTitle(), itemGroup.getTitle())
-                || Helpers.equals(item.getPlaylistId(), itemGroup.getId()));
-    }
-
-    private String findCashedTitle(String playlistId) {
-        PlaylistInfo first = Helpers.findFirst(mCachedPlaylistInfos, item -> Helpers.equals(item.getPlaylistId(), playlistId));
-
-        return first != null ? first.getTitle() : null;
-    }
 
     @NonNull
     private static WatchNextService getWatchNextService() {

@@ -3,7 +3,6 @@ package com.liskovsoft.youtubeapi.channelgroups.models
 import com.liskovsoft.googleapi.youtubedata3.impl.ItemMetadata
 import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup
 import com.liskovsoft.mediaserviceinterfaces.data.ItemGroup.Item
-import com.liskovsoft.mediaserviceinterfaces.data.MediaItem
 import com.liskovsoft.sharedutils.helpers.Helpers
 import com.liskovsoft.youtubeapi.channelgroups.ChannelGroupServiceImpl
 import com.liskovsoft.googlecommon.common.helpers.ServiceHelper
@@ -141,6 +140,13 @@ internal data class ItemGroupImpl(
             titleId(PLAYLIST_GROUP_PREFIX, "playlist-group", title, groupOf)
 
         /**
+         * The id of a playlist of this device that was a copy of the YouTube playlist of the id (see PlaylistGroupServiceImpl):
+         * the same on every device, so a copy synced from another is that one
+         */
+        @JvmStatic
+        fun playlistCopyId(youTubePlaylistId: String): String = PLAYLIST_GROUP_PREFIX + hash("playlist-copy\n$youTubePlaylistId")
+
+        /**
          * Made from a title (see subscriptionGroupId), not a random one: a random id has letters and digits only
          */
         @JvmStatic
@@ -242,11 +248,6 @@ internal data class ItemGroupImpl(
             return ItemGroupImpl(
                 playlistId, title, metadata.cardImageUrl, mutableListOf(), metadata.itemCount?.let { "$it videos" }
             )
-        }
-
-        @JvmStatic
-        fun fromMediaItem(mediaItem: MediaItem): ItemGroup {
-            return ItemGroupImpl(mediaItem.playlistId, mediaItem.title, mediaItem.cardImageUrl, mutableListOf(), mediaItem.badgeText)
         }
     }
 }

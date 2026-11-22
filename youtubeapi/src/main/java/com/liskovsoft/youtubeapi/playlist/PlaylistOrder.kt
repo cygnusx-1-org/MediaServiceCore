@@ -18,13 +18,14 @@ internal object PlaylistOrder {
     }
 
     /**
-     * The playlists of the Playlists section. A copy kept on this device has the playlist id as the channel id (see BrowseService2Wrapper).
+     * The playlists of the Playlists section: YouTube's opened as a channel ("VL" + the playlist id). One kept on this device has its
+     * own id (see BrowseService2Wrapper), a playlist of its own also when it's titled Watch later.
      */
     @JvmStatic
     fun sort(playlists: List<MediaItem>): List<MediaItem> {
         return sort(playlists, { it.title },
-            { it.channelId == BrowseApiHelper.WATCH_LATER_CHANNEL_ID || it.channelId == BrowseApiHelper.WATCH_LATER_PLAYLIST },
-            // By the start, as in BrowseService2Wrapper: the id can go on after VLLL
-            { it.channelId?.startsWith(BrowseApiHelper.LIKED_CHANNEL_ID) == true || it.channelId == BrowseApiHelper.LIKED_PLAYLIST })
+            { it.channelId == BrowseApiHelper.WATCH_LATER_CHANNEL_ID },
+            // By the start: the id can go on after VLLL
+            { it.channelId?.startsWith(BrowseApiHelper.LIKED_CHANNEL_ID) == true })
     }
 }
