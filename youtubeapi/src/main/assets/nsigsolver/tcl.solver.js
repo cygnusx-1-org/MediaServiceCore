@@ -1,8 +1,9 @@
 /*!
  * TCL player n-function solver.
  *
- * What it makes of a player is cached under TclChallengeProvider's solverVersion: a change here that changes what it makes (the
- * preprocessed player) changes that version too. One that only makes it faster, with the same output, leaves it.
+ * What it makes of a player (the preprocessed player) is cached under TclChallengeProvider's solverVersion: a change here that leaves
+ * what it made before unusable changes that version too. One that leaves those working (e.g. a faster preprocess, or a pruned output
+ * that answers as the whole one does) keeps it, and the players cached already keep loading.
  */
 var tclSolver = (function (meriyah, astring) {
   'use strict';
@@ -509,7 +510,9 @@ var tclSolver = (function (meriyah, astring) {
 
   // ownNames may be a single name or an array, so multiple entry points can share one visited set.
   // protoMethodsByCtorName: the player's, made once (see buildProtoMethodsIndex, preprocessPlayer)
-  function collectDependencies(entryNodes, ownNames, parsedBaseJs, protoMethodsByCtorName) {
+  // bodies: the extract's, its pieces' function bodies added to it (see makePiece)
+  // Returns each dependency's pieces, in the order they're emitted: a declaration's one, or a constructor's prototype methods'.
+  function collectDependencies(entryNodes, ownNames, parsedBaseJs, protoMethodsByCtorName, bodies) {
     const ownNameSet = new Set(Array.isArray(ownNames) ? ownNames : [ownNames]);
     const visitedNames = new Set();
     const nameToCodeText = new Map();
@@ -543,13 +546,14 @@ var tclSolver = (function (meriyah, astring) {
       const declarationNode = findMethodByName(parsedBaseJs, name);
       if (!declarationNode) return;
 
-      nameToCodeText.set(name, generateCode(declarationNode));
+      // Generated now, before the names it depends on are looked up (a lookup may change the tree, see findMethodByName)
+      nameToCodeText.set(name, [makePiece(declarationNode, generateCode, bodies)]);
       const depNames = undeclaredExcludingOwnNames(declarationNode);
 
       const protoMethodNodes = protoMethodsByCtorName.get(name.trim()) || [];
       if (protoMethodNodes.length) {
         const protoGroupKey = name + "$$proto";
-        nameToCodeText.set(protoGroupKey, protoMethodNodes.map(generateCode).join("\n"));
+        nameToCodeText.set(protoGroupKey, protoMethodNodes.map(node => makePiece(node, generateCode, bodies)));
 
         const protoDepNames = new Set();
         for (const protoMethodNode of protoMethodNodes) {
@@ -583,12 +587,121 @@ var tclSolver = (function (meriyah, astring) {
 
     for (const name of nameToCodeText.keys()) topoSort(name);
 
-    return orderedNames.map(name => nameToCodeText.get(name)).join("\n");
+    return orderedNames.map(name => nameToCodeText.get(name));
   }
 
   function generateCode(node) {
     const raw = astring.generate(node).replace(/;;+\s*$/, ";");
     return ensureVarDeclaration(node, raw);
+  }
+
+  // ---- the preprocessed player's pruning ----
+
+  // In a piece's skeleton, where the body of its function number n goes: "__tclBody<n>__"
+  const BODY_MARK = "__tclBody";
+  const BODY_MARK_PATTERN = /__tclBody(\d+)__/g;
+  // Of the trace of the top-level functions run (see pruneExtract): a global the traced extract marks them in
+  const USED_GLOBAL = "__tclUsed";
+  // Thrown by a function pruned, should it run after all: TclChallengeProvider preprocesses the player again, without pruning
+  const PRUNED_MARK = "tcl-pruned";
+  // Set by a function pruned as it throws, a global: the throw may be caught in the player, and the n it gives wrong. The solve
+  // looks at it after the n-function ran (see TclChallengeProvider, solveFunctionScript), and so does the check of the pruned one.
+  const PRUNED_GLOBAL = "tclPrunedReached";
+  // Of the pruned extract: what its pruned functions call to set PRUNED_GLOBAL and throw. One function, as each of thousands of them
+  // setting it in its own body made the extract a third bigger. Under BODY_MARK, so a player that can be pruned has no such name.
+  const PRUNED_FUNCTION = BODY_MARK + "Pruned";
+  // The url TclChallengeProvider wraps an n-parameter in to solve it (see solveN)
+  const CHALLENGE_URL = "https://www.youtube.com/videoplayback?n=";
+  const N_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+  // The functions of a declaration that are at its top: a function declaration, "var x = function…", "a.b = function…", or those of a
+  // synthetic Program's statements (see findMethodByName)
+  function topLevelFunctionsOf(node) {
+    if (!node) return [];
+    if (node.type === "FunctionDeclaration") return [node];
+    if (node.type === "VariableDeclaration") {
+      return node.declarations.filter(d => d.init?.type === "FunctionExpression").map(d => d.init);
+    }
+    if (node.type === "ExpressionStatement") {
+      const expr = node.expression;
+      return expr?.type === "AssignmentExpression" && expr.right?.type === "FunctionExpression" ? [expr.right] : [];
+    }
+    if (node.type === "Program") return node.body.flatMap(topLevelFunctionsOf);
+    return [];
+  }
+
+  // A declaration of the extract, generated as before (full), and again with the bodies of its top-level functions left out
+  // (skeleton): each one's text goes to bodies, and its number into the skeleton, where it goes. Both made now, from the tree as it is
+  // (see collectDependencies). A declaration with no such function is its text.
+  function makePiece(node, generate, bodies) {
+    const full = generate(node);
+    const functions = topLevelFunctionsOf(node);
+    if (!functions.length) return full;
+
+    const saved = functions.map(fn => fn.body);
+    let skeleton;
+    try {
+      functions.forEach((fn, i) => {
+        fn.body = { type: "Identifier", name: BODY_MARK + (bodies.length + i) + "__" };
+      });
+      skeleton = generate(node);
+    } finally {
+      functions.forEach((fn, i) => {
+        fn.body = saved[i];
+      });
+    }
+    for (const fn of functions) bodies.push(astring.generate(fn.body));
+
+    return { full, skeleton };
+  }
+
+  function pieceText(piece, bodyOf) {
+    if (typeof piece === "string") return piece;
+    return bodyOf ? piece.skeleton.replace(BODY_MARK_PATTERN, (mark, n) => bodyOf(Number(n))) : piece.full;
+  }
+
+  function randomChallenge(length) {
+    let n = "";
+    for (let i = 0; i < length; i++) n += N_ALPHABET[Math.floor(Math.random() * N_ALPHABET.length)];
+    return CHALLENGE_URL + n;
+  }
+
+  // The preprocessed player with the bodies of the top-level functions the n-function doesn't run left out: a fraction of it to compile,
+  // and to run at each solve (TclChallengeProvider makes the n-function anew for each). 155 of 6704 functions ran (2.48 MB to 0.68 MB) on
+  // 6b3d0364, and which ones doesn't depend on the n: on 9 builds the first of 5000 random ones ran all that the 5000 did. So a few find
+  // them, and the pruned one must answer as the whole one does for others, or the whole one is kept.
+  function pruneExtract(extract, nFunction) {
+    if (!extract.canPrune || extract.bodies.length === 0) return extract.full;
+
+    try {
+      const used = new Uint8Array(extract.bodies.length);
+      globalThis[USED_GLOBAL] = used;
+      try {
+        const traced = new Function(extract.render(n => "{" + USED_GLOBAL + "[" + n + "]=1;" + extract.bodies[n].slice(1)))();
+        for (let i = 0; i < 8; i++) traced(randomChallenge(4 + i * 4));
+      } finally {
+        delete globalThis[USED_GLOBAL];
+      }
+
+      const stub = "{throw " + PRUNED_FUNCTION + "();}";
+      const pruned = "function " + PRUNED_FUNCTION + "() { globalThis." + PRUNED_GLOBAL + " = 1; return \"" + PRUNED_MARK + "\"; }\n" +
+        extract.render(n => used[n] ? extract.bodies[n] : stub);
+      try {
+        const prunedFunction = new Function(pruned)();
+        for (let i = 0; i < 16; i++) {
+          const challenge = randomChallenge(2 + i * 2);
+          if (prunedFunction(challenge) !== nFunction(challenge)) return extract.full;
+        }
+        // A pruned one ran, its throw caught in the player, and the n's came out the same all the same
+        if (globalThis[PRUNED_GLOBAL]) return extract.full;
+      } finally {
+        delete globalThis[PRUNED_GLOBAL];
+      }
+
+      return pruned;
+    } catch (e) {
+      return extract.full;
+    }
   }
 
   // Matches "obj[expr[literal]]" — a computed member access whose own index is itself computed
@@ -791,49 +904,62 @@ var tclSolver = (function (meriyah, astring) {
     if (!urlBuilderCtor) throw new Error("Could not locate URL-builder constructor");
     let urlBuilderCtorName = urlBuilderCtor.ctorName;
 
+    // The function bodies of the extract's pieces, by number (see makePiece)
+    const bodies = [];
     const urlBuilderCtorNode = findMethodByName(parsedBaseJs, urlBuilderCtorName);
-    const urlBuilderCtorCode = urlBuilderCtorNode ? generateCode(urlBuilderCtorNode) : "";
+    const urlBuilderCtorPiece = urlBuilderCtorNode ? makePiece(urlBuilderCtorNode, generateCode, bodies) : "";
 
     // Made once: the dependencies' walk takes it too (it was made again there, a pass over the player's body)
     const protoMethodsByCtorName = buildProtoMethodsIndex(parsedBaseJs, globalArray.globalArrayData, globalArray.globalArrayName);
     const urlBuilderProtoMethodNodes = protoMethodsByCtorName.get(urlBuilderCtorName.trim()) || [];
-    const urlBuilderProtoMethodsCode = urlBuilderProtoMethodNodes.map(generateCode).join("\n");
+    const urlBuilderProtoMethodPieces = urlBuilderProtoMethodNodes.map(node => makePiece(node, generateCode, bodies));
 
     // Shared dep walk avoids emitting deps common to both entry points twice.
     const sharedDeps = collectDependencies(
       [nFunctionNode, ...(urlBuilderCtorNode ? [urlBuilderCtorNode] : []), ...urlBuilderProtoMethodNodes],
       [nFunctionName, urlBuilderCtorName],
       parsedBaseJs,
-      protoMethodsByCtorName
+      protoMethodsByCtorName,
+      bodies
     );
+    const nFunctionPiece = makePiece(nFunctionNode, astring.generate, bodies);
 
     // "g" is a namespace object some builds attach methods to (e.g. "g.Foo = function(){}");
     // harmless to predeclare even when unused.
     const globalArrayDecl = `var ${globalArray.globalArrayName} = ${JSON.stringify(globalArray.globalArrayData)};`;
-    let combinedSection =
-      `var g = {};\n${globalArrayDecl}\n${astring.generate(nFunctionNode)}\n` +
-      sharedDeps + "\n" + urlBuilderCtorCode + "\n" + urlBuilderProtoMethodsCode;
-
     let urlParamsInit = "let urlParams = new " + urlBuilderCtorName + "(nValue, true); \n\n";
-    return (
-      "if (typeof globalThis.XMLHttpRequest === 'undefined') { globalThis.XMLHttpRequest = { prototype: {} }; }\n" +
-      "if (typeof location !== 'undefined') { try { location.href = 'https://www.youtube.com/watch?v=yt-dlp-wins'; } catch (e) {} }\n" +
-      combinedSection +
-      "\nvar nFunction=function(nValue) { " + urlParamsInit + "; " + nFunctionName + "(" + nCallArgs + ", urlParams); return urlParams['get']('n') };" +
-      "\nreturn nFunction;"
-    );
+
+    // The extract, with each top-level function's body the one bodyOf gives for its number (see makePiece); as generated without one
+    function render(bodyOf) {
+      const text = piece => pieceText(piece, bodyOf);
+      let combinedSection =
+        `var g = {};\n${globalArrayDecl}\n${text(nFunctionPiece)}\n` +
+        sharedDeps.map(group => group.map(text).join("\n")).join("\n") + "\n" + text(urlBuilderCtorPiece) + "\n" +
+        urlBuilderProtoMethodPieces.map(text).join("\n");
+
+      return (
+        "if (typeof globalThis.XMLHttpRequest === 'undefined') { globalThis.XMLHttpRequest = { prototype: {} }; }\n" +
+        "if (typeof location !== 'undefined') { try { location.href = 'https://www.youtube.com/watch?v=yt-dlp-wins'; } catch (e) {} }\n" +
+        combinedSection +
+        "\nvar nFunction=function(nValue) { " + urlParamsInit + "; " + nFunctionName + "(" + nCallArgs + ", urlParams); return urlParams['get']('n') };" +
+        "\nreturn nFunction;"
+      );
+    }
+
+    // A player that has the mark itself can't be pruned: the skeletons' marks wouldn't be told from its own
+    return { full: render(null), render, bodies, canPrune: baseJsData.indexOf(BODY_MARK) === -1 };
   }
 
   // Entry point matching the calling convention used by TclChallengeProvider:
-  // input = { type: "player", player: "<base.js source>", challenges: [...], output_preprocessed: true }
+  // input = { type: "player", player: "<base.js source>", challenges: [...], output_preprocessed: true, prune?: false }
   //       | { type: "preprocessed", preprocessed_player: "<cached script from a prior result>", challenges: [...] }
   // output = { type: "result", results: { "<challenge>": "<decoded n>" }, preprocessed_player?: "..." }
   //        | { type: "error", error: "..." }
+  // The preprocessed player given is pruned (see pruneExtract), unless prune is false.
   function main(input) {
     try {
-      const preprocessedPlayer = input.type === "preprocessed"
-        ? input.preprocessed_player
-        : preprocessPlayer(input.player);
+      const extract = input.type === "preprocessed" ? null : preprocessPlayer(input.player);
+      const preprocessedPlayer = extract ? extract.full : input.preprocessed_player;
       const nFunction = new Function(preprocessedPlayer)();
       const results = {};
       for (const challenge of input.challenges) {
@@ -841,7 +967,7 @@ var tclSolver = (function (meriyah, astring) {
       }
       const output = { type: "result", results: results };
       if (input.type === "player" && input.output_preprocessed) {
-        output.preprocessed_player = preprocessedPlayer;
+        output.preprocessed_player = input.prune === false ? preprocessedPlayer : pruneExtract(extract, nFunction);
       }
       return output;
     } catch (error) {

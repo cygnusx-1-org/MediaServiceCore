@@ -24,7 +24,7 @@ import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
  *
  * The runtime is kept between the solves with the player's n-function loaded, so a video only runs its own challenges. Its player
  * is replaced when the url changes (YouTube rotated the build), and the one preprocessed earlier is used only when it was made under
- * this solverVersion: by scripts that make what these ones do.
+ * this solverVersion: by scripts whose output these ones still load.
  */
 internal object TclChallengeProvider {
     private val tag = TclChallengeProvider::class.simpleName
@@ -47,6 +47,16 @@ internal object TclChallengeProvider {
      * Of the loaded player, preprocessed from its source. It's cached once it solves.
      */
     private var pendingPreprocessed: String? = null
+    /**
+     * A challenge reached a function pruned from the preprocessed player (see tcl.solver.js, pruneExtract): the players preprocessed
+     * from now on, in this run, are whole. The one that was pruned is preprocessed again at once (see solveSync).
+     */
+    @Volatile
+    private var isPruningOff = false
+    /**
+     * The error the solver's last run gave, null for none (see runSolver). Read under v8Lock, as it's set.
+     */
+    private var lastSolverError: String? = null
     private val v8Lock = Any()
     private const val cacheSection = "tcl-challenge-solver"
     /**
@@ -63,14 +73,22 @@ internal object TclChallengeProvider {
     const val LOADED_FROM_PREPROCESSED = "preprocessed"
     private const val FAILED = "failed"
     /**
+     * Thrown by a function pruned from the preprocessed player, should a challenge reach it (see tcl.solver.js, PRUNED_MARK)
+     */
+    private const val PRUNED_MARK = "tcl-pruned"
+    /**
+     * Set by a function pruned as it throws: a throw caught in the player leaves only this (see tcl.solver.js, PRUNED_GLOBAL)
+     */
+    private const val PRUNED_GLOBAL = "tclPrunedReached"
+    /**
      * Of the runtime: where a player's source, and its preprocessed one, are put for a script, not in it (see runV8With)
      */
     private const val SOURCE_GLOBAL = "tclPlayerSource"
     private const val PREPROCESSED_GLOBAL = "tclPreprocessedPlayer"
     /**
      * Of what the solver scripts make of a player: one preprocessed under another version (e.g. before the app was updated) is
-     * preprocessed again. Changed by hand, and only by a change of the scripts that changes what they make (see tcl.solver.js): one
-     * that leaves it as it was keeps the players preprocessed already, a preprocess of 10-100 s on a TV each.<br/>
+     * preprocessed again. Changed by hand, and only by a change of the scripts that leaves what they made before unusable (see
+     * tcl.solver.js): one that leaves it working keeps the players preprocessed already, a preprocess of 10-100 s on a TV each.<br/>
      * The sha1 of the scripts it was till 2026-11-22, unchanged since 2026-10-17: the players cached by the versions before keep loading.
      */
     private const val solverVersion = "992072fc2ff7835a1a6258a974bce5847b83becd"
@@ -84,6 +102,11 @@ internal object TclChallengeProvider {
                 var results = {};
                 for (var i = 0; i < challenges.length; i++) {
                     results[challenges[i]] = nFunction(challenges[i]);
+                }
+                // A pruned function ran, its throw caught in the player: the n's it gave may be wrong (see tcl.solver.js)
+                if (globalThis.$PRUNED_GLOBAL) {
+                    delete globalThis.$PRUNED_GLOBAL;
+                    return { type: "error", error: "$PRUNED_MARK" };
                 }
                 return { type: "result", results: results };
             } catch (error) {
@@ -147,9 +170,18 @@ internal object TclChallengeProvider {
 
             solveLoaded(challenges)?.let { return it.also { storePreprocessed(playerUrl) } }
 
+            // A challenge reached a pruned function: the player is preprocessed again whole, even one just preprocessed (pruned), and
+            // the ones after it are whole too
+            val isPrunedReached = lastSolverError?.contains(PRUNED_MARK) == true
+
+            if (isPrunedReached) {
+                Log.e(tag, "A TCL n-function challenge reached a pruned function: the player is preprocessed whole")
+                isPruningOff = true
+            }
+
             invalidate()
 
-            if (source == PlayerSource.PLAYER_CODE) {
+            if (source == PlayerSource.PLAYER_CODE && !isPrunedReached) {
                 return null
             }
 
@@ -200,10 +232,12 @@ internal object TclChallengeProvider {
     private fun preprocess(playerCode: () -> String?): String? {
         val code = playerCode() ?: return null.also { Log.e(tag, "No TCL player source to solve with") }
 
+        // Pruned to the functions the n-function runs (see tcl.solver.js, pruneExtract), unless a challenge reached a pruned one
         val request = mapOf(
             "type" to "player",
             "challenges" to emptyList<String>(),
-            "output_preprocessed" to true
+            "output_preprocessed" to true,
+            "prune" to !isPruningOff
         )
 
         initRuntime()
@@ -230,7 +264,8 @@ internal object TclChallengeProvider {
                 preprocessed = takeGlobalString(PREPROCESSED_GLOBAL)
             }
         } finally {
-            span.end(if (preprocessed != null) null else FAILED)
+            // Its size says whether it was pruned: about a quarter of a whole one
+            span.end(if (preprocessed != null) "${preprocessed.length / 1024} KB" else FAILED)
         }
 
         return preprocessed
@@ -282,10 +317,13 @@ internal object TclChallengeProvider {
      * @param global of the runtime, holding the value while the script runs (see runV8With). Null for none.
      */
     private fun runSolver(global: String?, value: String?, stdin: String): SolverOutput? {
+        lastSolverError = null
+
         val stdout = try {
             if (global != null && value != null) runV8With(global, value, stdin) else runV8(stdin)
         } catch (e: Exception) {
             Log.e(tag, "TCL n-function solve failed: ${e.message}")
+            lastSolverError = e.message ?: e.javaClass.simpleName
             return null
         }
 
@@ -293,11 +331,13 @@ internal object TclChallengeProvider {
             Gson().fromJson(stdout, solverOutputType)
         } catch (e: JsonSyntaxException) {
             Log.e(tag, "Cannot parse TCL solver output: ${e.message}")
+            lastSolverError = e.message ?: e.javaClass.simpleName
             return null
         }
 
         if (output.type == "error") {
             Log.e(tag, "TCL solver error: ${output.error}")
+            lastSolverError = output.error ?: output.type
             return null
         }
 
