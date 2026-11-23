@@ -100,4 +100,20 @@ public class WarmUpsTest {
         assertEquals(WarmUps.MAX_RUNS, runs.size());
         assertEquals(4_000, runs.get(0).startMs);
     }
+
+    /**
+     * What a step ran is kept with it (see FetchStages#describeWarmUp)
+     */
+    @Test
+    public void aStepKeepsWhatItRan() {
+        WarmUps.Recorder run = WarmUps.begin();
+        run.beginStep("player data").end("ready", "player JS load (first of run) 19.3 s");
+        run.beginStep("poToken").end("got");
+        run.end();
+
+        List<WarmUps.Step> steps = WarmUps.snapshot().get(0).steps;
+
+        assertEquals("player JS load (first of run) 19.3 s", steps.get(0).detail);
+        assertNull(steps.get(1).detail);
+    }
 }

@@ -192,8 +192,9 @@ public class VideoInfoService extends VideoInfoServiceBase {
         // A live stream with nothing to play it from is skipped for the next client's, which may have it
         VideoInfo result = firstInfoWith(videoId, clickTrackingParams, info -> !info.isUnplayable() && !info.hasNoLiveMedia(), answers);
 
-        // A members' video the account can't watch: no other client plays it (see isMembersOnlyAnswer)
-        if (result != null || hasMembersOnlyAnswer(answers)) {
+        // A members' video the account can't watch, or one the TV clients said is gone: no other client plays it (see
+        // isMembersOnlyAnswer, isGoneOnTvClients)
+        if (result != null || hasMembersOnlyAnswer(answers) || isGoneOnTvClients(getVideoInfoTypes(), answers)) {
             return result;
         }
 
@@ -211,6 +212,41 @@ public class VideoInfoService extends VideoInfoServiceBase {
      */
     private static boolean isMembersOnlyAnswer(@Nullable VideoInfo info) {
         return info != null && info.isUnplayable() && info.isMembersOnly() && info.isAuth();
+    }
+
+    /**
+     * The TV clients of the order (TV, TV_SAMSUNG, VISIONOS, TV_DOWNGRADED) were all asked, and each said the video is gone (status
+     * ERROR, e.g. removed, or an ID of no video): no other client plays it. In the 1,432 starts of the submissions analyzed to
+     * 2026-11-23, no client played a video after one of them had said so. Not WEB_EMBED's ERROR: it says that of a video that can't be
+     * embedded, which WEB_SAFARI and IOS played (97MSK8B6, H8ZP1GPV). Asking the others too took 7-9 s, WEB's poToken 4.9-5.7 s of it
+     * (4Z0TV6X2 #1, #2). None of them in the order: the others are asked as before.
+     *
+     * @param answers of the clients asked, null for one whose request got none
+     */
+    @VisibleForTesting
+    static boolean isGoneOnTvClients(AppClient[] types, Map<AppClient, VideoInfo> answers) {
+        int gone = 0;
+
+        for (AppClient type : types) {
+            if (!isTvClient(type)) {
+                continue;
+            }
+
+            VideoInfo answer = answers.get(type);
+
+            if (answer == null || !answer.isVisibilityRestricted()) {
+                return false;
+            }
+
+            gone++;
+        }
+
+        return gone > 0;
+    }
+
+    private static boolean isTvClient(AppClient client) {
+        return client == AppClient.TV || client == AppClient.TV_SAMSUNG || client == AppClient.VISIONOS
+                || client == AppClient.TV_DOWNGRADED;
     }
 
     private static boolean hasMembersOnlyAnswer(Map<AppClient, VideoInfo> answers) {
@@ -282,7 +318,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 return result;
             }
 
-            if (isMembersOnlyAnswer(result)) {
+            if (isMembersOnlyAnswer(result) || isGoneOnTvClients(types, answers)) {
                 return null;
             }
 

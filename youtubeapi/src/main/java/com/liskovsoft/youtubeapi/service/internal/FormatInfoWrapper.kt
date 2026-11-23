@@ -466,11 +466,15 @@ internal object FormatInfoWrapper {
     }
 
     /**
+     * The step's stages are its detail (see FetchStages#describeWarmUp): e.g. whether the player data's player was preprocessed, and
+     * how long that took, which only a fetch that waited for it showed before
+     *
      * @param warmUp how the step ended (see WARM_UP_READY…)
      */
     private fun runWarmUp(step: String, run: WarmUps.Recorder, warmUp: () -> String) {
         mWarmUpStep = step
         val recorder = run.beginStep(step)
+        val stagesBefore = FetchStages.countWarmUpStages()
         var result: String? = null
 
         try {
@@ -480,7 +484,7 @@ internal object FormatInfoWrapper {
             result = e.javaClass.simpleName
         } finally {
             mWarmUpStep = null
-            recorder.end(result)
+            recorder.end(result, FetchStages.describeWarmUp(stagesBefore))
         }
     }
 

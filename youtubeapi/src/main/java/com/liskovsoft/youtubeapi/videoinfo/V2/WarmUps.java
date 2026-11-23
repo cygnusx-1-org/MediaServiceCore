@@ -42,12 +42,22 @@ public final class WarmUps {
          */
         @Nullable
         public final String result;
+        /**
+         * What it ran, e.g. of the player data, its player's load (see FetchStages#describeWarmUp). Null for nothing to tell.
+         */
+        @Nullable
+        public final String detail;
 
         public Step(String name, long startMs, long endMs, @Nullable String result) {
+            this(name, startMs, endMs, result, null);
+        }
+
+        public Step(String name, long startMs, long endMs, @Nullable String result, @Nullable String detail) {
             this.name = name;
             this.startMs = startMs;
             this.endMs = endMs;
             this.result = result;
+            this.detail = detail;
         }
 
         public boolean isOpen() {
@@ -133,11 +143,18 @@ public final class WarmUps {
          * Once: a step ended again is ignored
          */
         public void end(@Nullable String result) {
+            end(result, null);
+        }
+
+        /**
+         * @param detail what it ran (see Step#detail)
+         */
+        public void end(@Nullable String result, @Nullable String detail) {
             synchronized (WarmUps.class) {
                 Step step = mRun.steps.get(mIndex);
 
                 if (step.isOpen()) {
-                    mRun.steps.set(mIndex, new Step(step.name, step.startMs, sClock.now(), result));
+                    mRun.steps.set(mIndex, new Step(step.name, step.startMs, sClock.now(), result, detail));
                 }
             }
         }

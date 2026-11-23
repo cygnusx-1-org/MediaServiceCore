@@ -27,6 +27,10 @@ public final class FetchStages {
      */
     static final int MAX_STAGES = 64;
     /**
+     * Of a warm-up's step, the stages told (see {@link #describeWarmUp})
+     */
+    static final int MAX_DESCRIBED_STAGES = 8;
+    /**
      * The detail of the stages run ahead of the fetch, on another thread (see {@link #fork})
      */
     static final String AHEAD = "ahead";
@@ -415,6 +419,57 @@ public final class FetchStages {
         if (stages.size() < MAX_STAGES) {
             stages.add(stage);
         }
+    }
+
+    /**
+     * How many stages the warm-up's run has recorded so far (see {@link #runWarmUp}): where a step of it begins (see
+     * {@link #describeWarmUp})
+     */
+    public static synchronized int countWarmUpStages() {
+        List<Stage> stages = sStages.get(WARM_UP_KEY);
+
+        return stages != null ? stages.size() : 0;
+    }
+
+    /**
+     * The warm-up's stages ended since the count was taken (see {@link #countWarmUpStages}), in the order they started, e.g. "player
+     * JS load (first of run) 19.3 s, player download 1.1 s, player preprocess 12.9 s": what a step of it ran, told with the step when no
+     * fetch waited for it too (YNM4W0VE: a run's player data took 17 s again, 11 min after the one before had preprocessed the player,
+     * and nothing said whether it was preprocessed again). Null for none, e.g. the player was loaded already.
+     */
+    @Nullable
+    public static synchronized String describeWarmUp(int fromCount) {
+        List<Stage> stages = sStages.get(WARM_UP_KEY);
+
+        if (stages == null || stages.size() <= fromCount) {
+            return null;
+        }
+
+        List<Stage> ended = new ArrayList<>(stages.subList(fromCount, stages.size()));
+        Collections.sort(ended, (a, b) -> a.startMs != b.startMs ? Long.compare(a.startMs, b.startMs) : Integer.compare(a.depth, b.depth));
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < ended.size() && i < MAX_DESCRIBED_STAGES; i++) {
+            Stage stage = ended.get(i);
+
+            if (result.length() > 0) {
+                result.append(", ");
+            }
+
+            result.append(stage.name);
+
+            if (stage.detail != null) {
+                result.append(" (").append(stage.detail).append(')');
+            }
+
+            result.append(String.format(Locale.US, " %.1f s", (stage.endMs - stage.startMs) / 1_000f));
+        }
+
+        if (ended.size() > MAX_DESCRIBED_STAGES) {
+            result.append(", ").append(ended.size() - MAX_DESCRIBED_STAGES).append(" more");
+        }
+
+        return result.toString();
     }
 
     /**

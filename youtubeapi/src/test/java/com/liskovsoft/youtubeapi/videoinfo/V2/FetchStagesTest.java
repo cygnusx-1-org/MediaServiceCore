@@ -513,4 +513,48 @@ public class FetchStagesTest {
         assertEquals(startMs, stage.startMs);
         assertEquals(endMs, stage.endMs);
     }
+
+    /**
+     * YNM4W0VE: a run's player data took 17 s again, 11 min after the run before had preprocessed the player, and only a fetch that
+     * waited for it would have said why. A step tells what it ran, by itself.
+     */
+    @Test
+    public void aWarmUpStepTellsTheStagesItRan() {
+        FetchStages.runWarmUp(() -> {
+            FetchStages.time("translation languages", null, () -> mNow.addAndGet(2_000));
+            int before = FetchStages.countWarmUpStages();
+            FetchStages.Span load = FetchStages.begin("player JS load");
+            FetchStages.time("player download", null, () -> mNow.addAndGet(1_100));
+            FetchStages.time("player preprocess", "912 KB", () -> mNow.addAndGet(12_900));
+            FetchStages.time("n-function load", "preprocessed", () -> mNow.addAndGet(300));
+            load.end("first of run");
+
+            assertEquals("player JS load (first of run) 14.3 s, player download 1.1 s, player preprocess (912 KB) 12.9 s, "
+                    + "n-function load (preprocessed) 0.3 s", FetchStages.describeWarmUp(before));
+        });
+    }
+
+    /**
+     * Nothing ran (e.g. the player was loaded already): nothing to tell
+     */
+    @Test
+    public void aWarmUpStepThatRanNothingTellsNothing() {
+        FetchStages.runWarmUp(() -> {
+            FetchStages.time("player JS load", "first of run", () -> mNow.addAndGet(100));
+            int before = FetchStages.countWarmUpStages();
+
+            assertNull(FetchStages.describeWarmUp(before));
+        });
+    }
+
+    @Test
+    public void aWarmUpStepTellsItsFirstStagesOnly() {
+        FetchStages.runWarmUp(() -> {
+            for (int i = 0; i < FetchStages.MAX_DESCRIBED_STAGES + 2; i++) {
+                FetchStages.time("stage", null, () -> mNow.addAndGet(100));
+            }
+
+            assertTrue(FetchStages.describeWarmUp(0).endsWith(", 2 more"));
+        });
+    }
 }
