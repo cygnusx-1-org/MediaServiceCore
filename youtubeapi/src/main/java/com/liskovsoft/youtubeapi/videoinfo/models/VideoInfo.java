@@ -83,6 +83,13 @@ public class VideoInfo {
     @JsonPath("$.playabilityStatus.errorScreen.playerErrorMessageRenderer.subreason")
     private TextItem mPlayabilityDescription;
 
+    /**
+     * Of one refused for the viewer's age: why (1 seen). Not translated, unlike the reason, and not in a bot check's answer, which has
+     * the same status (LOGIN_REQUIRED).
+     */
+    @JsonPath("$.playabilityStatus.desktopLegacyAgeGateReason")
+    private int mAgeGateReason;
+
     @JsonPath({"$.storyboards.playerStoryboardSpecRenderer.spec",
                "$.storyboards.playerLiveStoryboardSpecRenderer.spec",
     })
@@ -277,6 +284,14 @@ public class VideoInfo {
      */
     public boolean isMembersOnly() {
         return OFFER_MEMBERS.equals(mOfferId);
+    }
+
+    /**
+     * Refused for the viewer's age (the account's, or none signed in): it won't play for them in a while either. Unlike
+     * #isAgeRestricted, not a bot check (see #mAgeGateReason).
+     */
+    public boolean isAgeGated() {
+        return mAgeGateReason > 0;
     }
 
     /**

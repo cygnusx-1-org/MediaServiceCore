@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.app.models.ClientData;
 import com.liskovsoft.youtubeapi.app.models.cached.AppInfoCached;
 import com.liskovsoft.youtubeapi.app.models.cached.ClientDataCached;
 import com.liskovsoft.youtubeapi.app.playerdata.PlayerDataExtractor;
+import com.liskovsoft.youtubeapi.app.playerdata.TclPlayerDataExtractor;
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants;
 import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
@@ -37,6 +38,10 @@ class AppServiceCoreCached extends AppServiceCore {
     private volatile PlayerDataExtractor mTclPlayerDataExtractor;
     private volatile long mAppInfoUpdateTimeMs;
     private volatile long mRefreshFailedMs = -1;
+    /**
+     * Got ahead of the refresh, which puts it in use (see preparePlayerDataRefresh). Null for none. Under mAppInfoSync.
+     */
+    private AppInfoCached mPendingAppInfo;
     /**
      * Why a player is loaded, the detail of its "player JS load" stage: the first of the run, YouTube's player changed (the app info's
      * url isn't the one loaded), or a fallback after the player of the app info's url failed (the last one that worked, the app's own)
@@ -103,6 +108,9 @@ class AppServiceCoreCached extends AppServiceCore {
     @Override
     public void refreshPlayerData(@Nullable AppClient client) {
         synchronized (mAppInfoSync) {
+            AppInfoCached pending = mPendingAppInfo;
+            mPendingAppInfo = null;
+
             // Done meanwhile (e.g. it expired, and a call got it again)
             if (!isPlayerDataToRefresh()) {
                 return;
@@ -110,7 +118,8 @@ class AppServiceCoreCached extends AppServiceCore {
 
             Log.d(TAG, "refreshAppInfoData");
 
-            AppInfoCached appInfo = AppInfoCached.from(fetchAppInfo(DefaultHeaders.APP_USER_AGENT));
+            // Got ahead, with its player made ready then (see preparePlayerDataRefresh)
+            AppInfoCached appInfo = pending != null ? pending : AppInfoCached.from(fetchAppInfo(DefaultHeaders.APP_USER_AGENT));
 
             if (appInfo == null || appInfo.getPlayerUrl() == null) {
                 mRefreshFailedMs = System.currentTimeMillis();
@@ -126,6 +135,49 @@ class AppServiceCoreCached extends AppServiceCore {
         if (extractor != null) {
             extractor.warmUp();
         }
+    }
+
+    /**
+     * Ahead of the refresh, which the fetches wait for (see refreshPlayerData): the app info got again, and a new TV player's
+     * n-function preprocessed for the solver to load (see TclPlayerDataExtractor#preprocessAhead). That's seconds of work (BG2Y27G3: a
+     * fetch waited 2.3 s for a refresh 8.4 s into the load of a new player; QJVVSYS7's TV took about 100 s to preprocess one). The
+     * refresh then takes both: a fetch running meanwhile goes on with the player before.
+     */
+    @Override
+    public void preparePlayerDataRefresh(@Nullable AppClient client) {
+        AppInfoCached appInfo;
+
+        synchronized (mAppInfoSync) {
+            if (!isPlayerDataToRefresh() || mPendingAppInfo != null) {
+                return;
+            }
+
+            appInfo = AppInfoCached.from(fetchAppInfo(DefaultHeaders.APP_USER_AGENT));
+
+            if (appInfo == null || appInfo.getPlayerUrl() == null) {
+                mRefreshFailedMs = System.currentTimeMillis();
+                return;
+            }
+
+            mPendingAppInfo = appInfo;
+        }
+
+        // As the refresh's load goes (see getPlayerDataExtractorSync)
+        AppClient actual = client != null ? client : mRecentClient;
+        PlayerDataExtractor loaded = restoreExtractor(actual);
+
+        // The same player: nothing to make ready
+        if (isTcl(actual) && (loaded == null || !Helpers.equals(loaded.getPlayerUrl(), appInfo.getPlayerUrl()))) {
+            preprocessPlayerAhead(appInfo.getPlayerUrl());
+        }
+    }
+
+    /**
+     * Its n-function preprocessed for the solver to load, the player itself not loaded (see preparePlayerDataRefresh)
+     */
+    @VisibleForTesting
+    protected void preprocessPlayerAhead(String playerUrl) {
+        TclPlayerDataExtractor.preprocessAhead(playerUrl);
     }
 
     @Override

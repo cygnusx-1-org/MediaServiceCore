@@ -92,6 +92,46 @@ class AppServiceCoreCachedTest {
         assertEquals(PLAYER_A, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
     }
 
+    /**
+     * BG2Y27G3: a fetch waited 2.3 s for a refresh that held its lock 8.4 s into the load of a new player. The new player's n-function
+     * is made ready first, while fetches go on with the one in use; the refresh then takes the app info got then, and swaps the player.
+     */
+    @Test
+    fun aNewPlayerIsMadeReadyBeforeTheRefresh() {
+        core.getPlayerDataExtractor(AppClient.TV)
+        core.ageAppInfo(HOURS_9_5)
+        core.youTubePlayerUrl = PLAYER_B
+
+        core.preparePlayerDataRefresh(AppClient.TV)
+
+        assertEquals(listOf(PLAYER_B), core.preprocessedAhead)
+        assertEquals(listOf(PLAYER_A), core.loaded)
+        assertEquals(PLAYER_A, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
+        assertEquals(2, core.appInfoFetches)
+
+        core.refreshPlayerData(AppClient.TV)
+
+        assertEquals(2, core.appInfoFetches)
+        assertEquals(listOf(PLAYER_A, PLAYER_B), core.loaded)
+        assertFalse(core.isPlayerDataToRefresh())
+    }
+
+    /**
+     * The same url, or the web player's: nothing to make ready
+     */
+    @Test
+    fun theSamePlayerIsntMadeReadyAhead() {
+        core.getPlayerDataExtractor(AppClient.TV)
+        core.ageAppInfo(HOURS_9_5)
+
+        core.preparePlayerDataRefresh(AppClient.TV)
+        core.refreshPlayerData(AppClient.TV)
+
+        assertEquals(emptyList<String>(), core.preprocessedAhead)
+        assertEquals(listOf(PLAYER_A), core.loaded)
+        assertEquals(2, core.appInfoFetches)
+    }
+
     @Test
     fun nothingIsRefreshedBeforeItsHour() {
         core.getPlayerDataExtractor(AppClient.TV)
@@ -223,6 +263,7 @@ class AppServiceCoreCachedTest {
         @Volatile
         var appInfoFetches = 0
         val loaded: MutableList<String> = Collections.synchronizedList(mutableListOf())
+        val preprocessedAhead: MutableList<String> = Collections.synchronizedList(mutableListOf())
         val extractors: MutableMap<String, FakeExtractor> = ConcurrentHashMap()
         val invalid: MutableSet<String> = ConcurrentHashMap.newKeySet()
         /**
@@ -242,6 +283,10 @@ class AppServiceCoreCachedTest {
                 override fun getVisitorData(): String = "visitor"
                 override fun getLivingRoomPoTokenId(): String = "living-room"
             }
+        }
+
+        public override fun preprocessPlayerAhead(playerUrl: String) {
+            preprocessedAhead += playerUrl
         }
 
         public override fun newPlayerDataExtractor(client: AppClient?, playerUrl: String): PlayerDataExtractor {

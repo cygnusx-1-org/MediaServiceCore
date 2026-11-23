@@ -11,6 +11,7 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.common.CachedData
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.loadScript
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.withLock
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Solves the n-parameter challenge for TCL-flavored players (tv-player-*-tcl.vflset), whose
@@ -58,6 +59,15 @@ internal object TclChallengeProvider {
      */
     private var lastSolverError: String? = null
     private val v8Lock = Any()
+    /**
+     * One player preprocessed ahead at a time (see preprocessAhead)
+     */
+    private val aheadLock = Any()
+    /**
+     * A player preprocessed ahead of its load (see preprocessAhead): its url and its preprocessed one, taken by its load. Not in the
+     * cache till a solve went by it, as one just preprocessed isn't: the cache has one player, the one in use's.
+     */
+    private val aheadPlayer = AtomicReference<Pair<String, String>?>()
     private const val cacheSection = "tcl-challenge-solver"
     /**
      * A player's load, in the stages of the fetch that waits for it (see FetchStages): the runtime made with the solver's scripts, the
@@ -71,6 +81,7 @@ internal object TclChallengeProvider {
      */
     const val LOADED_FROM_CACHE = "cache"
     const val LOADED_FROM_PREPROCESSED = "preprocessed"
+    const val LOADED_FROM_AHEAD = "preprocessed ahead"
     private const val FAILED = "failed"
     /**
      * Thrown by a function pruned from the preprocessed player, should a challenge reach it (see tcl.solver.js, PRUNED_MARK)
@@ -218,6 +229,14 @@ internal object TclChallengeProvider {
             CacheService.clear(cacheSection)
         }
 
+        takeAheadPlayer(playerUrl)?.let { ahead ->
+            if (timeLoad(LOADED_FROM_AHEAD) { loadNFunction(playerUrl, ahead) }) {
+                // Stored once a solve went by it (see storePreprocessed). Failing, it's preprocessed again from its source.
+                pendingPreprocessed = ahead
+                return PlayerSource.CACHE
+            }
+        }
+
         val preprocessed = preprocess(playerCode) ?: return null
 
         if (!timeLoad(LOADED_FROM_PREPROCESSED) { loadNFunction(playerUrl, preprocessed) }) {
@@ -232,33 +251,13 @@ internal object TclChallengeProvider {
     private fun preprocess(playerCode: () -> String?): String? {
         val code = playerCode() ?: return null.also { Log.e(tag, "No TCL player source to solve with") }
 
-        // Pruned to the functions the n-function runs (see tcl.solver.js, pruneExtract), unless a challenge reached a pruned one
-        val request = mapOf(
-            "type" to "player",
-            "challenges" to emptyList<String>(),
-            "output_preprocessed" to true,
-            "prune" to !isPruningOff
-        )
-
         initRuntime()
 
         val span = FetchStages.begin(STAGE_PREPROCESS)
         var preprocessed: String? = null
 
         try {
-            // The source goes in, and the preprocessed player comes out, as globals of the runtime, not in the script or its output
-            // (see runV8With). In a function: nothing else of the run stays in the runtime's globals, holding on to the source.
-            val output = runSolver(SOURCE_GLOBAL, code, """
-                var $PREPROCESSED_GLOBAL;
-                (function () {
-                    var request = ${Gson().toJson(request)};
-                    request.player = $SOURCE_GLOBAL;
-                    var output = tclSolver(request);
-                    $PREPROCESSED_GLOBAL = output.preprocessed_player;
-                    delete output.preprocessed_player;
-                    return JSON.stringify(output);
-                })();
-            """)
+            val output = runSolver(SOURCE_GLOBAL, code, preprocessScript())
 
             if (output != null) {
                 preprocessed = takeGlobalString(PREPROCESSED_GLOBAL)
@@ -269,6 +268,110 @@ internal object TclChallengeProvider {
         }
 
         return preprocessed
+    }
+
+    /**
+     * The source goes in, and the preprocessed player comes out, as globals of the runtime, not in the script or its output (see
+     * runV8With). In a function: nothing else of the run stays in the runtime's globals, holding on to the source. Pruned to the
+     * functions the n-function runs (see tcl.solver.js, pruneExtract), unless a challenge reached a pruned one.
+     */
+    private fun preprocessScript(): String {
+        val request = mapOf(
+            "type" to "player",
+            "challenges" to emptyList<String>(),
+            "output_preprocessed" to true,
+            "prune" to !isPruningOff
+        )
+
+        return """
+                var $PREPROCESSED_GLOBAL;
+                (function () {
+                    var request = ${Gson().toJson(request)};
+                    request.player = $SOURCE_GLOBAL;
+                    var output = tclSolver(request);
+                    $PREPROCESSED_GLOBAL = output.preprocessed_player;
+                    delete output.preprocessed_player;
+                    return JSON.stringify(output);
+                })();
+            """
+    }
+
+    /**
+     * A new player preprocessed ahead of its load, in a runtime of its own: the solves go on with the player loaded meanwhile, and its
+     * load takes it (see aheadPlayer, AppServiceCoreCached#preparePlayerDataRefresh). A fetch waited 2.3 s for a refresh that held its
+     * lock 8.4 s into the load of a new player (BG2Y27G3), and a TCL TV took about 100 s to preprocess one (QJVVSYS7). Not when it's
+     * loaded, cached or preprocessed ahead already. Never throws.
+     */
+    fun preprocessAhead(playerUrl: String, playerCode: () -> String?) {
+        try {
+            synchronized(aheadLock) {
+                if (isReady(playerUrl)) {
+                    return
+                }
+
+                val code = playerCode() ?: return
+                val preprocessed = preprocessInOwnRuntime(code) ?: return
+
+                // Loaded meanwhile (e.g. by a fetch that came first): it has its own
+                if (!isReady(playerUrl)) {
+                    aheadPlayer.set(playerUrl to preprocessed)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Can't preprocess the TCL player ahead: ${e.message}")
+        }
+    }
+
+    /**
+     * Its n-function is loaded, or there to load without a preprocess
+     */
+    private fun isReady(playerUrl: String): Boolean =
+        (v8Runtime != null && loadedPlayerUrl == playerUrl) || aheadPlayer.get()?.first == playerUrl
+                || CacheService.load(cacheSection, getCacheKey(playerUrl))?.version == solverVersion
+
+    /**
+     * The player preprocessed ahead (see preprocessAhead), null when it isn't this one. Taken once: a player loaded doesn't keep it.
+     */
+    private fun takeAheadPlayer(playerUrl: String): String? {
+        val ahead = aheadPlayer.getAndSet(null) ?: return null
+
+        return if (ahead.first == playerUrl) ahead.second else null
+    }
+
+    /**
+     * Null when the solver fails
+     */
+    private fun preprocessInOwnRuntime(code: String): String? {
+        // Read before the runtime is made: it's never left locked to this thread (see withLock)
+        val stdin = constructCommonStdin()
+        val runtime = V8.createV8Runtime()
+
+        try {
+            return runtime.withLock {
+                it.executeStringScript(stdin)
+
+                try {
+                    it.add(SOURCE_GLOBAL, code)
+                    val output: SolverOutput? = Gson().fromJson(it.executeStringScript(preprocessScript()), solverOutputType)
+
+                    if (output?.type != "result") {
+                        Log.e(tag, "TCL solver error ahead: ${output?.error}")
+                        null
+                    } else if (it.getType(PREPROCESSED_GLOBAL) == V8Value.STRING) {
+                        it.getString(PREPROCESSED_GLOBAL)
+                    } else {
+                        null
+                    }
+                } finally {
+                    it.addUndefined(SOURCE_GLOBAL)
+                    it.addUndefined(PREPROCESSED_GLOBAL)
+                }
+            }
+        } finally {
+            runtime.withLock {
+                it.release(false)
+            }
+        }
     }
 
     /**

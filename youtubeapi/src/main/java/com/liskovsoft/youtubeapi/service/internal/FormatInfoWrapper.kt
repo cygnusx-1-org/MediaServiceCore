@@ -444,10 +444,14 @@ internal object FormatInfoWrapper {
             RxHelper.runAsync({
                 RxHelper.runAsync {
                     try {
-                        // Not while a fetch runs: its request and its decipher would go by different players, and the solver keeps one
-                        // only (see TclChallengeProvider). A fetch started meanwhile waits for it.
+                        val client = getVideoInfoService().nextClient
+                        // The new player made ready first, while fetches run: its load is what a fetch waited for (BG2Y27G3: 2.3 s, the
+                        // refresh 8.4 s into it)
+                        AppService.instance().preparePlayerDataRefresh(client)
+                        // Its swap not while a fetch runs: its request and its decipher would go by different players, and the solver
+                        // keeps one only (see TclChallengeProvider). A fetch started meanwhile waits for it.
                         withLock(LOCK_PLAYER_DATA_REFRESH) {
-                            AppService.instance().refreshPlayerData(getVideoInfoService().nextClient)
+                            AppService.instance().refreshPlayerData(client)
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Can't refresh the player data: %s", e.message)
@@ -617,7 +621,8 @@ internal object FormatInfoWrapper {
             formatInfo == null -> RetrofitHelper.takeConnectException()?.let { Attempt.exception(INNERTUBE_CLIENT, it) }
                 ?: Attempt.nullResponse(INNERTUBE_CLIENT)
             formatInfo.isUnplayable() -> Attempt.unplayable(INNERTUBE_CLIENT, formatInfo.getPlayabilityStatus(), formatInfo.getPlayabilityReason(),
-                false, (formatInfo as? MediaItemFormatInfoImpl)?.getUnplayableCause())
+                false, (formatInfo as? MediaItemFormatInfoImpl)?.getUnplayableCause(),
+                (formatInfo as? MediaItemFormatInfoImpl)?.isAgeGated() == true)
             else -> Attempt.ok(INNERTUBE_CLIENT)
         }
     }

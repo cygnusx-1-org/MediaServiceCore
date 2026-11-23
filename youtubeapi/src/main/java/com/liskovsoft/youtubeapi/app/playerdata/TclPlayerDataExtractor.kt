@@ -12,6 +12,23 @@ import com.liskovsoft.youtubeapi.service.internal.MediaServiceData
 private const val TCL_URL = "/tv-player-ias-tcl.vflset/tv-player-ias-tcl.js"
 
 /**
+ * The TCL player of the build of the url
+ */
+private fun toTclPlayerUrl(playerUrl: String): String {
+    // The hash must come from tv_config: the n-params are bound to that exact player build.
+    // Don't substitute the path of the regular player (its hash differs).
+    // See https://github.com/yt-dlp/yt-dlp/issues/12398
+    // tv url: https://www.youtube.com/s/player/69b31e11/tv-player-es6-tce.vflset/tv-player-es6-tce.js
+    // web url: https://www.youtube.com/s/player/e12fbea4/player_ias_tce.vflset/en_US/base.js
+    return playerUrl
+        .replace("/tv-player-es6.vflset/tv-player-es6.js", TCL_URL)
+        .replace("/tv-player-ias.vflset/tv-player-ias.js", TCL_URL)
+        .replace("/player_es6.vflset/en_US/base.js", TCL_URL)
+        .replace("/player_ias.vflset/en_US/base.js", TCL_URL)
+        .replace("-es6", "-ias") // es6 no supported
+}
+
+/**
  * [playerUrl] is the TCL-flavored player (from tv_config).
  * Its n-function has a different call shape than the regular
  * web/TV player, so n-param extraction is routed to [TclChallengeProvider] instead of the
@@ -25,19 +42,7 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
     private var nFuncCode: Boolean = false
     private var cpnCode: String? = null
     private var signatureTimestamp: String? = null
-    private val fixedPlayerUrl by lazy {
-        // The hash must come from tv_config: the n-params are bound to that exact player build.
-        // Don't substitute the path of the regular player (its hash differs).
-        // See https://github.com/yt-dlp/yt-dlp/issues/12398
-        // tv url: https://www.youtube.com/s/player/69b31e11/tv-player-es6-tce.vflset/tv-player-es6-tce.js
-        // web url: https://www.youtube.com/s/player/e12fbea4/player_ias_tce.vflset/en_US/base.js
-        playerUrl
-            .replace("/tv-player-es6.vflset/tv-player-es6.js", TCL_URL)
-            .replace("/tv-player-ias.vflset/tv-player-ias.js", TCL_URL)
-            .replace("/player_es6.vflset/en_US/base.js", TCL_URL)
-            .replace("/player_ias.vflset/en_US/base.js", TCL_URL)
-            .replace("-es6", "-ias") // es6 no supported
-    }
+    private val fixedPlayerUrl by lazy { toTclPlayerUrl(playerUrl) }
     // Fetched lazily, once, and shared between validation (checkSigData) and real extraction —
     // TclChallengeProvider needs the raw player source, unless it has the player preprocessed.
     private val playerCode: String? by lazy { loadPlayer() }
@@ -173,6 +178,18 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    companion object {
+        /**
+         * The n-function of the player of the url made ready ahead of the player's load, with no extractor of it yet: its preprocess,
+         * for the solver to load (see TclChallengeProvider#preprocessAhead, AppServiceCoreCached#preparePlayerDataRefresh)
+         */
+        @JvmStatic
+        fun preprocessAhead(playerUrl: String) {
+            val url = toTclPlayerUrl(playerUrl)
+            TclChallengeProvider.preprocessAhead(url) { YouTubeInfoExtractor.loadPlayerSilent(url) }
         }
     }
 }

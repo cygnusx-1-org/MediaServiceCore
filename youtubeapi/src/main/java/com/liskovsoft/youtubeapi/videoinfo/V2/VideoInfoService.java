@@ -311,7 +311,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
 
         if (result.isUnplayable()) {
             return Attempt.unplayable(client.name(), result.getPlayabilityStatusName(), result.getPlayabilityStatus(), result.isMembersOnly(),
-                    result.getUnplayableCause());
+                    result.getUnplayableCause(), result.isAgeGated());
         }
 
         if (result.hasNoLiveMedia()) {

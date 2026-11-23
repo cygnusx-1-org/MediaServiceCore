@@ -130,6 +130,13 @@ class AppServiceCore {
         // NOP: nothing is kept
     }
 
+    /**
+     * Before the refresh, while fetches run (see refreshPlayerData)
+     */
+    public void preparePlayerDataRefresh(@Nullable AppClient client) {
+        // NOP: nothing is kept
+    }
+
     // Moved from AppService
 
     public String getClientId() {

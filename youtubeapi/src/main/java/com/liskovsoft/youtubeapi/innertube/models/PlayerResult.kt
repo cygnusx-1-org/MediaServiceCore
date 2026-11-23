@@ -18,7 +18,11 @@ internal data class PlayerResult(
         val status: String?,
         val reason: String?,
         val playableInEmbed: Boolean?,
-        val errorScreen: ErrorScreen?
+        val errorScreen: ErrorScreen?,
+        /**
+         * Of one refused for the viewer's age (see VideoInfo#isAgeGated)
+         */
+        val desktopLegacyAgeGateReason: Int?
     ) {
         data class ErrorScreen(
             val playerLegacyDesktopYpcTrailerRenderer: PlayerLegacyDesktopYpcTrailerRenderer?,

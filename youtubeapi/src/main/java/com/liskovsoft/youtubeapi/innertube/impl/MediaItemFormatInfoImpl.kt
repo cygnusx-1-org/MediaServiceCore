@@ -111,6 +111,11 @@ internal data class MediaItemFormatInfoImpl(private val playerResult: PlayerResu
     private val _isUnplayable by lazy { isUnknownRestricted() || isVisibilityRestricted() || isAgeRestricted() || isPostLiveSabrOnly() }
 
     /**
+     * Refused for the viewer's age (see VideoInfo#isAgeGated)
+     */
+    fun isAgeGated(): Boolean = (playerResult.playabilityStatus?.desktopLegacyAgeGateReason ?: 0) > 0
+
+    /**
      * Why it's unplayable when its status doesn't say (see VideoInfo#getUnplayableCause)
      */
     fun getUnplayableCause(): String? = when {

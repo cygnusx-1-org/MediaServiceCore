@@ -35,6 +35,7 @@ public final class ClientAttempts {
      * After the status of an unplayable one only the channel's members watch (see Attempt#describe)
      */
     static final String MEMBERS = "members";
+    static final String AGE_GATED = "age_gated";
     /**
      * Of the reason in an attempt's description (see Attempt#describe)
      */
@@ -96,13 +97,18 @@ public final class ClientAttempts {
          */
         @Nullable
         public final String connectionError;
+        /**
+         * Of an unplayable one: refused for the viewer's age (see VideoInfo#isAgeGated). Found by a field that isn't translated, unlike
+         * the reason, and that a bot check with the same status (LOGIN_REQUIRED) doesn't have.
+         */
+        public final boolean ageGated;
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error) {
-            this(client, result, status, reason, error, false, null, null);
+            this(client, result, status, reason, error, false, null, null, false);
         }
 
         private Attempt(String client, String result, @Nullable String status, @Nullable String reason, @Nullable String error,
-                        boolean members, @Nullable String cause, @Nullable String connectionError) {
+                        boolean members, @Nullable String cause, @Nullable String connectionError, boolean ageGated) {
             this.client = client;
             this.result = result;
             this.status = status;
@@ -111,6 +117,7 @@ public final class ClientAttempts {
             this.members = members;
             this.cause = cause;
             this.connectionError = connectionError;
+            this.ageGated = ageGated;
         }
 
         /**
@@ -132,6 +139,7 @@ public final class ClientAttempts {
             String text = status != null ? result + " " + status : result;
             text = cause != null ? text + " " + cause : text;
             text = members ? text + " " + MEMBERS : text;
+            text = ageGated ? text + " " + AGE_GATED : text;
             String shortReason = shortReason(reason);
 
             return shortReason != null ? text + ": " + shortReason : text;
@@ -165,7 +173,15 @@ public final class ClientAttempts {
          */
         public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason, boolean members,
                                          @Nullable String cause) {
-            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members, cause, null);
+            return unplayable(client, status, reason, members, cause, false);
+        }
+
+        /**
+         * @param ageGated refused for the viewer's age (see #ageGated)
+         */
+        public static Attempt unplayable(String client, @Nullable String status, @Nullable String reason, boolean members,
+                                         @Nullable String cause, boolean ageGated) {
+            return new Attempt(client, RESULT_UNPLAYABLE, status, reason, null, members, cause, null, ageGated);
         }
 
         public static Attempt noLiveManifest(String client) {
@@ -182,7 +198,7 @@ public final class ClientAttempts {
          */
         public static Attempt exception(String client, Throwable error) {
             return new Attempt(client, RESULT_EXCEPTION, null, null, error.getClass().getSimpleName() + ": " + error.getMessage(), false,
-                    null, ConnectionErrors.describe(error));
+                    null, ConnectionErrors.describe(error), false);
         }
     }
 

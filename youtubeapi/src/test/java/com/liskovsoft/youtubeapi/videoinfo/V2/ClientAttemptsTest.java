@@ -64,6 +64,18 @@ public class ClientAttemptsTest {
     }
 
     /**
+     * An age check: found by a field that isn't translated, as a bot check has the same status
+     */
+    @Test
+    public void anAgeGatedOneSaysSo() {
+        Attempt attempt = Attempt.unplayable("WEB", "LOGIN_REQUIRED", "Sign in to confirm your age", false, null, true);
+
+        assertTrue(attempt.ageGated);
+        assertEquals("unplayable LOGIN_REQUIRED age_gated: Sign in to confirm your age", attempt.describe());
+        assertFalse(Attempt.unplayable("TV", "LOGIN_REQUIRED", "Sign in to confirm you're not a bot").ageGated);
+    }
+
+    /**
      * The status alone doesn't tell a bot check from an age check: the reason does, in the language YouTube was asked for. Its first
      * part only, without the marks that keep its direction.
      */

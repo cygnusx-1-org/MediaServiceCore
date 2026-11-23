@@ -282,6 +282,14 @@ public class AppService {
         mAppServiceCore.refreshPlayerData(client);
     }
 
+    /**
+     * Before the refresh, while fetches run (see refreshPlayerData): the app info got again, and the player of a new url made ready, a
+     * load of seconds. The refresh puts them in use.
+     */
+    public void preparePlayerDataRefresh(@Nullable AppClient client) {
+        mAppServiceCore.preparePlayerDataRefresh(client);
+    }
+
     @NonNull
     public Context getContext() {
         Context context = GlobalPreferences.isInitialized() ? GlobalPreferences.sInstance.getContext() : null;
