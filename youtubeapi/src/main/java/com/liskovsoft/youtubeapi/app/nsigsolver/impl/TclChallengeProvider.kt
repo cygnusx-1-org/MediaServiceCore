@@ -11,7 +11,6 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.common.CachedData
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.loadScript
 import com.liskovsoft.youtubeapi.app.nsigsolver.common.withLock
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
-import java.security.MessageDigest
 
 /**
  * Solves the n-parameter challenge for TCL-flavored players (tv-player-*-tcl.vflset), whose
@@ -24,8 +23,8 @@ import java.security.MessageDigest
  * placeholder URL.
  *
  * The runtime is kept between the solves with the player's n-function loaded, so a video only runs its own challenges. Its player
- * is replaced when the url changes (YouTube rotated the build), and the one preprocessed earlier is used only when the solver
- * scripts that made it are the ones of this version.
+ * is replaced when the url changes (YouTube rotated the build), and the one preprocessed earlier is used only when it was made under
+ * this solverVersion: by scripts that make what these ones do.
  */
 internal object TclChallengeProvider {
     private val tag = TclChallengeProvider::class.simpleName
@@ -69,9 +68,12 @@ internal object TclChallengeProvider {
     private const val SOURCE_GLOBAL = "tclPlayerSource"
     private const val PREPROCESSED_GLOBAL = "tclPreprocessedPlayer"
     /**
-     * Of the solver scripts: a player that other ones preprocessed (e.g. before the app was updated) is preprocessed again
+     * Of what the solver scripts make of a player: one preprocessed under another version (e.g. before the app was updated) is
+     * preprocessed again. Changed by hand, and only by a change of the scripts that changes what they make (see tcl.solver.js): one
+     * that leaves it as it was keeps the players preprocessed already, a preprocess of 10-100 s on a TV each.<br/>
+     * The sha1 of the scripts it was till 2026-11-22, unchanged since 2026-10-17: the players cached by the versions before keep loading.
      */
-    private val solverVersion: String by lazy { sha1(loadSolverScripts()) }
+    private const val solverVersion = "992072fc2ff7835a1a6258a974bce5847b83becd"
     /**
      * Each solve makes a new n-function from the loaded player, like the solves that had a runtime of their own
      */
@@ -386,9 +388,5 @@ internal object TclChallengeProvider {
         runtime.withLock {
             it.release(false)
         }
-    }
-
-    private fun sha1(text: String): String {
-        return MessageDigest.getInstance("SHA-1").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 }

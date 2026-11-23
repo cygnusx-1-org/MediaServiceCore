@@ -1,37 +1,103 @@
 /*!
  * TCL player n-function solver.
+ *
+ * What it makes of a player is cached under TclChallengeProvider's solverVersion: a change here that changes what it makes (the
+ * preprocessed player) changes that version too. One that only makes it faster, with the same output, leaves it.
  */
 var tclSolver = (function (meriyah, astring) {
   'use strict';
 
   // ---- minimal generic ESTree walker ----
 
+  // The keys holding a node's children, per node type, in the order a for-in over meriyah's nodes has them (their creation order),
+  // so a walk visits what it did before, in the same order. The types are the TCL players' (10 builds, 7460dd14 to 6b3d0364); any
+  // other type is walked over all its keys. A for-in over every key of every node was half of the preprocess's time (0.97 of 1.9 s on
+  // a desktop; a TV is 6-50 times slower). An object method's FunctionExpression has its id last, and null: its order doesn't matter.
+  const CHILD_KEYS = {
+    ArrayExpression: ["elements"],
+    AssignmentExpression: ["left", "right"],
+    BinaryExpression: ["left", "right"],
+    BlockStatement: ["body"],
+    BreakStatement: ["label"],
+    CallExpression: ["callee", "arguments"],
+    CatchClause: ["param", "body"],
+    ConditionalExpression: ["test", "consequent", "alternate"],
+    ContinueStatement: ["label"],
+    DoWhileStatement: ["body", "test"],
+    EmptyStatement: [],
+    ExpressionStatement: ["expression"],
+    ForInStatement: ["body", "left", "right"],
+    ForStatement: ["init", "test", "update", "body"],
+    FunctionDeclaration: ["id", "params", "body"],
+    FunctionExpression: ["id", "params", "body"],
+    Identifier: [],
+    IfStatement: ["test", "consequent", "alternate"],
+    LabeledStatement: ["label", "body"],
+    Literal: [],
+    LogicalExpression: ["left", "right"],
+    MemberExpression: ["object", "property"],
+    NewExpression: ["callee", "arguments"],
+    ObjectExpression: ["properties"],
+    Program: ["body"],
+    Property: ["key", "value"],
+    ReturnStatement: ["argument"],
+    SequenceExpression: ["expressions"],
+    SwitchCase: ["test", "consequent"],
+    SwitchStatement: ["discriminant", "cases"],
+    ThisExpression: [],
+    ThrowStatement: ["argument"],
+    TryStatement: ["block", "handler", "finalizer"],
+    UnaryExpression: ["argument"],
+    UpdateExpression: ["argument"],
+    VariableDeclaration: ["declarations"],
+    VariableDeclarator: ["id", "init"],
+  };
+
   function forEachChild(node, fn) {
     if (!node || typeof node !== "object") return;
-    for (const key in node) {
-      if (key === "start" || key === "end" || key === "loc" || key === "range" || key === "type") continue;
-      const value = node[key];
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          if (item && typeof item.type === "string") fn(item);
-        }
-      } else if (value && typeof value.type === "string") {
-        fn(value);
-      }
+    const keys = CHILD_KEYS[node.type];
+    if (keys === undefined) {
+      forEachChildOfAnyKey(node, fn);
+      return;
+    }
+    for (let i = 0; i < keys.length; i++) {
+      forEachNodeOf(node[keys[i]], fn);
     }
   }
 
+  function forEachChildOfAnyKey(node, fn) {
+    for (const key in node) {
+      if (key === "start" || key === "end" || key === "loc" || key === "range" || key === "type") continue;
+      forEachNodeOf(node[key], fn);
+    }
+  }
+
+  function forEachNodeOf(value, fn) {
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const item = value[i];
+        if (item && typeof item.type === "string") fn(item);
+      }
+    } else if (value && typeof value.type === "string") {
+      fn(value);
+    }
+  }
+
+  // The visitors get the ancestors of the node they're called with, nearest last: one list, pushed and popped as the walk goes in and
+  // out, not a copy of it made for each node. They read it then, and don't keep it.
   function walkAncestor(node, visitors) {
-    function visit(n, ancestors) {
+    const ancestors = [];
+    function visit(n) {
       const fn = visitors[n.type];
       if (fn) fn(n, ancestors);
       // don't walk into throw arguments — an unreachable error path shouldn't drag in its own
       // dependency chain
       if (n.type === "ThrowStatement") return;
-      const nextAncestors = ancestors.concat([n]);
-      forEachChild(n, (child) => visit(child, nextAncestors));
+      ancestors.push(n);
+      forEachChild(n, visit);
+      ancestors.pop();
     }
-    visit(node, []);
+    visit(node);
   }
 
   function findGlobalArray(parsedBaseJs) {
@@ -442,20 +508,32 @@ var tclSolver = (function (meriyah, astring) {
   }
 
   // ownNames may be a single name or an array, so multiple entry points can share one visited set.
-  function collectDependencies(entryNodes, ownNames, parsedBaseJs) {
+  // protoMethodsByCtorName: the player's, made once (see buildProtoMethodsIndex, preprocessPlayer)
+  function collectDependencies(entryNodes, ownNames, parsedBaseJs, protoMethodsByCtorName) {
     const ownNameSet = new Set(Array.isArray(ownNames) ? ownNames : [ownNames]);
     const visitedNames = new Set();
     const nameToCodeText = new Map();
     const nameToDepNames = new Map();
-    const { globalArrayName, globalArrayData } = findGlobalArray(parsedBaseJs);
-    const protoMethodsByCtorName = buildProtoMethodsIndex(parsedBaseJs, globalArrayData, globalArrayName);
 
+    // What getUndeclaredMethods gives for each own name, merged in the order of the own names: from one walk of the node, not one per
+    // own name (two walks of every dependency, a third of the preprocess's time). An own name only leaves out itself and its members
+    // ("own.x"), and where a name first comes in the walk doesn't depend on it: each one's list is the walk's, less those.
     function undeclaredExcludingOwnNames(node) {
+      const all = getUndeclaredMethods(node, null);
       const merged = new Set();
       for (const ownName of ownNameSet) {
-        for (const dep of getUndeclaredMethods(node, ownName)) merged.add(dep);
+        for (const dep of all) {
+          if (!isOfOwnName(dep, ownName)) merged.add(dep);
+        }
       }
       return new Set([...merged].filter(dep => !ownNameSet.has(dep)));
+    }
+
+    // The name itself, or a member of it ("name.x"): what getUndeclaredMethods leaves out for it
+    function isOfOwnName(dep, ownName) {
+      if (dep === ownName) return true;
+      const dot = dep.indexOf(".");
+      return dot !== -1 && dep.slice(0, dot) === ownName;
     }
 
     function resolveAndCollect(name) {
@@ -618,9 +696,13 @@ var tclSolver = (function (meriyah, astring) {
     }
 
     // Earliest confirming function by source position.
+    // The walk goes in source order but for a for-in's body, which meriyah puts before its left and right (see CHILD_KEYS), and a
+    // function comes before the ones in it: the first one confirmed is the earliest, and nothing after it is looked at. The nodes have
+    // no positions (the player is parsed without ranges, which doubled the heap): the check of one by its position never stopped the
+    // walk, and it went on through the whole player, keeping the last one confirmed (each of 10 builds has only one).
     let confirmed = null;
     function visit(node) {
-      if (confirmed && node.start >= confirmed.start) return;
+      if (confirmed) return;
       if (node.type === "VariableDeclarator" && node.id?.type === "Identifier" && node.init?.type === "FunctionExpression") {
         if (throwsFromGlobalArrayDirect(node.init)) {
           confirmed = { functionName: node.id.name, start: node.start };
@@ -679,7 +761,10 @@ var tclSolver = (function (meriyah, astring) {
         }
       }
     }
+    // The nodes have no positions (see findNCallSiteByThrow), so the first one found is kept (best.start is undefined, and so is the
+    // check against it): nothing after it is looked at.
     function visit(node) {
+      if (best) return;
       if ((node.type === "Program" || node.type === "BlockStatement") && Array.isArray(node.body)) {
         visitBody(node.body);
       }
@@ -709,16 +794,17 @@ var tclSolver = (function (meriyah, astring) {
     const urlBuilderCtorNode = findMethodByName(parsedBaseJs, urlBuilderCtorName);
     const urlBuilderCtorCode = urlBuilderCtorNode ? generateCode(urlBuilderCtorNode) : "";
 
-    const urlBuilderProtoMethodNodes = buildProtoMethodsIndex(
-      parsedBaseJs, globalArray.globalArrayData, globalArray.globalArrayName
-    ).get(urlBuilderCtorName.trim()) || [];
+    // Made once: the dependencies' walk takes it too (it was made again there, a pass over the player's body)
+    const protoMethodsByCtorName = buildProtoMethodsIndex(parsedBaseJs, globalArray.globalArrayData, globalArray.globalArrayName);
+    const urlBuilderProtoMethodNodes = protoMethodsByCtorName.get(urlBuilderCtorName.trim()) || [];
     const urlBuilderProtoMethodsCode = urlBuilderProtoMethodNodes.map(generateCode).join("\n");
 
     // Shared dep walk avoids emitting deps common to both entry points twice.
     const sharedDeps = collectDependencies(
       [nFunctionNode, ...(urlBuilderCtorNode ? [urlBuilderCtorNode] : []), ...urlBuilderProtoMethodNodes],
       [nFunctionName, urlBuilderCtorName],
-      parsedBaseJs
+      parsedBaseJs,
+      protoMethodsByCtorName
     );
 
     // "g" is a namespace object some builds attach methods to (e.g. "g.Foo = function(){}");
