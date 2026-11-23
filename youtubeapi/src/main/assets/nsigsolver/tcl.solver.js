@@ -925,7 +925,9 @@ var tclSolver = (function (meriyah, astring) {
     const nFunctionPiece = makePiece(nFunctionNode, astring.generate, bodies);
 
     // "g" is a namespace object some builds attach methods to (e.g. "g.Foo = function(){}");
-    // harmless to predeclare even when unused.
+    // harmless to predeclare even when unused. A build that isn't wrapped in "function(g)" may declare a g of its own, a function the
+    // extract takes along (c2f7551f: "function g(z)"): hoisted, it's kept, as "var g = {}" replaced it before the n-function ran
+    // ("g is not a function", no n solved).
     const globalArrayDecl = `var ${globalArray.globalArrayName} = ${JSON.stringify(globalArray.globalArrayData)};`;
     let urlParamsInit = "let urlParams = new " + urlBuilderCtorName + "(nValue, true); \n\n";
 
@@ -933,7 +935,7 @@ var tclSolver = (function (meriyah, astring) {
     function render(bodyOf) {
       const text = piece => pieceText(piece, bodyOf);
       let combinedSection =
-        `var g = {};\n${globalArrayDecl}\n${text(nFunctionPiece)}\n` +
+        `var g = g || {};\n${globalArrayDecl}\n${text(nFunctionPiece)}\n` +
         sharedDeps.map(group => group.map(text).join("\n")).join("\n") + "\n" + text(urlBuilderCtorPiece) + "\n" +
         urlBuilderProtoMethodPieces.map(text).join("\n");
 
