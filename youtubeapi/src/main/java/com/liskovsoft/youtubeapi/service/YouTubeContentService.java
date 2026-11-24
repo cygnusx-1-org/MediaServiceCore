@@ -727,6 +727,16 @@ class YouTubeContentService implements ContentService {
     }
 
     @Override
+    public Observable<List<String>> getMembershipChannelIdsObserve() {
+        return RxHelper.fromCallable(() -> {
+            checkSigned();
+
+            // Signed out, the guide is the one of no account: null, an error
+            return getSignInService().isSigned() ? getBrowseService2().getMembershipChannelIds() : null;
+        });
+    }
+
+    @Override
     public void enableHistory(boolean enable) {
         if (enable) {
             getActionsService().resumeWatchHistory();

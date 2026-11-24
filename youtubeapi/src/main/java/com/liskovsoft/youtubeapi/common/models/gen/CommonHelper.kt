@@ -526,6 +526,13 @@ internal fun ResponseContext.getSuggestToken(): String? = serviceTrackingParams?
     } else null
 }
 
+/**
+ * The response is a signed-in account's: not one sent without its sign-in (e.g. its token couldn't be refreshed)
+ */
+internal fun ResponseContext.isLoggedIn(): Boolean = serviceTrackingParams?.any {
+    it?.service == SERVICE_GFEEDBACK && it.params?.any { param -> param?.key == KEY_LOGGED_IN && param.value == "1" } == true
+} == true
+
 //////
 
 internal fun RendererContext.getVideoId() = getOnTapCommand()?.getVideoId()

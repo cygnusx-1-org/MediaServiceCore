@@ -113,6 +113,10 @@ public interface ContentService {
      * the ones kept on the device. An error when neither is known.
      */
     Observable<List<String>> getSubscribedChannelIdsObserve();
+    /**
+     * The ids of the channels the signed-in account is a member of, empty for none. An error when they can't be read or signed out.
+     */
+    Observable<List<String>> getMembershipChannelIdsObserve();
     Observable<MediaGroup> getSubscribedChannelsObserve();
     Observable<MediaGroup> getSubscribedChannelsByNewContentObserve();
     Observable<MediaGroup> getSubscribedChannelsByNameObserve();

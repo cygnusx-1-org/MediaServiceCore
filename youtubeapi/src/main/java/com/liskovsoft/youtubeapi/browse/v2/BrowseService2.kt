@@ -10,6 +10,7 @@ import com.liskovsoft.youtubeapi.common.helpers.PostDataHelper
 import com.liskovsoft.youtubeapi.common.models.gen.ItemWrapper
 import com.liskovsoft.youtubeapi.common.models.gen.getCurrentStateIndex
 import com.liskovsoft.youtubeapi.common.models.gen.getPlaylistId
+import com.liskovsoft.youtubeapi.common.models.gen.isLoggedIn
 import com.liskovsoft.youtubeapi.common.models.gen.getVideoId
 import com.liskovsoft.youtubeapi.common.models.gen.isLive
 import com.liskovsoft.youtubeapi.common.models.gen.isUpcoming
@@ -185,6 +186,19 @@ internal open class BrowseService2 {
 
         // A channel is listed again under each sorting
         return RetrofitHelper.get(browseResult)?.getTabs()?.mapNotNull { it?.getSubscribedChannelId() }?.distinct()
+    }
+
+    /**
+     * The ids of the channels the account is a member of, as the TV app's left nav lists them (see [GuideResult.getMembershipChannelIds])
+     * @return empty when it's a member of none, null when they can't be read
+     */
+    open fun getMembershipChannelIds(): List<String>? {
+        val guideResult = mBrowseApi.getGuideResultTV(BrowseApiHelper.getGuideQuery(AppClient.TV))
+
+        // Not the account's guide (e.g. sent without its sign-in), or none: it has no channels either, they aren't known
+        return RetrofitHelper.get(guideResult)
+            ?.takeIf { it.responseContext?.isLoggedIn() == true && !it.items.isNullOrEmpty() }
+            ?.getMembershipChannelIds()
     }
 
     /**

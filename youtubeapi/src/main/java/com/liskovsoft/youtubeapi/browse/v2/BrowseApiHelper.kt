@@ -170,6 +170,13 @@ internal object BrowseApiHelper {
         return PostDataHelper.createQuery(client.browseTemplate, SUBSCRIPTIONS)
     }
 
+    /**
+     * The left nav of the TV app (see GuideResult.getMembershipChannelIds)
+     */
+    fun getGuideQuery(client: AppClient): String {
+        return PostDataHelper.createQuery(client.browseTemplate, "")
+    }
+
     fun getSportsQuery(client: AppClient): String {
         return PostDataHelper.createQuery(client.browseTemplate, SPORTS)
     }

@@ -206,6 +206,19 @@ internal fun GuideResult.getRecommended(): List<GuideItem?>? = items?.mapNotNull
 internal fun GuideResult.getSuggestToken(): String? = responseContext?.getSuggestToken()
 private fun GuideResult.getSubsRoot() = items?.firstNotNullOfOrNull { it?.guideSubscriptionsSectionRenderer }
 
+/**
+ * The channels the account is a member of: of the TV app's left nav (the TV guide), the entries that open a channel.
+ * Neither the subscribed channels nor the ones watched are there: an account subscribed to a channel whose video it just watched has
+ * none, a member of it has it (2026.11.23_guide_member.json). The TV app has no memberships page (SPmanage_red comes back empty), and
+ * the web one doesn't take the TV sign-in. Not the web guide, whose subscriptions are a section of their own.
+ */
+internal fun GuideResult.getMembershipChannelIds(): List<String> = items.orEmpty()
+    .flatMap { it?.guideSectionRenderer?.items.orEmpty() }
+    .mapNotNull { it?.guideEntryRenderer?.getBrowseId()?.takeIf { id -> id.startsWith(CHANNEL_ID_PREFIX) } }
+    .distinct()
+
+private const val CHANNEL_ID_PREFIX = "UC"
+
 internal fun GuideItem.getBrowseId() = navigationEndpoint?.getBrowseId()
 internal fun GuideItem.getParams() = navigationEndpoint?.getParams()
 internal fun GuideItem.getThumbnails() = thumbnail
