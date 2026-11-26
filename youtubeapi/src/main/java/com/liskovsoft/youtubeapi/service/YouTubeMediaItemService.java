@@ -108,7 +108,11 @@ public class YouTubeMediaItemService implements MediaItemService {
 
     @Override
     public Observable<Void> prefetchFormatInfoObserve(String videoId) {
-        return RxHelper.fromRunnable(() -> FormatInfoWrapper.prefetchFormatInfo(videoId));
+        return RxHelper.fromRunnable(() -> {
+            FormatInfoWrapper.prefetchFormatInfo(videoId);
+            // Out of the fetches' lock: the next video's start finds its server's name looked up
+            FormatInfoWrapper.resolvePrefetchedHost(videoId);
+        });
     }
 
     @Override
