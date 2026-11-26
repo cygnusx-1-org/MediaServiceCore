@@ -609,7 +609,7 @@ internal object FormatInfoWrapper {
         // Its attempts were recorded when it was fetched ahead, and what that fetch left is its now
         mCache.takePrefetched(videoId)?.let {
             mPrefetchedState?.let { state -> setFetchState(state) }
-            FetchStages.mark("cached", PREFETCHED)
+            FetchStages.mark("cached", describePrefetched(ClientAttempts.get(videoId)))
             return it
         }
 
@@ -626,6 +626,41 @@ internal object FormatInfoWrapper {
         }
 
         return formatInfo
+    }
+
+    /**
+     * The detail of the cached mark of formats fetched ahead: PREFETCHED, then what the clients before the one that gave them answered,
+     * the ones in a row that answered the same in one, e.g. "prefetched, after TV, TV_SAMSUNG unplayable LOGIN_REQUIRED: Sign in to
+     * confirm you're not a bot". A start's own fetch has a row for each attempt; the prefetch's had none, and a start on WEB after ten
+     * on TV didn't say why (EENAQFZF -UJLISx_uoI, qVqLUM-wjNc).
+     *
+     * @param attempts the prefetch's, in the order they were tried (see ClientAttempts)
+     */
+    internal fun describePrefetched(attempts: List<Attempt>): String {
+        val groups = mutableListOf<Pair<MutableList<String>, String>>()
+
+        for (attempt in attempts) {
+            if (attempt.result == ClientAttempts.RESULT_OK) {
+                continue
+            }
+
+            val description = attempt.describe()
+            val last = groups.lastOrNull()
+
+            if (last != null && last.second == description) {
+                last.first.add(attempt.client)
+            } else {
+                groups.add(Pair(mutableListOf(attempt.client), description))
+            }
+        }
+
+        if (groups.isEmpty()) {
+            return PREFETCHED
+        }
+
+        return "$PREFETCHED, after " + groups.joinToString("; ") { (clients, description) ->
+            clients.joinToString(", ") + " " + description
+        }
     }
 
     /**
