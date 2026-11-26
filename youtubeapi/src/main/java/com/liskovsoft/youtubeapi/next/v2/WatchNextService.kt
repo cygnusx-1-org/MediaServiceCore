@@ -51,6 +51,9 @@ internal open class WatchNextService {
                 ChannelGroupServiceImpl.cachedChannel = ItemImpl(it, author, authorImageUrl)
                 if (!YouTubeSignInService.instance().isSigned) {
                     isSubscribedOverrideItem = ChannelGroupServiceImpl.isSubscribed(it)
+                    collaboratorList.forEach { collaborator ->
+                        collaborator.isSubscribedOverride = ChannelGroupServiceImpl.isSubscribed(collaborator.getChannelId())
+                    }
                 } else {
                     if (isSubscribed != ChannelGroupServiceImpl.isSubscribed(it)) {
                         ChannelGroupServiceImpl.subscribe(isSubscribed, it, author, authorImageUrl)

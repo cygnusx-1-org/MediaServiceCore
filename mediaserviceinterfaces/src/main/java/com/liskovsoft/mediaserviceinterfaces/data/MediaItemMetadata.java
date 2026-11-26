@@ -1,5 +1,6 @@
 package com.liskovsoft.mediaserviceinterfaces.data;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface MediaItemMetadata {
@@ -40,5 +41,12 @@ public interface MediaItemMetadata {
      */
     default String getMembersLabel() {
         return null;
+    }
+    /**
+     * The channels of a collaboration, in the order of the byline: the uploader's first (see getChannelId).
+     * Empty for the video of one channel.
+     */
+    default List<Collaborator> getCollaborators() {
+        return Collections.emptyList();
     }
 }

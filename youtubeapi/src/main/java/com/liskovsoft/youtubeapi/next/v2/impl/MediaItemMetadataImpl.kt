@@ -39,6 +39,15 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     private val collaboratorPanel by lazy {
         watchNextResult.getCollaboratorPanel()
     }
+    /**
+     * One per channel of a collaboration, in the order of the byline. The video of one channel has no such panel.
+     */
+    val collaboratorList: List<CollaboratorImpl> by lazy {
+        watchNextResult.getCollaboratorPanels()
+            ?.mapNotNull { panel -> panel?.getCollaboratorChannelId()?.let { CollaboratorImpl(panel, it) } }
+            ?.takeIf { it.size > 1 }
+            ?: emptyList()
+    }
     private val liveChatKeyItem by lazy {
         watchNextResult.getLiveChatToken()
     }
@@ -121,8 +130,14 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     }
     private val videoSecondTitle by lazy {
         YouTubeHelper.createInfo(
-            videoAuthor, albumName, viewCountText, publishedTime
+            collaborationByline ?: videoAuthor, albumName, viewCountText, publishedTime
         )
+    }
+    /**
+     * A collaboration's channels, as the byline shows them (e.g. "X and Y"). The author is the uploader alone.
+     */
+    private val collaborationByline by lazy {
+        if (collaboratorList.isNotEmpty()) videoOwner?.title?.getText()?.takeIf { it.isNotBlank() } else null
     }
     private val videoAuthor by lazy { videoDetails?.getUserName() }
     private val subscriberCountItem by lazy { videoOwner?.getSubscriberCount() ?: collaboratorPanel?.getSubscribersCount() }
@@ -310,6 +325,10 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
 
     override fun getSubscriberCount(): String? {
         return subscriberCountItem
+    }
+
+    override fun getCollaborators(): List<Collaborator> {
+        return collaboratorList
     }
 
     override fun getSuggestions(): List<MediaGroup?>? {

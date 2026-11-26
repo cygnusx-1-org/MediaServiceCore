@@ -267,6 +267,20 @@ internal fun EngagementPanel.getCollaboratorChannelId(): String? =
  * The handle of a collaborator's panel, from its subtitle "@handle · 262K subscribers"
  */
 internal fun EngagementPanel.getChannelHandle(): String? = getHeader()?.subtitle?.getText()?.let { ServiceHelper.extractChannelHandle(it) }
+/**
+ * The name of a collaborator's channel: the title of its panel
+ */
+internal fun EngagementPanel.getCollaboratorName(): String? = getHeader()?.title?.getText()
+/**
+ * The subscribers of a collaborator's panel, from its subtitle "@handle · 262K subscribers". Null when the channel hides them.
+ */
+internal fun EngagementPanel.getCollaboratorSubscriberCount(): String? = getHeader()?.subtitle?.getText()
+    ?.split(YouTubeHelper.TEXT_DELIM_ALT)?.map { it.trim() }?.lastOrNull { it.isNotEmpty() && !it.startsWith("@") }
+/**
+ * The account is subscribed to a collaborator's channel, as its panel's subscribe button tells. Null without the button.
+ */
+internal fun EngagementPanel.isCollaboratorSubscribed(): Boolean? = engagementPanelSectionListRenderer?.content?.itemSectionRenderer
+    ?.contents?.firstNotNullOfOrNull { it?.subscribeButtonRenderer }?.subscribed
 internal fun EngagementPanel.getTitle(): String? = getDescriptionHeader()?.title?.getText()
 internal fun EngagementPanel.getChannelName(): String? = getDescriptionHeader()?.channel?.getText()
 internal fun EngagementPanel.getViews(): String? = getDescriptionHeader()?.views?.getText()

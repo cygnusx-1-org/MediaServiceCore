@@ -238,8 +238,19 @@ internal data class EngagementPanel(
             val structuredDescriptionContentRenderer: StructuredDescriptionContentRenderer?,
             val macroMarkersListRenderer: MacroMarkersListRenderer?,
             val sectionListRenderer: SectionListRenderer?,
-            val listViewModel: ListViewModel?
+            val listViewModel: ListViewModel?,
+            val itemSectionRenderer: ItemSectionRenderer?
         ) {
+            /**
+             * The buttons of a collaborator's panel: its subscribe button, then "Go to channel"
+             */
+            data class ItemSectionRenderer(
+                val contents: List<Item?>?
+            ) {
+                data class Item(
+                    val subscribeButtonRenderer: SubscribeButtonRenderer?
+                )
+            }
             data class StructuredDescriptionContentRenderer(
                  val items: List<Item?>?
             ) {
