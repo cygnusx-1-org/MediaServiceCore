@@ -51,6 +51,11 @@ internal class FormatInfoCache {
         get(videoId) != null || synchronized(this) { mPrefetched }?.takeIf { isUsableFor(it, videoId) } != null
 
     /**
+     * The ones fetched ahead for the video, left there (see takePrefetched)
+     */
+    fun peekPrefetched(videoId: String?): MediaItemFormatInfo? = synchronized(this) { mPrefetched }?.takeIf { isUsableFor(it, videoId) }
+
+    /**
      * The ones fetched ahead for the video become the cached ones, in place of the ones before: the video plays now
      */
     fun takePrefetched(videoId: String?): MediaItemFormatInfo? {

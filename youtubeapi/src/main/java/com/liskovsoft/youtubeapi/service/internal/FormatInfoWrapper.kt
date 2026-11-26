@@ -1,9 +1,11 @@
 package com.liskovsoft.youtubeapi.service.internal
 
+import android.net.Uri
 import android.os.SystemClock
 import com.liskovsoft.googlecommon.common.helpers.RetrofitHelper
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo
 import com.liskovsoft.sharedutils.mylogger.Log
+import com.liskovsoft.sharedutils.okhttp.OkHttpManager
 import com.liskovsoft.sharedutils.okhttp.RequestScope
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
 import com.liskovsoft.sharedutils.rx.RxHelper
@@ -201,6 +203,25 @@ internal object FormatInfoWrapper {
             } finally {
                 setFetchState(playing)
             }
+        }
+    }
+
+    /**
+     * The name of the server the video fetched ahead streams from (see prefetchFormatInfo) is looked up now, through the player's
+     * resolver: its start then finds it cached. An Android TV's lookups took 200-520 ms on 11 of 17 autoplay starts, 955 ms on another,
+     * where a name looked up minutes before took 0-30 ms; the formats had been fetched 19 s before each (electriceel 0HCC641V). Not
+     * under the fetches' lock: a lookup may take a second. A lookup that fails is the start's to make again.
+     */
+    @JvmStatic
+    fun resolvePrefetchedHost(videoId: String?) {
+        val formatInfo = mCache.peekPrefetched(videoId) ?: return
+        val url = formatInfo.serverAbrStreamingUrl ?: formatInfo.adaptiveFormats?.firstOrNull { it.url != null }?.url ?: return
+        val host = Uri.parse(url).host ?: return
+
+        try {
+            OkHttpManager.instance().client.dns.lookup(host)
+        } catch (e: Exception) {
+            Log.d(TAG, "Can't look up %s ahead: %s", host, e.message)
         }
     }
 
