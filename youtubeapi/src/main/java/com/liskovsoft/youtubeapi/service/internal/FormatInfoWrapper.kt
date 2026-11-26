@@ -152,6 +152,9 @@ internal object FormatInfoWrapper {
             // Another fetch, the next video's prefetch or the player data's refresh (the warm-up doesn't hold the lock). Read before the
             // wait: it's let go after.
             val holder = getLockHolder()
+            // Told before the wait too: a start left inside it says what it waited for (97Z1YWD3 start 42 and WVE7ZKDD's two at
+            // 22:18:28/33 gave up in a "lock wait, still going" that named nothing)
+            lockWait.describe(holder)
 
             return withLock("$LOCK_FETCH $videoId") {
                 lockWait.end(holder)
@@ -431,9 +434,10 @@ internal object FormatInfoWrapper {
     /**
      * The app info due its refresh soon is got again in the background, and the player of a new url loaded: the next fetch doesn't
      * load it (see AppService#refreshPlayerData). Later, like the poToken's: the player's load is heavy, and the video starting needs
-     * the device.
+     * the device. Also called once a new TV player stood in for is preprocessed, for its swap (see AppServiceCoreCached#getStandIn).
      */
-    private fun refreshPlayerDataLater() {
+    @JvmStatic
+    fun refreshPlayerDataLater() {
         // Called in the fetch's finally: nothing thrown here may replace its result
         try {
             if (!AppService.instance().isPlayerDataToRefresh() || !mPlayerDataRefresh.compareAndSet(false, true)) {
@@ -490,13 +494,20 @@ internal object FormatInfoWrapper {
 
     /**
      * With a client picked for the video, its formats were the legacy clients' (see selectPlaybackFormatInfo): those are switched, past
-     * the picked one
+     * the picked one. Not forced, the client's poToken is reset instead when it can be (see PoTokenGate#resetCache): the client stays.
+     *
+     * @return the client tried next (see getClientName) when that's another one, null when it stays the one before, its poToken reset.
+     * The error fixer's switch_next_client read as a switch when it only reset TV's poToken (WVE7ZKDD #2: the reload stayed on TV, and the
+     * poToken made again was 2.2 s of its 5.3 s). Two switches with no fetch between them name the same next client: the second reads as
+     * staying.
      */
     @JvmStatic
-    fun switchNextFormat(force: Boolean) {
+    fun switchNextFormat(force: Boolean): String? {
+        val before = getClientName()
+
         if (mTryInnertubeFirst && !mInnertubeResult.isUnplayable && !getVideoInfoService().hasPickedClient()) {
             if (!force && mInnertubeResult.client?.let { PoTokenGate.resetCache(it) } ?: false)
-                return
+                return null
 
             mTryInnertubeFirst = false
         } else {
@@ -504,6 +515,10 @@ internal object FormatInfoWrapper {
             if (endReached)
                 mTryInnertubeFirst = true
         }
+
+        val after = getClientName()
+
+        return if (force || after != before) after else null
     }
 
     /**

@@ -5,7 +5,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.liskovsoft.sharedutils.prefs.GlobalPreferences
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants
-import com.liskovsoft.youtubeapi.app.AppServiceInt
+import com.liskovsoft.googlecommon.common.helpers.DefaultHeaders
+import com.liskovsoft.youtubeapi.app.AppService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -17,8 +18,6 @@ import org.junit.Test
 private const val WEB_TIMESTAMP_LENGTH = 5
 
 class WebPlayerDataExtractorTest {
-    private val mAppServiceInt = AppServiceInt()
-
     @JvmField
     @Rule
     val internetPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.INTERNET)
@@ -28,12 +27,15 @@ class WebPlayerDataExtractorTest {
         GlobalPreferences.instance(InstrumentationRegistry.getInstrumentation().context)
     }
 
+    /**
+     * Of the app info, by the service's public face: AppServiceCore is its package's own
+     */
     private fun getPlayerUrl(): String {
-        val playerUrl = mAppServiceInt.playerUrl
+        val playerUrl = AppService.instance().getAppInfo(DefaultHeaders.APP_USER_AGENT)?.playerUrl
 
         assertNotNull("Player url not null", playerUrl)
 
-        return playerUrl
+        return playerUrl!!
     }
 
     @Test
@@ -51,9 +53,8 @@ class WebPlayerDataExtractorTest {
 
     @Test
     fun testThatDecipherFunctionIsValid() {
-        val playerUrl = mAppServiceInt.playerUrl
-
-        mAppServiceInt.getPlayerDataExtractor(playerUrl).validate()
+        // The web one, as AppServiceCore#getPlayerDataExtractor(String) gives for no client
+        WebPlayerDataExtractor(getPlayerUrl()).validate()
     }
 
     @Test

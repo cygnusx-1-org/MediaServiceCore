@@ -267,7 +267,8 @@ public class AppService {
     }
 
     /**
-     * The app info is due its refresh within the hour, or past it (see refreshPlayerData)
+     * The app info is due its refresh within the hour, or past it, or a new TV player another one stood in for is preprocessed, due its
+     * swap (see refreshPlayerData)
      */
     public boolean isPlayerDataToRefresh() {
         return mAppServiceCore.isPlayerDataToRefresh();

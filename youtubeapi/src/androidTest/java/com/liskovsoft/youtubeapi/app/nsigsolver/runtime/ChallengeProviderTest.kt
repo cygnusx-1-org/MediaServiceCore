@@ -9,7 +9,9 @@ import com.liskovsoft.youtubeapi.app.nsigsolver.provider.JsChallengeProviderResp
 import com.liskovsoft.youtubeapi.app.nsigsolver.provider.JsChallengeRequest
 import com.liskovsoft.youtubeapi.app.nsigsolver.provider.JsChallengeResponse
 import com.liskovsoft.youtubeapi.app.nsigsolver.provider.JsChallengeType
+import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -94,5 +96,49 @@ internal class ChallengeProviderTest {
     fun testSingleNRequest() {
         val result = V8ChallengeProvider.bulkSolve(listOf(tests.first())).toList()
         assertTrue("not empty", result.isNotEmpty())
+    }
+
+    /**
+     * 97Z1YWD3: about 35 web deciphers took 1.9-2.1 s each, a runtime made with the solver's libraries and the player loaded for every
+     * one. The runtime is kept with the player loaded: a solve of the same player runs only its challenges.
+     */
+    @Test
+    fun aSecondSolveOfThePlayerRunsOnlyItsChallenges() {
+        val player = tests.take(2)
+        solveTimed("solve1", player)
+
+        val stages = solveTimed("solve2", player)
+
+        assertEquals(responses.take(2), V8ChallengeProvider.bulkSolve(player).toList())
+        assertEquals(listOf(V8ChallengeProvider.STAGE_SOLVE), stages)
+    }
+
+    /**
+     * The runtime of the player before is let go: another one's solve makes it again, and loads its player
+     */
+    @Test
+    fun anotherPlayerIsLoadedInANewRuntime() {
+        solveTimed("player1", tests.take(2))
+
+        val stages = solveTimed("player2", tests.drop(2).take(2))
+
+        assertTrue(stages.toString(), stages.containsAll(listOf(V8ChallengeProvider.STAGE_V8_START, V8ChallengeProvider.STAGE_PLAYER_LOAD,
+                V8ChallengeProvider.STAGE_SOLVE)))
+        assertFalse(stages.toString(), solveTimed("player2again", tests.drop(2).take(2)).contains(V8ChallengeProvider.STAGE_V8_START))
+    }
+
+    /**
+     * The names of the stages the solve ran, as a fetch of the video records them
+     */
+    private fun solveTimed(videoId: String, requests: List<JsChallengeRequest>): List<String> {
+        FetchStages.open(videoId)
+
+        try {
+            V8ChallengeProvider.bulkSolve(requests).toList()
+        } finally {
+            FetchStages.close()
+        }
+
+        return FetchStages.take(videoId).map { it.name }.filter { it != "fetch" }
     }
 }

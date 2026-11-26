@@ -65,9 +65,10 @@ public class VideoInfoService extends VideoInfoServiceBase {
             //AppClient.ANDROID_SDK_LESS, // doesn't require pot (hangs on Cronet!)
     };
     /**
-     * The order's first client answered LOGIN_REQUIRED for this many videos running, each played by a client after it: the session is
-     * refused (e.g. "Sign in to confirm you're not a bot" signed out), not the video (e.g. its age), and the fetches begin at the one
-     * that played (see noteAnswers). One video's refusal is its own: an age-restricted one doesn't move the others.
+     * The order's first client answered LOGIN_REQUIRED or ERROR (see isRefusal) for this many videos running, each played by a client
+     * after it: the session is refused (e.g. "Sign in to confirm you're not a bot" signed out), or the client doesn't work for the user,
+     * not the video (e.g. its age), and the fetches begin at the one that played (see noteAnswers). One video's refusal is its own: an
+     * age-restricted one doesn't move the others.
      */
     @VisibleForTesting
     static final int LOGIN_REFUSALS_TO_SKIP = 2;
@@ -115,7 +116,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
     private int mInfoTypeResets;
     private final Object mFetchStateLock = new Object();
     /**
-     * Of the first client's LOGIN_REQUIRED answers (see LOGIN_REFUSALS_TO_SKIP): the fetches of the next video run on other threads
+     * Of the first client's refusals (see LOGIN_REFUSALS_TO_SKIP): the fetches of the next video run on other threads
      */
     private final Object mLoginSkipLock = new Object();
     private int mLoginRefusals;
@@ -313,8 +314,7 @@ public class VideoInfoService extends VideoInfoServiceBase {
             span.end(attempt.describe());
 
             if (accepted) {
-                VideoInfo firstAnswer = answers.get(types[0]);
-                noteAnswers(videoId, type, types[0], firstAnswer != null && firstAnswer.isLoginRequired());
+                noteAnswers(videoId, type, types[0], isRefusal(answers.get(types[0])));
                 return result;
             }
 
@@ -438,13 +438,26 @@ public class VideoInfoService extends VideoInfoServiceBase {
     }
 
     /**
-     * A video's formats were accepted from a client (see firstInfoWith): whether the order's first one refused the session (see
-     * LOGIN_REFUSALS_TO_SKIP)
+     * The answer of the order's first client refused a video that a client after it played (see noteAnswers): LOGIN_REQUIRED, or ERROR
+     * ("Video unavailable"). An ERROR may be the video's own (e.g. removed), and then no client plays it: it's never counted. DuneHD's
+     * WEB_EMBED, first in the user's own order, answered "Видео недоступно" ("Video unavailable") 8 times of 8, each video played by WEB
+     * after it, about 19 s in all, one request 8.0 s (R71TW3F4, 65FDWR9C, KK7V463C).
      *
-     * @param isFirstLoginRequired the order's first client was asked for this video and answered LOGIN_REQUIRED
+     * @param answer of the order's first client, null when it wasn't asked or gave none
      */
     @VisibleForTesting
-    void noteAnswers(String videoId, AppClient accepted, AppClient first, boolean isFirstLoginRequired) {
+    static boolean isRefusal(@Nullable VideoInfo answer) {
+        return answer != null && (answer.isLoginRequired() || answer.isVisibilityRestricted());
+    }
+
+    /**
+     * A video's formats were accepted from a client (see firstInfoWith): whether the order's first one refused it (see
+     * LOGIN_REFUSALS_TO_SKIP)
+     *
+     * @param isFirstRefused the order's first client was asked for this video and refused it (see isRefusal)
+     */
+    @VisibleForTesting
+    void noteAnswers(String videoId, AppClient accepted, AppClient first, boolean isFirstRefused) {
         synchronized (mLoginSkipLock) {
             if (accepted == first) {
                 // It plays again: the refusal is over
@@ -454,14 +467,14 @@ public class VideoInfoService extends VideoInfoServiceBase {
                 return;
             }
 
-            if (!isFirstLoginRequired || Helpers.equals(videoId, mLoginRefusedVideoId)) {
+            if (!isFirstRefused || Helpers.equals(videoId, mLoginRefusedVideoId)) {
                 return;
             }
 
             mLoginRefusedVideoId = videoId;
 
             if (++mLoginRefusals >= LOGIN_REFUSALS_TO_SKIP) {
-                Log.d(TAG, "%s refused %s videos running with LOGIN_REQUIRED: %s is asked first for %s min", first, mLoginRefusals,
+                Log.d(TAG, "%s refused %s videos running (LOGIN_REQUIRED or ERROR): %s is asked first for %s min", first, mLoginRefusals,
                         accepted, LOGIN_SKIP_MS / 60_000);
                 mLoginSkipClient = accepted;
                 mLoginSkipUntilMs = SystemClock.elapsedRealtime() + LOGIN_SKIP_MS;

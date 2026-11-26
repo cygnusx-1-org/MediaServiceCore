@@ -323,17 +323,20 @@ internal object TclChallengeProvider {
     }
 
     /**
-     * Its n-function is loaded, or there to load without a preprocess
+     * Its n-function is loaded, or there to load without a preprocess (e.g. for a player to stand in for it, see
+     * AppServiceCoreCached#getStandIn)
      */
-    private fun isReady(playerUrl: String): Boolean =
+    fun isReady(playerUrl: String): Boolean =
         (v8Runtime != null && loadedPlayerUrl == playerUrl) || aheadPlayer.get()?.first == playerUrl
                 || CacheService.load(cacheSection, getCacheKey(playerUrl))?.version == solverVersion
 
     /**
-     * The player preprocessed ahead (see preprocessAhead), null when it isn't this one. Taken once: a player loaded doesn't keep it.
+     * The player preprocessed ahead (see preprocessAhead), null when it isn't this one. Taken once by its own load. Another player's
+     * load leaves it: a stand-in loaded again (e.g. its solve failed, see AppServiceCoreCached#getStandIn) would throw away the new
+     * player's preprocess, done again then in the swap, 20-100 s under the fetches' lock.
      */
     private fun takeAheadPlayer(playerUrl: String): String? {
-        val ahead = aheadPlayer.getAndSet(null) ?: return null
+        val ahead = aheadPlayer.getAndUpdate { if (it?.first == playerUrl) null else it } ?: return null
 
         return if (ahead.first == playerUrl) ahead.second else null
     }

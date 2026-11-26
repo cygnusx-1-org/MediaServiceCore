@@ -2,6 +2,7 @@ package com.liskovsoft.youtubeapi.videoinfo.V2;
 
 import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
+import com.liskovsoft.youtubeapi.videoinfo.models.VideoInfo;
 
 import org.junit.After;
 import org.junit.Before;
@@ -10,10 +11,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.shadows.ShadowSystemClock;
 
+import java.lang.reflect.Field;
 import java.time.Duration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * The order's first client refuses the session (LOGIN_REQUIRED, e.g. "confirm you're not a bot" signed out) and a later one plays
@@ -138,6 +142,39 @@ public class LoginSkipTest {
         getService().resetClient();
 
         assertEquals(mFirst, getService().getNextClient());
+    }
+
+    /**
+     * DuneHD's WEB_EMBED, first in the user's own order, answered ERROR ("Видео недоступно") 8 times of 8, each video played by WEB
+     * after it, about 19 s in all (R71TW3F4, 65FDWR9C, KK7V463C): it's skipped as a session's refusal is
+     */
+    @Test
+    public void anErrorOfTheFirstClientIsSkippedToo() throws Exception {
+        getService().noteAnswers("video1", mSecond, mFirst, VideoInfoService.isRefusal(answer("ERROR")));
+        getService().noteAnswers("video2", mSecond, mFirst, VideoInfoService.isRefusal(answer("ERROR")));
+
+        assertEquals(mSecond, getService().getNextClient());
+    }
+
+    /**
+     * Another status (e.g. UNPLAYABLE) isn't one, nor no answer
+     */
+    @Test
+    public void whatARefusalIs() throws Exception {
+        assertTrue(VideoInfoService.isRefusal(answer("LOGIN_REQUIRED")));
+        assertTrue(VideoInfoService.isRefusal(answer("ERROR")));
+        assertFalse(VideoInfoService.isRefusal(answer("UNPLAYABLE")));
+        assertFalse(VideoInfoService.isRefusal(answer("OK")));
+        assertFalse(VideoInfoService.isRefusal(null));
+    }
+
+    private static VideoInfo answer(String status) throws Exception {
+        VideoInfo info = new VideoInfo();
+        Field field = VideoInfo.class.getDeclaredField("mPlayabilityStatus");
+        field.setAccessible(true);
+        field.set(info, status);
+
+        return info;
     }
 
     private static VideoInfoService getService() {

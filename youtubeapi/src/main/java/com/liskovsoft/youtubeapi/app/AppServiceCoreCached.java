@@ -6,6 +6,7 @@ import androidx.annotation.VisibleForTesting;
 import com.liskovsoft.googlecommon.common.helpers.DefaultHeaders;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.sharedutils.mylogger.Log;
+import com.liskovsoft.sharedutils.rx.RxHelper;
 import com.liskovsoft.youtubeapi.app.models.AppInfo;
 import com.liskovsoft.youtubeapi.app.models.ClientData;
 import com.liskovsoft.youtubeapi.app.models.cached.AppInfoCached;
@@ -16,6 +17,8 @@ import com.liskovsoft.youtubeapi.common.helpers.AppClient;
 import com.liskovsoft.youtubeapi.common.helpers.AppConstants;
 import com.liskovsoft.youtubeapi.service.internal.FormatInfoWrapper;
 import com.liskovsoft.youtubeapi.videoinfo.V2.FetchStages;
+
+import java.util.Locale;
 
 class AppServiceCoreCached extends AppServiceCore {
     private static final String TAG = AppServiceCoreCached.class.getSimpleName();
@@ -50,6 +53,35 @@ class AppServiceCoreCached extends AppServiceCore {
     static final String LOAD_NEW_PLAYER = "new player";
     static final String LOAD_LAST_WORKING = "fallback: last working";
     static final String LOAD_BUILT_IN = "fallback: built-in";
+    /**
+     * A moment of the fetch, in its player JS: a TV player stood in for the app info's new one (see getStandIn). Its detail says which
+     * and how old it is, e.g. "loaded, 3 days old", "last working, 9 days old".
+     */
+    static final String STAGE_STAND_IN = "player stand-in";
+    static final String STAND_IN_LOADED = "loaded";
+    static final String STAND_IN_LAST_WORKING = "last working";
+    /**
+     * The oldest a stand-in may be, by its signature timestamp: the day YouTube built it (see getStandIn)
+     */
+    @VisibleForTesting
+    static final int STAND_IN_MAX_AGE_DAYS = 14;
+    private static final long DAY_MS = 24 * 60 * 60 * 1_000L;
+    /**
+     * The url of the TV player stood in for (see getStandIn), null for none. Set under mTclPlayerSync, cleared by the swap.
+     */
+    private volatile String mStandInFor;
+    /**
+     * The client the stand-in was for: the swap loads its player (see refreshPlayerData)
+     */
+    private volatile AppClient mStandInClient;
+    /**
+     * The url stood in for last: its load isn't put off twice (see getStandIn)
+     */
+    private volatile String mStandInUsedFor;
+    /**
+     * The url whose preprocess ahead ended, for the stand-in (see getStandIn): its swap is due while it's the one stood in for
+     */
+    private volatile String mStandInReadyFor;
     private final Object mAppInfoSync = new Object();
     /**
      * One lock per player: a load of the TV (TCL) one and of the web one don't wait for each other. On the emulator's cold start with a
@@ -95,6 +127,13 @@ class AppServiceCoreCached extends AppServiceCore {
 
     @Override
     public boolean isPlayerDataToRefresh() {
+        return isAppInfoToRefresh() || isStandInToSwap();
+    }
+
+    /**
+     * The app info is due its refresh within the hour, or past it
+     */
+    private boolean isAppInfoToRefresh() {
         long nowMs = System.currentTimeMillis();
 
         return mAppInfo != null && nowMs - mAppInfoUpdateTimeMs >= CACHE_REFRESH_PERIOD_MS - REFRESH_AHEAD_MS
@@ -102,8 +141,18 @@ class AppServiceCoreCached extends AppServiceCore {
     }
 
     /**
+     * The new TV player stood in for was preprocessed ahead (see getStandIn): it's swapped in by the refresh
+     */
+    private boolean isStandInToSwap() {
+        String standInFor = mStandInFor;
+
+        return standInFor != null && standInFor.equals(mStandInReadyFor);
+    }
+
+    /**
      * The app info is got again before it expires, and the player of a new url is loaded now. The one in use is kept when it can't be
-     * got.
+     * got. A new TV player stood in for (see getStandIn) is swapped in once it's preprocessed: as the refresh runs holding the fetches'
+     * lock (see FormatInfoWrapper#refreshPlayerDataLater), between fetches.
      */
     @Override
     public void refreshPlayerData(@Nullable AppClient client) {
@@ -116,20 +165,38 @@ class AppServiceCoreCached extends AppServiceCore {
                 return;
             }
 
-            Log.d(TAG, "refreshAppInfoData");
+            if (isAppInfoToRefresh()) {
+                Log.d(TAG, "refreshAppInfoData");
 
-            // Got ahead, with its player made ready then (see preparePlayerDataRefresh)
-            AppInfoCached appInfo = pending != null ? pending : AppInfoCached.from(fetchAppInfo(DefaultHeaders.APP_USER_AGENT));
+                // Got ahead, with its player made ready then (see preparePlayerDataRefresh)
+                AppInfoCached appInfo = pending != null ? pending : AppInfoCached.from(fetchAppInfo(DefaultHeaders.APP_USER_AGENT));
 
-            if (appInfo == null || appInfo.getPlayerUrl() == null) {
-                mRefreshFailedMs = System.currentTimeMillis();
-                return;
+                if (appInfo != null && appInfo.getPlayerUrl() != null) {
+                    mAppInfo = appInfo;
+                    mAppInfoUpdateTimeMs = System.currentTimeMillis();
+                } else {
+                    mRefreshFailedMs = System.currentTimeMillis();
+
+                    // The stand-in's swap is made all the same
+                    if (!isStandInToSwap()) {
+                        return;
+                    }
+                }
             }
-
-            mAppInfo = appInfo;
-            mAppInfoUpdateTimeMs = System.currentTimeMillis();
         }
 
+        AppClient standInClient = endStandIn();
+
+        // The new TV player's: a client tried first that's a web one loads only the web player. Before it, so the client's is the
+        // recent one after, as before (see mRecentClient).
+        if (standInClient != null && !isTcl(client)) {
+            warmUpPlayer(standInClient);
+        }
+
+        warmUpPlayer(client);
+    }
+
+    private void warmUpPlayer(@Nullable AppClient client) {
         PlayerDataExtractor extractor = getPlayerDataExtractor(client);
 
         if (extractor != null) {
@@ -148,7 +215,7 @@ class AppServiceCoreCached extends AppServiceCore {
         AppInfoCached appInfo;
 
         synchronized (mAppInfoSync) {
-            if (!isPlayerDataToRefresh() || mPendingAppInfo != null) {
+            if (!isAppInfoToRefresh() || mPendingAppInfo != null) {
                 return;
             }
 
@@ -173,7 +240,7 @@ class AppServiceCoreCached extends AppServiceCore {
     }
 
     /**
-     * Its n-function preprocessed for the solver to load, the player itself not loaded (see preparePlayerDataRefresh)
+     * Its n-function preprocessed for the solver to load, the player itself not loaded (see preparePlayerDataRefresh, getStandIn)
      */
     @VisibleForTesting
     protected void preprocessPlayerAhead(String playerUrl) {
@@ -306,6 +373,13 @@ class AppServiceCoreCached extends AppServiceCore {
             return playerDataExtractor;
         }
 
+        // A new TV player that would be preprocessed now: one that's ready goes on meanwhile
+        PlayerDataExtractor standIn = isTcl(client) ? getStandIn(client, playerUrls[MAIN], playerDataExtractor) : null;
+
+        if (standIn != null) {
+            return standIn;
+        }
+
         // Why it's loaded: none was yet, YouTube's player changed, or the one before failed
         String loadReason = playerDataExtractor == null ? LOAD_FIRST : LOAD_NEW_PLAYER;
 
@@ -315,13 +389,17 @@ class AppServiceCoreCached extends AppServiceCore {
                 continue;
             }
 
+            String reason = idx == MAIN ? loadReason : idx == DATA ? LOAD_LAST_WORKING : LOAD_BUILT_IN;
             FetchStages.Span load = FetchStages.begin("player JS load");
+            // Told before it's loaded too: a start left inside the load says why it ran (WVE7ZKDD 22:18:13, 7ESEXE3B: a "player JS
+            // load, still going" didn't say whether it was the run's first player or a new one)
+            load.describe(reason);
 
             try {
                 playerDataExtractor = newPlayerDataExtractor(client, url);
                 persistExtractor(client, playerDataExtractor);
             } finally {
-                load.end(idx == MAIN ? loadReason : idx == DATA ? LOAD_LAST_WORKING : LOAD_BUILT_IN);
+                load.end(reason);
             }
 
             if (FetchStages.time("player JS check", null, playerDataExtractor::validate)) {
@@ -355,6 +433,157 @@ class AppServiceCoreCached extends AppServiceCore {
         }
 
         return playerDataExtractor;
+    }
+
+    /**
+     * A TV player that's ready stands in for the app info's new one while that one's n-function is preprocessed in the background,
+     * 20-100 s on a slow TV that a start waited for: 7ESEXE3B's first video gave up 12.4 s into a wait for the warm-up's "player
+     * preprocess", then 21.8 s in (the device's take 22-27 s, H5B64KBE, Y1D66CNW); WVE7ZKDD's three starts at 22:18 and 97Z1YWD3's
+     * starts 41-42 never played behind one. The stand-in is the player loaded, else at the first of the run the last one that worked,
+     * kept on disk with its preprocessed n-function. Every call goes by it till the swap, made between fetches once the new one is
+     * preprocessed (see refreshPlayerData), as the refresh does: a fetch's request and its decipher go by the same player, and the
+     * signature timestamp it sends is the stand-in's own, the one its n-function answers to.<br/>
+     * YouTube serves the timestamp of a player it replaced for a while (a TV runs the player it loaded for days): only a player built in
+     * the last STAND_IN_MAX_AGE_DAYS stands in. A request with the timestamp of one YouTube has retired would be answered unplayable, or
+     * with stream urls its n-function doesn't decipher, refused (403) or throttled when the player loads them: the next client, or the
+     * player's error fixing, goes on from it as from any such failure, till the swap a preprocess later.<br/>
+     * Not a fallback (see firstValidExtractor), and once per url: when its preprocess ahead failed, the swap loads it the usual way.
+     * Under mTclPlayerSync.
+     *
+     * @param loaded the one in use, null for none (e.g. the first of the run)
+     * @return null for none: the new one is loaded now
+     */
+    @Nullable
+    private PlayerDataExtractor getStandIn(AppClient client, @Nullable String playerUrl, @Nullable PlayerDataExtractor loaded) {
+        if (playerUrl == null) {
+            return null;
+        }
+
+        // Standing in already: till the swap
+        if (loaded != null && playerUrl.equals(mStandInFor)) {
+            return loaded;
+        }
+
+        if (playerUrl.equals(mStandInUsedFor) || getFailedPlayerUrl() != null) {
+            return null;
+        }
+
+        String standInUrl = loaded != null ? loaded.getPlayerUrl() : getLastTclPlayerUrl();
+
+        // The same player, nothing ready to stand in, or the new one's n-function is there to load (e.g. preprocessed ahead of the
+        // refresh, see preparePlayerDataRefresh)
+        if (standInUrl == null || standInUrl.equals(playerUrl) || isPlayerPreprocessed(playerUrl) || !isPlayerPreprocessed(standInUrl)) {
+            return null;
+        }
+
+        // From disk, the last one that worked: its timestamp and nonce kept, its n-function loaded from the cache
+        PlayerDataExtractor standIn = loaded != null ? loaded : newPlayerDataExtractor(client, standInUrl);
+        int ageDays = getPlayerAgeDays(standIn.getSignatureTimestamp(), System.currentTimeMillis());
+
+        if (!standIn.validate() || ageDays < 0 || ageDays > STAND_IN_MAX_AGE_DAYS) {
+            return null;
+        }
+
+        mStandInFor = playerUrl;
+        mStandInUsedFor = playerUrl;
+        mStandInClient = client;
+        mStandInReadyFor = null;
+
+        if (loaded == null) {
+            persistExtractor(client, standIn);
+        }
+
+        String source = loaded != null ? STAND_IN_LOADED : STAND_IN_LAST_WORKING;
+        FetchStages.mark(STAGE_STAND_IN, String.format(Locale.US, "%s, %d days old", source, ageDays));
+        Log.d(TAG, "The TV player %s (%s) stands in for %s while it's preprocessed", standInUrl, source, playerUrl);
+
+        runInBackground(() -> {
+            try {
+                preprocessPlayerAhead(playerUrl);
+            } finally {
+                // Not one stood in for since (e.g. YouTube changed the player again meanwhile)
+                if (playerUrl.equals(mStandInFor)) {
+                    mStandInReadyFor = playerUrl;
+                    requestPlayerDataRefresh();
+                }
+            }
+        });
+
+        return standIn;
+    }
+
+    /**
+     * The stand-in's time is up, its player preprocessed (see getStandIn): the next call loads the player it stood in for
+     *
+     * @return the client it was for, null for no stand-in due its swap
+     */
+    @Nullable
+    private AppClient endStandIn() {
+        // Mostly none: the refresh doesn't wait for a TV player's load (e.g. of a web client's refresh)
+        if (!isStandInToSwap()) {
+            return null;
+        }
+
+        // As getStandIn sets them: a stand-in begun meanwhile for the app info's next player isn't cleared with this one
+        synchronized (mTclPlayerSync) {
+            if (!isStandInToSwap()) {
+                return null;
+            }
+
+            AppClient client = mStandInClient;
+            mStandInFor = null;
+            mStandInReadyFor = null;
+            mStandInClient = null;
+
+            return client;
+        }
+    }
+
+    /**
+     * How many days ago YouTube built the player, by its signature timestamp: the day's number since 1970 (20522 for 2026-03-10), a TV
+     * player's with 3 more digits (20522001). -1 for none, or one of another form.
+     */
+    @VisibleForTesting
+    static int getPlayerAgeDays(@Nullable String signatureTimestamp, long nowMs) {
+        if (signatureTimestamp == null || signatureTimestamp.length() < 5) {
+            return -1;
+        }
+
+        int day = Helpers.parseInt(signatureTimestamp.substring(0, 5));
+        long ageDays = nowMs / DAY_MS - day;
+
+        // A day ahead: the device's clock, or YouTube's time zone
+        return day > 0 && ageDays >= -1 ? (int) Math.max(0, ageDays) : -1;
+    }
+
+    /**
+     * Its n-function is there to load without a preprocess: loaded, cached or preprocessed ahead (see getStandIn)
+     */
+    @VisibleForTesting
+    protected boolean isPlayerPreprocessed(String playerUrl) {
+        return TclPlayerDataExtractor.isPreprocessed(playerUrl);
+    }
+
+    /**
+     * Of the last TV player that worked, its timestamp and nonce kept on disk (see getStandIn). Null for none.
+     */
+    @VisibleForTesting
+    @Nullable
+    protected String getLastTclPlayerUrl() {
+        return TclPlayerDataExtractor.getLastWorkingPlayerUrl();
+    }
+
+    @VisibleForTesting
+    protected void runInBackground(Runnable task) {
+        RxHelper.runAsync(task);
+    }
+
+    /**
+     * The refresh, which swaps the stand-in's player between fetches (see refreshPlayerData)
+     */
+    @VisibleForTesting
+    protected void requestPlayerDataRefresh() {
+        FormatInfoWrapper.refreshPlayerDataLater();
     }
 
     /**

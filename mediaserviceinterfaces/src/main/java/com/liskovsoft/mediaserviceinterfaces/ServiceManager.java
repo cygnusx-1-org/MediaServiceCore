@@ -33,6 +33,12 @@ public interface ServiceManager {
      */
     boolean isPlayerDataToRefresh();
     void switchNextClient();
+    /**
+     * As #switchNextClient, telling what it did: the client's poToken may be made again instead, the client staying
+     *
+     * @return the client tried next when that's another one, e.g. WEB; null when it stays the one before, its poToken reset
+     */
+    String switchNextClientOrPoToken();
     void switchNextClientNow();
     void resetClient();
     /**

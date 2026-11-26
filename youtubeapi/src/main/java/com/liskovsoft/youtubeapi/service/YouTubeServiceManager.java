@@ -137,8 +137,20 @@ public class YouTubeServiceManager implements ServiceManager {
 
     @Override
     public void switchNextClient() {
+        switchNextClientOrPoToken();
+    }
+
+    /**
+     * As #switchNextClient, telling what it did: the client's poToken may be made again instead, the client staying (see
+     * FormatInfoWrapper#switchNextFormat)
+     *
+     * @return the client tried next when that's another one, e.g. WEB; null when it stays the one before, its poToken reset
+     */
+    @Nullable
+    @Override
+    public String switchNextClientOrPoToken() {
         FormatInfoWrapper.invalidateCache();
-        FormatInfoWrapper.switchNextFormat(false);
+        return FormatInfoWrapper.switchNextFormat(false);
     }
 
     @Override

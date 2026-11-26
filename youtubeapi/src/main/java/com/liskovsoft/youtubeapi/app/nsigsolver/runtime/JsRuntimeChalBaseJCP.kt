@@ -34,38 +34,17 @@ internal abstract class JsRuntimeChalBaseJCP: JsChallengeProvider() {
         ScriptType.CORE to "yt.solver.core.min.js"
     )
 
-    protected abstract fun runJsRuntime(stdin: String): String
+    /**
+     * Runs the script in a runtime of its own (see solvePlayer). Not for a provider that solves another way.
+     */
+    protected open fun runJsRuntime(stdin: String): String =
+        throw UnsupportedOperationException("${this::class.simpleName} solves without a script run of its own")
 
     override fun realBulkSolve(requests: List<JsChallengeRequest>): Sequence<JsChallengeProviderResponse> = sequence {
         val grouped: Map<String, List<JsChallengeRequest>> = requests.groupBy { it.input.playerUrl }
 
         for ((playerUrl, groupedRequests) in grouped) {
-            val data = ie.cache.load(cacheSection, "player:$playerUrl")
-            var player = data?.code
-
-            val cached = if (player != null) {
-                true
-            } else {
-                player = getPlayer(playerUrl)
-                false
-            }
-
-            val stdin = constructStdin(player, cached, groupedRequests)
-            val stdout = runJsRuntime(stdin)
-
-            val gson = Gson()
-            val output: SolverOutput = try {
-                gson.fromJson(stdout, solverOutputType)
-            } catch (e: JsonSyntaxException) {
-                throw JsChallengeProviderError("Cannot parse solver output", e)
-            }
-
-            if (output.type == "error")
-                throw JsChallengeProviderError(output.error ?: "Unknown solver output error")
-
-            val preprocessed = output.preprocessed_player
-            if (preprocessed != null)
-                ie.cache.store(cacheSection, "player:$playerUrl", CachedData(preprocessed))
+            val output = solvePlayer(playerUrl, groupedRequests)
 
             for ((request, responseData) in groupedRequests.zip(output.responses)) {
                 if (responseData.type == "error") {
@@ -80,15 +59,67 @@ internal abstract class JsRuntimeChalBaseJCP: JsChallengeProvider() {
         }
     }
 
-    private fun constructStdin(player: String, preprocessed: Boolean, requests: List<JsChallengeRequest>): String {
-        val jsonRequests = requests.map { request ->
-            mapOf(
-                // TODO: i despise nsig name
-                //"type" to if (request.type.value == "n") "nsig" else request.type.value,
-                "type" to request.type.value,
-                "challenges" to request.input.challenges
-            )
+    /**
+     * The player's challenges solved: the player (or its preprocessed one, cached) and the challenges put in a script that runs in a
+     * runtime of its own (see runJsRuntime). A provider that keeps its runtime solves them its own way.
+     */
+    protected open fun solvePlayer(playerUrl: String, requests: List<JsChallengeRequest>): SolverOutput {
+        val data = ie.cache.load(cacheSection, getCacheKey(playerUrl))
+        var player = data?.code
+
+        val cached = if (player != null) {
+            true
+        } else {
+            player = getPlayer(playerUrl)
+            false
         }
+
+        val stdin = constructStdin(player, cached, requests)
+        val output = parseOutput(runJsRuntime(stdin))
+
+        val preprocessed = output.preprocessed_player
+        if (preprocessed != null)
+            ie.cache.store(cacheSection, getCacheKey(playerUrl), CachedData(preprocessed))
+
+        return output
+    }
+
+    /**
+     * Of the solver's output. Throws for none, or an error of the whole run.
+     */
+    protected fun parseOutput(stdout: String): SolverOutput {
+        val gson = Gson()
+        val output: SolverOutput = try {
+            gson.fromJson(stdout, solverOutputType)
+        } catch (e: JsonSyntaxException) {
+            throw JsChallengeProviderError("Cannot parse solver output", e)
+        }
+
+        if (output.type == "error")
+            throw JsChallengeProviderError(output.error ?: "Unknown solver output error")
+
+        return output
+    }
+
+    /**
+     * Of the player's preprocessed one, in the cache
+     */
+    protected fun getCacheKey(playerUrl: String) = "player:$playerUrl"
+
+    /**
+     * The challenges, as the solver takes them: each request's type and its challenges
+     */
+    protected fun toJsonRequests(requests: List<JsChallengeRequest>): List<Map<String, Any>> = requests.map { request ->
+        mapOf(
+            // TODO: i despise nsig name
+            //"type" to if (request.type.value == "n") "nsig" else request.type.value,
+            "type" to request.type.value,
+            "challenges" to request.input.challenges
+        )
+    }
+
+    private fun constructStdin(player: String, preprocessed: Boolean, requests: List<JsChallengeRequest>): String {
+        val jsonRequests = toJsonRequests(requests)
         val data = if (preprocessed) {
             mapOf(
                 "type" to "preprocessed",

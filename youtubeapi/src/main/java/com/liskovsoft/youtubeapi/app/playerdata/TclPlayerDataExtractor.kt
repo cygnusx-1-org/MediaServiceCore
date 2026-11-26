@@ -191,5 +191,18 @@ internal class TclPlayerDataExtractor(override val playerUrl: String): PlayerDat
             val url = toTclPlayerUrl(playerUrl)
             TclChallengeProvider.preprocessAhead(url) { YouTubeInfoExtractor.loadPlayerSilent(url) }
         }
+
+        /**
+         * The n-function of the player of the url is there to load without a preprocess: loaded, cached or preprocessed ahead (see
+         * AppServiceCoreCached#getStandIn)
+         */
+        @JvmStatic
+        fun isPreprocessed(playerUrl: String): Boolean = TclChallengeProvider.isReady(toTclPlayerUrl(playerUrl))
+
+        /**
+         * Of the last player loaded that worked, whose timestamp and nonce are kept (see persistAllData). Null for none.
+         */
+        @JvmStatic
+        fun getLastWorkingPlayerUrl(): String? = MediaServiceData.instance().tclPlayerExtractorCache?.playerUrl
     }
 }
