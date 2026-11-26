@@ -49,4 +49,11 @@ public interface MediaItemMetadata {
     default List<Collaborator> getCollaborators() {
         return Collections.emptyList();
     }
+    /**
+     * The number of comments, as YouTube words it in the language of the app ("212", "1.1K").
+     * Null when YouTube doesn't tell it, e.g. comments turned off or a live stream.
+     */
+    default String getCommentCount() {
+        return null;
+    }
 }

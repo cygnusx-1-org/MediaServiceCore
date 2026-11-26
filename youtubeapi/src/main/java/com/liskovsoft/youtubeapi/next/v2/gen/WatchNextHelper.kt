@@ -255,6 +255,11 @@ internal fun List<ContinuationItem?>.getContinuationToken(): String? = firstNotN
 internal fun EngagementPanel.getTopCommentsToken(): String? = getSubMenuItems()?.getOrNull(0)?.continuation?.getContinuationToken() ?:
     getSections()?.firstNotNullOfOrNull { it?.itemSectionRenderer?.continuations?.getContinuationToken() }
 internal fun EngagementPanel.getNewCommentsToken(): String? = getSubMenuItems()?.getOrNull(1)?.continuation?.getContinuationToken()
+/**
+ * The number of comments, as YouTube words it ("212", "1.1K"). Null when the panel doesn't tell it.
+ */
+internal fun EngagementPanel.getCommentCount(): String? =
+    engagementPanelSectionListRenderer?.header?.engagementPanelTitleHeaderRenderer?.contextualInfo?.getText()?.takeIf { it.isNotBlank() }
 internal fun EngagementPanel.isCommentsSection(): Boolean = engagementPanelSectionListRenderer?.panelIdentifier == "comment-item-section"
 internal fun EngagementPanel.isDescriptionSection(): Boolean = engagementPanelSectionListRenderer?.panelIdentifier == "video-description-ep-identifier"
 internal fun EngagementPanel.isCollaboratorSection(): Boolean = engagementPanelSectionListRenderer?.identifier?.tag?.startsWith(COLLABORATOR_PANEL_PREFIX) ?: false

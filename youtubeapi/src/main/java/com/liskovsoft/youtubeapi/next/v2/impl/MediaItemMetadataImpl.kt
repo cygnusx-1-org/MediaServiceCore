@@ -54,6 +54,9 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
     private val commentsKeyItem: String? by lazy {
         commentsPanel?.getTopCommentsToken()
     }
+    private val commentCountItem: String? by lazy {
+        commentsPanel?.getCommentCount()
+    }
     private val videoOwner by lazy {
         videoMetadata?.getVideoOwner()
     }
@@ -292,6 +295,10 @@ internal data class MediaItemMetadataImpl(private val watchNextResult: WatchNext
 
     override fun getCommentsKey(): String? {
         return commentsKeyItem
+    }
+
+    override fun getCommentCount(): String? {
+        return commentCountItem
     }
 
     override fun getMembersLabel(): String? {

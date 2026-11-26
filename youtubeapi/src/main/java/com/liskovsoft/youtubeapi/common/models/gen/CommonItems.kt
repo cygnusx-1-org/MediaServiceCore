@@ -735,5 +735,9 @@ internal data class OverlayPanelHeaderRenderer(
 
 internal data class EngagementPanelTitleHeaderRenderer(
     val menu: Menu?,
-    val title: TextItem?
+    val title: TextItem?,
+    /**
+     * Beside the title, e.g. the number of comments of the comments panel ("212", "1.1K")
+     */
+    val contextualInfo: TextItem?
 )
