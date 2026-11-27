@@ -6,9 +6,11 @@ import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import com.liskovsoft.sharedutils.helpers.Helpers;
 import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The videos added to a playlist or removed from it in the app. YouTube tells about an edit only a while after it's saved,
@@ -16,12 +18,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 final class RecentPlaylistEdits {
     private final Map<String, Edit> mEdits = new ConcurrentHashMap<>();
+    private final AtomicLong mLastSequence = new AtomicLong();
 
     static final class Edit {
+        private final String mPlaylistId;
         private final boolean mIsAdded;
+        /**
+         * A later edit has a greater one (see getLastAdded)
+         */
+        private final long mSequence;
 
-        private Edit(boolean isAdded) {
+        private Edit(String playlistId, boolean isAdded, long sequence) {
+            mPlaylistId = playlistId;
             mIsAdded = isAdded;
+            mSequence = sequence;
         }
     }
 
@@ -29,7 +39,7 @@ final class RecentPlaylistEdits {
      * @return the edit, to {@link #undo} it with when it can't be saved
      */
     Edit put(String playlistId, String videoId, boolean isAdded) {
-        Edit edit = new Edit(isAdded);
+        Edit edit = new Edit(playlistId, isAdded, mLastSequence.incrementAndGet());
         mEdits.put(getKey(playlistId, videoId), edit);
         return edit;
     }
@@ -65,6 +75,24 @@ final class RecentPlaylistEdits {
                 ((YouTubePlaylistInfo) playlistInfo).setSelected(isAdded);
             }
         }
+    }
+
+    /**
+     * The playlists a video was added to, each with its latest add, a later one greater. Removals don't count: Add to playlist
+     * puts first the ones videos were last added to (see PlaylistOrder.sortByEdit).
+     */
+    Map<String, Long> getLastAdded() {
+        Map<String, Long> result = new HashMap<>();
+
+        for (Edit edit : mEdits.values()) {
+            Long last = result.get(edit.mPlaylistId);
+
+            if (edit.mIsAdded && (last == null || last < edit.mSequence)) {
+                result.put(edit.mPlaylistId, edit.mSequence);
+            }
+        }
+
+        return result;
     }
 
     /**

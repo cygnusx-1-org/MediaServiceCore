@@ -327,13 +327,30 @@ public class PlaylistServiceWrapper extends PlaylistService implements MediaServ
             return null;
         }
 
-        return PlaylistOrder.sort(playlistInfos, PlaylistInfo::getTitle, info -> BrowseApiHelper.WATCH_LATER_PLAYLIST.equals(info.getPlaylistId()),
-                info -> BrowseApiHelper.LIKED_PLAYLIST.equals(info.getPlaylistId()));
+        // The ones kept on this device after YouTube's (see getCachedPlaylistInfo), unless a video was added to them in the app
+        return PlaylistOrder.sortByEdit(playlistInfos, PlaylistInfo::getPlaylistId, mRecentEdits.getLastAdded(),
+                PlaylistServiceWrapper::isWatchLater, PlaylistServiceWrapper::isLiked);
     }
 
     /**
-     * YouTube's playlists and the ones kept on this device, separate playlists also when one of each has one title. Ordered later
-     * (see getPlaylistsInfo).
+     * The playlists of the add dialog (see getPlaylistsInfo) by title, so that they don't move around, Watch later and Liked videos
+     * still on top
+     */
+    public static List<PlaylistInfo> sortByTitle(List<PlaylistInfo> playlistInfos) {
+        return PlaylistOrder.sort(playlistInfos, PlaylistInfo::getTitle, PlaylistServiceWrapper::isWatchLater, PlaylistServiceWrapper::isLiked);
+    }
+
+    private static boolean isWatchLater(PlaylistInfo playlistInfo) {
+        return BrowseApiHelper.WATCH_LATER_PLAYLIST.equals(playlistInfo.getPlaylistId());
+    }
+
+    private static boolean isLiked(PlaylistInfo playlistInfo) {
+        return BrowseApiHelper.LIKED_PLAYLIST.equals(playlistInfo.getPlaylistId());
+    }
+
+    /**
+     * YouTube's playlists in the order it gives them, then the ones kept on this device in their own (one goes to the top when a video
+     * is added to it), separate playlists also when one of each has one title. Ordered later (see getPlaylistsInfo).
      */
     List<PlaylistInfo> getCachedPlaylistInfo(List<PlaylistInfo> playlistsInfos, String videoId) {
         List<ItemGroup> playlistGroups = PlaylistGroupServiceImpl.getPlaylistGroups();

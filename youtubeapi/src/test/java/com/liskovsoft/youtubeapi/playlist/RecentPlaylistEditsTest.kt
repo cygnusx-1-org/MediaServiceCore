@@ -5,6 +5,7 @@ import com.liskovsoft.youtubeapi.channelgroups.models.ItemGroupImpl
 import com.liskovsoft.youtubeapi.playlist.impl.YouTubePlaylistInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RecentPlaylistEditsTest {
@@ -76,6 +77,45 @@ class RecentPlaylistEditsTest {
         edits.clear()
 
         assertNull(edits.get("WL", "video1"))
+    }
+
+    /**
+     * Add to playlist puts these first (see PlaylistOrder.sortByEdit): the latest add of each playlist, a later one greater
+     */
+    @Test
+    fun lastAddedIsTheLatestAddOfEachPlaylist() {
+        edits.put("PL1", "video1", true)
+        edits.put("PL2", "video1", true)
+        edits.put("PL1", "video2", true)
+        val lastAdded = edits.getLastAdded()
+
+        assertEquals(setOf("PL1", "PL2"), lastAdded.keys)
+        assertTrue(lastAdded.getValue("PL1") > lastAdded.getValue("PL2"))
+    }
+
+    /**
+     * Taking a video out doesn't put a playlist first, also when it was added before: the add is replaced
+     */
+    @Test
+    fun lastAddedLeavesOutRemovals() {
+        edits.put("PL1", "video1", true)
+        edits.put("PL1", "video1", false)
+        edits.put("PL2", "video1", false)
+
+        assertTrue(edits.getLastAdded().isEmpty())
+    }
+
+    /**
+     * An add that couldn't be saved doesn't put the playlist first, nor do the ones YouTube may have removed
+     */
+    @Test
+    fun lastAddedForgetsUndoneAndForgotAdds() {
+        val failed = edits.put("PL1", "video1", true)
+        edits.undo("PL1", "video1", failed)
+        edits.put("WL", "video1", true)
+        edits.forgetAdded("WL")
+
+        assertTrue(edits.getLastAdded().isEmpty())
     }
 
     @Test

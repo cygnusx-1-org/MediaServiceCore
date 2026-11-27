@@ -73,8 +73,47 @@ class PlaylistOrderTest {
         assertEquals(listOf("Liked videos", "Arc"), PlaylistOrder.sort(playlists).map { it.title })
     }
 
+    /**
+     * As YouTube gives them, the latest edited first: not by title
+     */
+    @Test
+    fun byEditKeepsYouTubesOrder() {
+        assertEquals(listOf("Watch later", "Music", "Health", "Games", "Comedy"),
+            sortByEdit(emptyMap(), "Watch later", "Music", "Health", "Games", "Comedy"))
+    }
+
+    /**
+     * YouTube tells about an add only a while after it's saved: the playlists added to in the app come first, the latest first
+     */
+    @Test
+    fun byEditAddedInTheAppFirstLatestFirst() {
+        assertEquals(listOf("Watch later", "Games", "Comedy", "Music", "Health"),
+            sortByEdit(mapOf("Comedy" to 1L, "Games" to 2L), "Watch later", "Music", "Health", "Games", "Comedy"))
+    }
+
+    /**
+     * Watch later and Liked videos keep their places on top, also when a video was added to another playlist since
+     */
+    @Test
+    fun byEditWatchLaterThenLikedFirst() {
+        assertEquals(listOf("Watch later", "Liked videos", "Music", "Arc"),
+            sortByEdit(mapOf("Music" to 3L, "Watch later" to 1L), "Arc", "Liked videos", "Music", "Watch later"))
+    }
+
+    @Test
+    fun byEditNoIdKeepsItsPlace() {
+        assertEquals(listOf("A", null, "B"), sortByEdit(mapOf("A" to 1L), null, "B", "A"))
+    }
+
     private fun sort(vararg titles: String?): List<String?> {
         return PlaylistOrder.sort(titles.toList(), { it }, { it == "Watch later" }, { it == "Liked videos" })
+    }
+
+    /**
+     * By the title as the id
+     */
+    private fun sortByEdit(lastAdded: Map<String, Long>, vararg titles: String?): List<String?> {
+        return PlaylistOrder.sortByEdit(titles.toList(), { it }, lastAdded, { it == "Watch later" }, { it == "Liked videos" })
     }
 
     private fun item(title: String, channelId: String): YouTubeMediaItem {

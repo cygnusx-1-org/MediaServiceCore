@@ -531,6 +531,14 @@ public class YouTubeMediaItemService implements MediaItemService {
     }
 
     /**
+     * The playlists of the add dialog by title, Watch later and Liked videos still on top. getPlaylistsInfoObserve gives them as
+     * YouTube does, the latest edited first.
+     */
+    public List<PlaylistInfo> sortPlaylistsByTitle(List<PlaylistInfo> playlistInfos) {
+        return PlaylistServiceWrapper.sortByTitle(playlistInfos);
+    }
+
+    /**
      * Creates a playlist kept on this device on YouTube, with its videos
      */
     public Observable<Void> copyPlaylistToYouTubeObserve(String playlistId) {
