@@ -61,6 +61,16 @@ class AppServiceCoreCached extends AppServiceCore {
     static final String STAND_IN_LOADED = "loaded";
     static final String STAND_IN_LAST_WORKING = "last working";
     /**
+     * None stood in, and the player is preprocessed now (see getStandIn): why, as the stage's detail, e.g. "none, no player kept". A
+     * run's first player preprocessed 14 s again an hour and a half after the run before had (7B13891M), with nothing to tell whether
+     * a player was kept, too old or not preprocessed.
+     */
+    static final String STAND_IN_NONE_KEPT = "none, no player kept";
+    static final String STAND_IN_NONE_SAME = "none, the same player, not preprocessed";
+    static final String STAND_IN_NONE_NOT_PREPROCESSED = "none, the last one not preprocessed";
+    static final String STAND_IN_NONE_INVALID = "none, the last one invalid";
+    static final String STAND_IN_NONE_OLD = "none, %d days old";
+    /**
      * The oldest a stand-in may be, by its signature timestamp: the day YouTube built it (see getStandIn)
      */
     @VisibleForTesting
@@ -468,19 +478,27 @@ class AppServiceCoreCached extends AppServiceCore {
             return null;
         }
 
+        // The new one's n-function is there to load (e.g. preprocessed ahead of the refresh, see preparePlayerDataRefresh): no wait
+        if (isPlayerPreprocessed(playerUrl)) {
+            return null;
+        }
+
         String standInUrl = loaded != null ? loaded.getPlayerUrl() : getLastTclPlayerUrl();
 
-        // The same player, nothing ready to stand in, or the new one's n-function is there to load (e.g. preprocessed ahead of the
-        // refresh, see preparePlayerDataRefresh)
-        if (standInUrl == null || standInUrl.equals(playerUrl) || isPlayerPreprocessed(playerUrl) || !isPlayerPreprocessed(standInUrl)) {
+        // Nothing ready to stand in, or the same player: it's preprocessed now, and the stage says why
+        if (standInUrl == null || standInUrl.equals(playerUrl) || !isPlayerPreprocessed(standInUrl)) {
+            FetchStages.mark(STAGE_STAND_IN, standInUrl == null ? STAND_IN_NONE_KEPT :
+                    standInUrl.equals(playerUrl) ? STAND_IN_NONE_SAME : STAND_IN_NONE_NOT_PREPROCESSED);
             return null;
         }
 
         // From disk, the last one that worked: its timestamp and nonce kept, its n-function loaded from the cache
         PlayerDataExtractor standIn = loaded != null ? loaded : newPlayerDataExtractor(client, standInUrl);
         int ageDays = getPlayerAgeDays(standIn.getSignatureTimestamp(), System.currentTimeMillis());
+        boolean isValid = standIn.validate() && ageDays >= 0;
 
-        if (!standIn.validate() || ageDays < 0 || ageDays > STAND_IN_MAX_AGE_DAYS) {
+        if (!isValid || ageDays > STAND_IN_MAX_AGE_DAYS) {
+            FetchStages.mark(STAGE_STAND_IN, isValid ? String.format(Locale.US, STAND_IN_NONE_OLD, ageDays) : STAND_IN_NONE_INVALID);
             return null;
         }
 

@@ -17,6 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.util.Collections
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -379,8 +380,12 @@ class AppServiceCoreCachedTest {
         core.youTubePlayerUrl = PLAYER_B
         core.preprocessed += PLAYER_B
 
+        FetchStages.open(VIDEO_ID)
         assertEquals(PLAYER_B, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
+        FetchStages.close()
+
         assertEquals(emptyList<Runnable>(), core.background)
+        assertEquals(emptyList<String>(), takeStandIns())
     }
 
     /**
@@ -388,14 +393,19 @@ class AppServiceCoreCachedTest {
      */
     @Test
     fun anOldPlayerDoesntStandIn() {
-        core.timestamps[PLAYER_A] = daysAgo(AppServiceCoreCached.STAND_IN_MAX_AGE_DAYS + 1)
+        val ageDays = AppServiceCoreCached.STAND_IN_MAX_AGE_DAYS + 1
+        core.timestamps[PLAYER_A] = daysAgo(ageDays)
         core.preprocessed += PLAYER_A
         core.getPlayerDataExtractor(AppClient.TV)
         core.ageAppInfo(HOURS_10_5)
         core.youTubePlayerUrl = PLAYER_B
 
+        FetchStages.open(VIDEO_ID)
         assertEquals(PLAYER_B, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
+        FetchStages.close()
+
         assertEquals(emptyList<Runnable>(), core.background)
+        assertEquals(listOf(String.format(Locale.US, AppServiceCoreCached.STAND_IN_NONE_OLD, ageDays)), takeStandIns())
     }
 
     /**
@@ -408,8 +418,40 @@ class AppServiceCoreCachedTest {
         core.ageAppInfo(HOURS_10_5)
         core.youTubePlayerUrl = PLAYER_B
 
+        FetchStages.open(VIDEO_ID)
         assertEquals(PLAYER_B, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
+        FetchStages.close()
+
         assertEquals(emptyList<Runnable>(), core.background)
+        assertEquals(listOf(AppServiceCoreCached.STAND_IN_NONE_NOT_PREPROCESSED), takeStandIns())
+    }
+
+    /**
+     * The run's first player with no player that worked kept on disk (e.g. the app's first run): preprocessed, and the stage says why.
+     * 7B13891M's second run preprocessed its player 14 s again with nothing to tell why none stood in.
+     */
+    @Test
+    fun aRunsFirstPlayerWithNoneKeptSaysWhyNoneStoodIn() {
+        FetchStages.open(VIDEO_ID)
+        assertEquals(PLAYER_A, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
+        FetchStages.close()
+
+        assertEquals(listOf(AppServiceCoreCached.STAND_IN_NONE_KEPT), takeStandIns())
+    }
+
+    /**
+     * The player kept is the app info's own, its n-function not kept with it: preprocessed again, and the stage says so
+     */
+    @Test
+    fun theSamePlayerKeptWithoutItsNFunctionSaysSo() {
+        core.lastWorkingTclPlayerUrl = PLAYER_A
+        core.timestamps[PLAYER_A] = daysAgo(1)
+
+        FetchStages.open(VIDEO_ID)
+        assertEquals(PLAYER_A, core.getPlayerDataExtractor(AppClient.TV).playerUrl)
+        FetchStages.close()
+
+        assertEquals(listOf(AppServiceCoreCached.STAND_IN_NONE_SAME), takeStandIns())
     }
 
     /**
@@ -578,6 +620,12 @@ class AppServiceCoreCachedTest {
     /**
      * The signature timestamp of a player built that many days ago (see AppServiceCoreCached#getPlayerAgeDays)
      */
+    /**
+     * The fetch's player stand-in stages (see AppServiceCoreCached#getStandIn), their details
+     */
+    private fun takeStandIns(): List<String?> =
+            FetchStages.take(VIDEO_ID).filter { it.name == AppServiceCoreCached.STAGE_STAND_IN }.map { it.detail }
+
     private fun daysAgo(days: Int): String = (System.currentTimeMillis() / DAY - days).toString()
 
     /**
